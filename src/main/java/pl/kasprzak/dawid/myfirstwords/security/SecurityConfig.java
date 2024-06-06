@@ -25,9 +25,8 @@ public class  SecurityConfig {
         httpSecurity.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/parents").authenticated()
-                      //  .requestMatchers(HttpMethod.POST, "/api/parents/children").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/parents/children").authenticated()
                 .anyRequest().permitAll())
-               // .formLogin(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .httpBasic(Customizer.withDefaults())
                 .headers(headers -> headers

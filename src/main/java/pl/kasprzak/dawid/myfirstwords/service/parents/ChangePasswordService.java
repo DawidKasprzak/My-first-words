@@ -17,5 +17,6 @@ public class ChangePasswordService {
     public void changePasswordForParent(Long id, ChangePasswordRequest request){
         ParentEntity parentEntity = parentsRepository.findById(id).orElseThrow(RuntimeException::new);
         parentEntity.setPassword(passwordEncoder.encode(request.getPassword()));
+        parentsRepository.save(parentEntity);
     }
 }
