@@ -17,6 +17,7 @@ public class GetWordsConverter implements Convertable<Void, WordEntity, GetWordR
     @Override
     public GetWordResponse toDto(WordEntity wordEntity) {
         return GetWordResponse.builder()
+                .id(wordEntity.getId())
                 .word(wordEntity.getWord())
                 .dateAchieve(wordEntity.getDateAchieve())
                 .build();

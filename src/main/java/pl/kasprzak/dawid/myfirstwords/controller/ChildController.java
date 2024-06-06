@@ -14,24 +14,24 @@ import pl.kasprzak.dawid.myfirstwords.service.children.GetChildService;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(path = "/api/parents")
+@RequestMapping(path = "/api/children")
 public class ChildController {
 
     private final CreateChildService createChildService;
     private final DeleteChildService deleteChildService;
     private final GetChildService getChildService;
 
-    @PostMapping(path = "/children")
+    @PostMapping
     public CreateChildResponse addChild(@Valid @RequestBody CreateChildRequest request, Authentication authentication){
         return createChildService.addChild(request, authentication);
     }
 
-    @DeleteMapping(path = "/children/{childId}")
-    public void deleteChild(@PathVariable(name = "childId") Long childId, Authentication authentication){
+    @DeleteMapping(path = "/{childId}")
+    public void deleteChild(@PathVariable Long childId, Authentication authentication){
         deleteChildService.deleteChild(childId, authentication);
     }
 
-    @GetMapping(path = "/children")
+    @GetMapping
     public GetAllChildResponse getAllChildren(Authentication authentication){
         return getChildService.getAllChildrenForParent(authentication);
     }

@@ -31,17 +31,17 @@ public class ParentController {
     }
 
     @GetMapping(path = "/{parentId}")
-    public ParentInfoResponse getRegisterParentsById(@PathVariable(name = "parentId") Long parentId){
+    public ParentInfoResponse getRegisterParentsById(@PathVariable Long parentId){
         return getParentService.getById(parentId);
     }
 
     @DeleteMapping(path = "/{parentId}")
-    public void deleteAccount(@PathVariable(name = "parentId") Long parentId){
+    public void deleteAccount(@PathVariable Long parentId){
         deleteParentService.deleteAccount(parentId);
     }
 
     @PutMapping(path = "/{parentId}/password")
-    public void changePassword(@PathVariable(name = "parentId") Long parentId, @RequestBody ChangePasswordRequest request){
+    public void changePassword(@PathVariable Long parentId, @RequestBody ChangePasswordRequest request){
         changePasswordService.changePasswordForParent(parentId, request);
     }
 }

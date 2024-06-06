@@ -1,5 +1,6 @@
 package pl.kasprzak.dawid.myfirstwords.service.children;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class GetChildService {
     private final ParentsRepository parentsRepository;
     private final GetChildConverter getChildConverter;
 
+    @Transactional
     public GetAllChildResponse getAllChildrenForParent(Authentication authentication) {
         ParentEntity parent = parentsRepository.findByUsername(authentication.getName())
                 .orElseThrow(()-> new RuntimeException("Parent not found"));

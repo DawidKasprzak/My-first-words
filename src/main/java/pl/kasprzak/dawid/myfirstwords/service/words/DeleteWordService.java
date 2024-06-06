@@ -14,9 +14,9 @@ public class DeleteWordService {
     private final WordsRepository wordsRepository;
     private final AuthorizationHelper authorizationHelper;
 
-    public void deleteWord(Long childId, Long id, Authentication authentication){
+    public void deleteWord(Long childId, Long wordId, Authentication authentication){
         authorizationHelper.validateAndAuthorizeChild(childId, authentication);
-        WordEntity word = wordsRepository.findById(id)
+        WordEntity word = wordsRepository.findById(wordId)
                 .orElseThrow(()-> new RuntimeException("Word not found"));
         if (!word.getChild().getId().equals(childId)){
             throw new RuntimeException("This word does not belong to this child");

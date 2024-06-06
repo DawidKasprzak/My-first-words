@@ -3,7 +3,6 @@ package pl.kasprzak.dawid.myfirstwords.service.milestones;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import pl.kasprzak.dawid.myfirstwords.service.DateRangeGeneralService;
 import pl.kasprzak.dawid.myfirstwords.util.AuthorizationHelper;
 import pl.kasprzak.dawid.myfirstwords.model.milestones.GetAllMilestoneResponse;
 import pl.kasprzak.dawid.myfirstwords.model.milestones.GetMilestoneResponse;
@@ -23,29 +22,33 @@ public class GetMilestoneService {
     private final MilestonesRepository milestonesRepository;
     private final GetMilestoneConverter getMilestoneConverter;
     private final AuthorizationHelper authorizationHelper;
-    private final DateRangeGeneralService dateRangeGeneralService;
-
 
     public List<GetMilestoneResponse> getByDateAchieveBefore(Long childId, LocalDate date, Authentication authentication) {
-        List<MilestoneEntity> milestone = dateRangeGeneralService.getByDateAchieveBefore(childId, date, authentication,
-                milestonesRepository::findByChildIdAndDateAchieveBefore);
-        return milestone.stream()
+        authorizationHelper.validateAndAuthorizeChild(childId, authentication);
+        List<MilestoneEntity> milestones = milestonesRepository.findByChildIdAndDateAchieveBefore(childId, date);
+        return milestones.stream()
                 .map(getMilestoneConverter::toDto)
                 .collect(Collectors.toList());
     }
 
     public List<GetMilestoneResponse> getByDateAchieveAfter(Long childId, LocalDate date, Authentication authentication) {
-        List<MilestoneEntity> milestone = dateRangeGeneralService.getByDateAchieveAfter(childId, date, authentication,
-                milestonesRepository::findByChildIdAndDateAchieveAfter);
-        return milestone.stream()
+        authorizationHelper.validateAndAuthorizeChild(childId, authentication);
+        List<MilestoneEntity> milestones = milestonesRepository.findByChildIdAndDateAchieveAfter(childId, date);
+        return milestones.stream()
                 .map(getMilestoneConverter::toDto)
                 .collect(Collectors.toList());
     }
 
     public List<GetMilestoneResponse> getWordsBetweenDays(Long childId, LocalDate startDate, LocalDate endDate, Authentication authentication) {
-        List<MilestoneEntity> milestone = dateRangeGeneralService.getWordsBetweenDays(childId, startDate, endDate, authentication,
-                milestonesRepository::findByChildIdAndDateAchieveBetween);
-        return milestone.stream()
+        authorizationHelper.validateAndAuthorizeChild(childId, authentication);
+        if (startDate == null || endDate == null){
+            throw new IllegalArgumentException("Start date and end date must not be null");
+        }
+        if (startDate.isAfter(endDate)){
+            throw new IllegalArgumentException("Start date must be before or equal to end date");
+        }
+        List<MilestoneEntity> milestones = milestonesRepository.findByChildIdAndDateAchieveBetween(childId, startDate, endDate);
+        return milestones.stream()
                 .map(getMilestoneConverter::toDto)
                 .collect(Collectors.toList());
     }

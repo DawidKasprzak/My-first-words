@@ -4,7 +4,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import pl.kasprzak.dawid.myfirstwords.service.DateRangeGeneralService;
 import pl.kasprzak.dawid.myfirstwords.util.AuthorizationHelper;
 import pl.kasprzak.dawid.myfirstwords.model.words.GetAllWordsResponse;
 import pl.kasprzak.dawid.myfirstwords.model.words.GetWordResponse;
@@ -15,7 +14,6 @@ import pl.kasprzak.dawid.myfirstwords.service.converters.words.GetWordsConverter
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,27 +23,32 @@ public class GetWordService {
     private final WordsRepository wordsRepository;
     private final GetWordsConverter getWordsConverter;
     private final AuthorizationHelper authorizationHelper;
-    private final DateRangeGeneralService dateRangeGeneralService;
 
     public List<GetWordResponse> getByDateAchieveBefore(Long childId, LocalDate date, Authentication authentication) {
-        List<WordEntity> words = dateRangeGeneralService.getByDateAchieveBefore(childId, date, authentication,
-                wordsRepository::findByChildIdAndDateAchieveBefore);
+        authorizationHelper.validateAndAuthorizeChild(childId, authentication);
+        List<WordEntity> words = wordsRepository.findByChildIdAndDateAchieveBefore(childId, date);
         return words.stream()
                 .map(getWordsConverter::toDto)
                 .collect(Collectors.toList());
     }
 
     public List<GetWordResponse> getByDateAchieveAfter(Long childId, LocalDate date, Authentication authentication) {
-        List<WordEntity> words = dateRangeGeneralService.getByDateAchieveAfter(childId, date, authentication,
-                wordsRepository::findByChildIdAndDateAchieveAfter);
+        authorizationHelper.validateAndAuthorizeChild(childId, authentication);
+        List<WordEntity> words = wordsRepository.findByChildIdAndDateAchieveAfter(childId, date);
         return words.stream()
                 .map(getWordsConverter::toDto)
                 .collect(Collectors.toList());
     }
 
     public List<GetWordResponse> getWordsBetweenDays(Long childId, LocalDate startDate, LocalDate endDate, Authentication authentication){
-        List<WordEntity> words = dateRangeGeneralService.getWordsBetweenDays(childId, startDate, endDate, authentication,
-                wordsRepository::findByChildIdAndDateAchieveBetween);
+        authorizationHelper.validateAndAuthorizeChild(childId, authentication);
+        if (startDate == null || endDate == null){
+            throw new IllegalArgumentException("Start date and end date must not be null");
+        }
+        if (startDate.isAfter(endDate)){
+            throw new IllegalArgumentException("Start date must be before or equal to end date");
+        }
+        List<WordEntity> words = wordsRepository.findByChildIdAndDateAchieveBetween(childId, startDate, endDate);
         return words.stream()
                 .map(getWordsConverter::toDto)
                 .collect(Collectors.toList());
