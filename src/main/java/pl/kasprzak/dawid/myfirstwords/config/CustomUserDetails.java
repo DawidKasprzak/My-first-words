@@ -1,5 +1,6 @@
 package pl.kasprzak.dawid.myfirstwords.config;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,13 +17,14 @@ public class CustomUserDetails implements UserDetailsService {
     private final ParentsRepository parentsRepository;
 
     @Override
+    @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        System.out.println(username);
         ParentEntity parentEntity = parentsRepository.findByUsername(username).orElseThrow(()-> new UsernameNotFoundException("user not found"));
         return User.builder()
                 .username(username)
                 .password(parentEntity.getPassword())
-                .authorities("Role_User")
                 .build();
 
-    }
+        }
 }

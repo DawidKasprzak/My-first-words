@@ -2,12 +2,14 @@ package pl.kasprzak.dawid.myfirstwords.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import pl.kasprzak.dawid.myfirstwords.model.parents.*;
 import pl.kasprzak.dawid.myfirstwords.service.parents.ChangePasswordService;
 import pl.kasprzak.dawid.myfirstwords.service.parents.CreateParentService;
 import pl.kasprzak.dawid.myfirstwords.service.parents.DeleteParentService;
 import pl.kasprzak.dawid.myfirstwords.service.parents.GetParentService;
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(path = "/api/parents")

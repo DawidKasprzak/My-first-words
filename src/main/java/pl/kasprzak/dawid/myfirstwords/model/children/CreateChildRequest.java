@@ -1,6 +1,7 @@
 package pl.kasprzak.dawid.myfirstwords.model.children;
 
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import lombok.*;
 import org.hibernate.validator.constraints.Length;
@@ -16,8 +17,11 @@ public class CreateChildRequest {
     @NotEmpty
     @Length(min = 2, max = 40)
     private String name;
-    @NotEmpty
-    @Past
+
+    @NotNull(message = "Birth date cannot be null")
+    @Past(message = "Birth date must be in the past")
     private LocalDate birthDate;
+
+    @NotNull(message = "Gender cannot be null")
     private Gender gender;
 }

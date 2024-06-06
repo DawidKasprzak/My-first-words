@@ -11,4 +11,5 @@ public class CreateChildResponse {
 
     private String name;
     private LocalDate birthDate;
+    private Gender gender;
 }

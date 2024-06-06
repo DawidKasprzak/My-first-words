@@ -23,6 +23,7 @@ public class CreateChildConverter implements Convertable<CreateChildRequest, Chi
         return CreateChildResponse.builder()
                 .name(childEntity.getName())
                 .birthDate(childEntity.getBirthDate())
+                .gender(childEntity.getGender())
                 .build();
     }
 }

@@ -23,4 +23,6 @@ public class ParentEntity {
     @OneToMany(mappedBy = "parent")
     private List<ChildEntity> children = new ArrayList<>();
 
+    private String authority;
+
 }

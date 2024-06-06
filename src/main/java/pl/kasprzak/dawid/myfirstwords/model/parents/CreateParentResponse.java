@@ -8,7 +8,6 @@ import java.util.List;
 @Builder
 public class CreateParentResponse {
 
-    private Long id;
     private String username;
     private String mail;
 }
