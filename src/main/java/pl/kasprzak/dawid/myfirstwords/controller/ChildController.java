@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import pl.kasprzak.dawid.myfirstwords.model.children.CreateChildRequest;
 import pl.kasprzak.dawid.myfirstwords.model.children.CreateChildResponse;
 import pl.kasprzak.dawid.myfirstwords.model.children.GetAllChildResponse;
+import pl.kasprzak.dawid.myfirstwords.model.children.GetChildResponse;
 import pl.kasprzak.dawid.myfirstwords.repository.ChildrenRepository;
 import pl.kasprzak.dawid.myfirstwords.service.children.CreateChildService;
 import pl.kasprzak.dawid.myfirstwords.service.children.DeleteChildService;
@@ -34,5 +35,10 @@ public class ChildController {
     @GetMapping
     public GetAllChildResponse getAllChildren(Authentication authentication){
         return getChildService.getAllChildrenForParent(authentication);
+    }
+
+    @GetMapping(path = "/{childId}")
+    public GetChildResponse getChildById(@PathVariable Long childId, Authentication authentication){
+        return getChildService.getChildById(childId, authentication);
     }
 }

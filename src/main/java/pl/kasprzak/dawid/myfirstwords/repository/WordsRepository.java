@@ -8,12 +8,19 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-public interface WordsRepository extends JpaRepository<WordEntity, Long>, DateRangeRepository<WordEntity> {
+public interface WordsRepository extends JpaRepository<WordEntity, Long> {
 
     Optional<WordEntity> findByWord(String word);
+
     Void findByChildIdAndId(Long childId, Long id);
+
     List<WordEntity> findAllByChildId(Long childId);
 
+    List<WordEntity> findByChildIdAndDateAchieveAfter(Long childId, LocalDate date);
+
+    List<WordEntity> findByChildIdAndDateAchieveBefore(Long childId, LocalDate date);
+
+    List<WordEntity> findByChildIdAndDateAchieveBetween(Long childId, LocalDate startDate, LocalDate endDate);
 
 
 }

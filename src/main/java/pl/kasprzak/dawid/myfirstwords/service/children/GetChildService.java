@@ -12,6 +12,7 @@ import pl.kasprzak.dawid.myfirstwords.repository.ParentsRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ParentEntity;
 import pl.kasprzak.dawid.myfirstwords.service.converters.children.CreateChildConverter;
 import pl.kasprzak.dawid.myfirstwords.service.converters.children.GetChildConverter;
+import pl.kasprzak.dawid.myfirstwords.util.AuthorizationHelper;
 
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -23,6 +24,7 @@ public class GetChildService {
     private final ChildrenRepository childrenRepository;
     private final ParentsRepository parentsRepository;
     private final GetChildConverter getChildConverter;
+    private final AuthorizationHelper authorizationHelper;
 
     @Transactional
     public GetAllChildResponse getAllChildrenForParent(Authentication authentication) {
@@ -35,10 +37,11 @@ public class GetChildService {
                 .build();
     }
 
-    public GetChildResponse getChildByName(String name) {
-        return childrenRepository.findByName(name)
+    public GetChildResponse getChildById(Long childId, Authentication authentication) {
+        authorizationHelper.validateAndAuthorizeChild(childId, authentication);
+        return childrenRepository.findById(childId)
                 .map(getChildConverter::toDto)
-                .orElseThrow(() -> new NoSuchElementException("Child not found with name: " + name));
+                .orElseThrow(() -> new NoSuchElementException("Child not found with id: " + childId));
     }
 
 

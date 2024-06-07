@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ChildrenRepository extends JpaRepository<ChildEntity, Long> {
-    Optional<ChildEntity> findByName(String name);
     List<ChildEntity> findByParentId(Long parentId);
 
 }

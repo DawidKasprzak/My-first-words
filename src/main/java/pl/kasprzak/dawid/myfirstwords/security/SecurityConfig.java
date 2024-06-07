@@ -27,6 +27,7 @@ public class  SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/parents").authenticated()
                         .requestMatchers("/api/children/**").authenticated()
                         .requestMatchers("/api/words/**").authenticated()
+                        .requestMatchers("/api/milestones/**").authenticated()
                 .anyRequest().permitAll())
                 .csrf(csrf -> csrf.disable())
                 .httpBasic(Customizer.withDefaults())

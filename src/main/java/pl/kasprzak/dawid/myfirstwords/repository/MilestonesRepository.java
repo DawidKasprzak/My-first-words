@@ -8,10 +8,15 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-public interface MilestonesRepository extends JpaRepository<MilestoneEntity, Long>, DateRangeRepository<MilestoneEntity> {
+public interface MilestonesRepository extends JpaRepository<MilestoneEntity, Long>{
     Optional<MilestoneEntity> findByTitleContaining(String title);
+
     List<MilestoneEntity> findByChildId(Long id);
 
+    List<MilestoneEntity> findByChildIdAndDateAchieveAfter(Long childId, LocalDate date);
 
+    List<MilestoneEntity> findByChildIdAndDateAchieveBefore(Long childId, LocalDate date);
+
+    List<MilestoneEntity> findByChildIdAndDateAchieveBetween(Long childId, LocalDate startDate, LocalDate endDate);
 
 }

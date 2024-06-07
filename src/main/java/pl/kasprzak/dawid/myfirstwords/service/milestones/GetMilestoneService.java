@@ -63,7 +63,8 @@ public class GetMilestoneService {
                 .build();
     }
 
-    public final GetMilestoneResponse getByTitle(String title) {
+    public GetMilestoneResponse getByTitle(Long childId, String title, Authentication authentication) {
+        authorizationHelper.validateAndAuthorizeChild(childId, authentication);
         return milestonesRepository.findByTitleContaining(title)
                 .map(getMilestoneConverter::toDto)
                 .orElseThrow(() -> new NoSuchElementException("Milestone not found"));
