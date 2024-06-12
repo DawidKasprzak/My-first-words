@@ -30,7 +30,9 @@ public class  SecurityConfig {
                         .requestMatchers("/api/milestones/**").authenticated()
                 .anyRequest().permitAll())
                 .csrf(csrf -> csrf.disable())
+                .formLogin(Customizer.withDefaults())
                 .httpBasic(Customizer.withDefaults())
+                .logout(Customizer.withDefaults())
                 .headers(headers -> headers
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable));
         return httpSecurity.build();

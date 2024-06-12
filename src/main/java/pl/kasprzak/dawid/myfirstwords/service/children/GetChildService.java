@@ -4,6 +4,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import pl.kasprzak.dawid.myfirstwords.exception.ChildNotFoundException;
+import pl.kasprzak.dawid.myfirstwords.exception.ParentNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.model.children.CreateChildResponse;
 import pl.kasprzak.dawid.myfirstwords.model.children.GetAllChildResponse;
 import pl.kasprzak.dawid.myfirstwords.model.children.GetChildResponse;
@@ -29,7 +31,7 @@ public class GetChildService {
     @Transactional
     public GetAllChildResponse getAllChildrenForParent(Authentication authentication) {
         ParentEntity parent = parentsRepository.findByUsername(authentication.getName())
-                .orElseThrow(()-> new RuntimeException("Parent not found"));
+                .orElseThrow(()-> new ParentNotFoundException("Parent not found"));
         return GetAllChildResponse.builder()
                 .children(childrenRepository.findByParentId(parent.getId()).stream()
                         .map(getChildConverter::toDto)
@@ -41,7 +43,7 @@ public class GetChildService {
         authorizationHelper.validateAndAuthorizeChild(childId, authentication);
         return childrenRepository.findById(childId)
                 .map(getChildConverter::toDto)
-                .orElseThrow(() -> new NoSuchElementException("Child not found with id: " + childId));
+                .orElseThrow(() -> new ChildNotFoundException("Child not found with id: " + childId));
     }
 
 

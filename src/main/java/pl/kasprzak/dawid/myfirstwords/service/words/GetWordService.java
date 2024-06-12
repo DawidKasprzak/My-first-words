@@ -4,6 +4,9 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import pl.kasprzak.dawid.myfirstwords.exception.DateValidationException;
+import pl.kasprzak.dawid.myfirstwords.exception.InvalidDateOrderException;
+import pl.kasprzak.dawid.myfirstwords.exception.WordNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.util.AuthorizationHelper;
 import pl.kasprzak.dawid.myfirstwords.model.words.GetAllWordsResponse;
 import pl.kasprzak.dawid.myfirstwords.model.words.GetWordResponse;
@@ -43,10 +46,10 @@ public class GetWordService {
     public List<GetWordResponse> getWordsBetweenDays(Long childId, LocalDate startDate, LocalDate endDate, Authentication authentication){
         authorizationHelper.validateAndAuthorizeChild(childId, authentication);
         if (startDate == null || endDate == null){
-            throw new IllegalArgumentException("Start date and end date must not be null");
+            throw new DateValidationException("Start date and end date must not be null");
         }
         if (startDate.isAfter(endDate)){
-            throw new IllegalArgumentException("Start date must be before or equal to end date");
+            throw new InvalidDateOrderException("Start date must be before or equal to end date");
         }
         List<WordEntity> words = wordsRepository.findByChildIdAndDateAchieveBetween(childId, startDate, endDate);
         return words.stream()
@@ -63,7 +66,7 @@ public class GetWordService {
     public GetWordResponse getWordById(long id) {
         return wordsRepository.findById(id)
                 .map(getWordsConverter::toDto)
-                .orElseThrow(() -> new NoSuchElementException("Word not found with id: " + id));
+                .orElseThrow(() -> new WordNotFoundException("Word not found with id: " + id));
     }
 
     public GetAllWordsResponse getAllWords(Long childId, Authentication authentication) {

@@ -2,6 +2,7 @@ package pl.kasprzak.dawid.myfirstwords.service.children;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import pl.kasprzak.dawid.myfirstwords.exception.ParentNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.model.children.CreateChildRequest;
 import pl.kasprzak.dawid.myfirstwords.model.children.CreateChildResponse;
 import pl.kasprzak.dawid.myfirstwords.repository.ChildrenRepository;
@@ -22,7 +23,7 @@ public class CreateChildService {
 
     public CreateChildResponse addChild(CreateChildRequest request, Principal principal) {
         ParentEntity parent = parentsRepository.findByUsername(principal.getName())
-                .orElseThrow(() -> new RuntimeException("Parent not found"));
+                .orElseThrow(() -> new ParentNotFoundException("Parent not found"));
         ChildEntity childEntity = createChildConverter.fromDto(request);
         childEntity.setParent(parent);
         ChildEntity savedEntity = childrenRepository.save(childEntity);

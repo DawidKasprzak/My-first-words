@@ -2,6 +2,7 @@ package pl.kasprzak.dawid.myfirstwords.service.parents;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import pl.kasprzak.dawid.myfirstwords.exception.ParentNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.model.parents.GetAllParentsResponse;
 import pl.kasprzak.dawid.myfirstwords.model.parents.ParentInfoResponse;
 import pl.kasprzak.dawid.myfirstwords.repository.ParentsRepository;
@@ -27,6 +28,6 @@ public class GetParentService {
     public ParentInfoResponse getById(Long parentId){
         return parentsRepository.findById(parentId)
                 .map(getParentsConverter::toDto)
-                .orElseThrow(()-> new RuntimeException("Parent not found with id: " + parentId));
+                .orElseThrow(()-> new ParentNotFoundException("Parent not found with id: " + parentId));
     }
 }

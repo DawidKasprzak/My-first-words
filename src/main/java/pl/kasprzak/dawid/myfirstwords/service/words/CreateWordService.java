@@ -20,7 +20,6 @@ public class CreateWordService {
     private final AuthorizationHelper authorizationHelper;
 
 
-
     public CreateWordResponse addWord(Long childId, CreateWordRequest request, Authentication authentication) {
         ChildEntity child = authorizationHelper.validateAndAuthorizeChild(childId, authentication);
         WordEntity wordToSave = createWordConverter.fromDto(request);

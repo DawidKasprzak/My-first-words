@@ -1,6 +1,7 @@
 package pl.kasprzak.dawid.myfirstwords.model.milestones;
 
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -11,6 +12,6 @@ public class UpdateMilestoneRequest {
     private String title;
     @NotEmpty
     private String description;
-    @NotEmpty
+    @NotNull
     private LocalDate dateAchieve;
 }

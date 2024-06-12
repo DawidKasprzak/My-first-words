@@ -3,6 +3,9 @@ package pl.kasprzak.dawid.myfirstwords.service.milestones;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import pl.kasprzak.dawid.myfirstwords.exception.DateValidationException;
+import pl.kasprzak.dawid.myfirstwords.exception.InvalidDateOrderException;
+import pl.kasprzak.dawid.myfirstwords.exception.MilestoneNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.util.AuthorizationHelper;
 import pl.kasprzak.dawid.myfirstwords.model.milestones.GetAllMilestoneResponse;
 import pl.kasprzak.dawid.myfirstwords.model.milestones.GetMilestoneResponse;
@@ -42,10 +45,10 @@ public class GetMilestoneService {
     public List<GetMilestoneResponse> getWordsBetweenDays(Long childId, LocalDate startDate, LocalDate endDate, Authentication authentication) {
         authorizationHelper.validateAndAuthorizeChild(childId, authentication);
         if (startDate == null || endDate == null){
-            throw new IllegalArgumentException("Start date and end date must not be null");
+            throw new DateValidationException("Start date and end date must not be null");
         }
         if (startDate.isAfter(endDate)){
-            throw new IllegalArgumentException("Start date must be before or equal to end date");
+            throw new InvalidDateOrderException("Start date must be before or equal to end date");
         }
         List<MilestoneEntity> milestones = milestonesRepository.findByChildIdAndDateAchieveBetween(childId, startDate, endDate);
         return milestones.stream()
@@ -67,6 +70,6 @@ public class GetMilestoneService {
         authorizationHelper.validateAndAuthorizeChild(childId, authentication);
         return milestonesRepository.findByTitleContaining(title)
                 .map(getMilestoneConverter::toDto)
-                .orElseThrow(() -> new NoSuchElementException("Milestone not found"));
+                .orElseThrow(() -> new MilestoneNotFoundException("Milestone not found"));
     }
 }
