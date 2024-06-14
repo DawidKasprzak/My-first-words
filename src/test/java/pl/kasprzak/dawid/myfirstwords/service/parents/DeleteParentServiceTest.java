@@ -4,12 +4,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import pl.kasprzak.dawid.myfirstwords.repository.MilestonesRepository;
+import pl.kasprzak.dawid.myfirstwords.exception.ParentNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.repository.ParentsRepository;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
+
 
 @ExtendWith(MockitoExtension.class)
 class DeleteParentServiceTest {
@@ -20,27 +23,27 @@ class DeleteParentServiceTest {
     private DeleteParentService deleteParentService;
 
     @Test
-    void testDeleteAccount_Success() {
+    void when_deleteParent_then_parentShouldBeRemoved() {
         Long parentId = 1L;
 
-        Mockito.when(parentsRepository.existsById(parentId)).thenReturn(true);
+        when(parentsRepository.existsById(parentId)).thenReturn(true);
 
         deleteParentService.deleteAccount(parentId);
 
-        Mockito.verify(parentsRepository).existsById(parentId);
-        Mockito.verify(parentsRepository).deleteById(parentId);
+        verify(parentsRepository).existsById(parentId);
+        verify(parentsRepository).deleteById(parentId);
 
     }
 
     @Test
-    void testDeleteAccount_ParentNotFound(){
+    void when_deleteNonexistentParent_then_throwParentNotFoundException(){
         Long parentId = 1L;
 
-        Mockito.when(parentsRepository.existsById(parentId)).thenReturn(false);
+        when(parentsRepository.existsById(parentId)).thenReturn(false);
 
-        assertThrows(RuntimeException.class, ()-> deleteParentService.deleteAccount(parentId));
+        assertThrows(ParentNotFoundException.class, ()-> deleteParentService.deleteAccount(parentId));
 
-        Mockito.verify(parentsRepository).existsById(parentId);
-        Mockito.verify(parentsRepository, Mockito.never()).deleteById(parentId);
+        verify(parentsRepository).existsById(parentId);
+        verify(parentsRepository, never()).deleteById(parentId);
     }
 }

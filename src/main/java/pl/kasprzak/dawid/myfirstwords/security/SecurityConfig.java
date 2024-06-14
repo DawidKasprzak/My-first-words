@@ -24,7 +24,7 @@ public class  SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/parents").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/parents/**").authenticated()
                         .requestMatchers("/api/children/**").authenticated()
                         .requestMatchers("/api/words/**").authenticated()
                         .requestMatchers("/api/milestones/**").authenticated()
