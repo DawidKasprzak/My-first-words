@@ -10,15 +10,16 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.transaction.annotation.Transactional;
 import pl.kasprzak.dawid.myfirstwords.exception.ParentNotFoundException;
-import pl.kasprzak.dawid.myfirstwords.model.parents.CreateParentRequest;
-import pl.kasprzak.dawid.myfirstwords.model.parents.CreateParentResponse;
-import pl.kasprzak.dawid.myfirstwords.model.parents.GetAllParentsResponse;
-import pl.kasprzak.dawid.myfirstwords.model.parents.ParentInfoResponse;
+import pl.kasprzak.dawid.myfirstwords.model.parents.*;
+import pl.kasprzak.dawid.myfirstwords.repository.ParentsRepository;
+import pl.kasprzak.dawid.myfirstwords.repository.dao.ParentEntity;
 import pl.kasprzak.dawid.myfirstwords.service.parents.CreateParentService;
 import pl.kasprzak.dawid.myfirstwords.service.parents.DeleteParentService;
 import pl.kasprzak.dawid.myfirstwords.service.parents.GetParentService;
@@ -27,15 +28,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -46,6 +47,10 @@ class ParentControllerIntegrationTest {
     private MockMvc mockMvc;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private ParentsRepository parentsRepository;
     @MockBean
     private CreateParentService createParentService;
     @MockBean
@@ -75,6 +80,7 @@ class ParentControllerIntegrationTest {
     }
 
     @Test
+    @Transactional
     void when_registerParent_then_parentShouldBePersistedInDatabase() throws Exception {
         CreateParentRequest request = new CreateParentRequest();
         request.setUsername("testUser");
@@ -105,6 +111,7 @@ class ParentControllerIntegrationTest {
 
         when(getParentService.getAll()).thenReturn(response);
 
+
         mockMvc.perform(get("/api/parents")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -119,6 +126,7 @@ class ParentControllerIntegrationTest {
 
         when(getParentService.getById(parentId)).thenReturn(parentInfoResponse1);
 
+
         mockMvc.perform(get("/api/parents/{parentId}", parentId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -132,6 +140,7 @@ class ParentControllerIntegrationTest {
 
         when(getParentService.getById(parentId)).thenThrow(new ParentNotFoundException("Parent not found with id:" + parentId));
 
+
         String expectedResponse = "Parent not found with id:" + parentId;
 
         mockMvc.perform(get("/api/parents/{parentId}", parentId)
@@ -142,6 +151,8 @@ class ParentControllerIntegrationTest {
     }
 
     @Test
+    @Transactional
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_deleteParent_then_parentShouldBeRemovedFromDatabase() throws Exception {
         Long parentId = 1L;
 
@@ -152,6 +163,8 @@ class ParentControllerIntegrationTest {
     }
 
     @Test
+    @Transactional
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_deleteNonexistentParent_then_throwParentNotFoundException() throws Exception {
         Long parentId = 1L;
 
@@ -163,6 +176,40 @@ class ParentControllerIntegrationTest {
     }
 
     @Test
-    void changePassword() {
+    @Transactional
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    void when_changePassword_then_passwordShouldBeChanged() throws Exception {
+        Long parentId = 1L;
+        String newPassword = "newPassword";
+        ParentEntity parent = new ParentEntity();
+        parent.setId(parentId);
+        parent.setPassword(passwordEncoder.encode("oldPassword"));
+
+        parentsRepository.save(parent);
+
+        ChangePasswordRequest request = new ChangePasswordRequest();
+        request.setPassword(newPassword);
+
+        mockMvc.perform(put("/api/parents/" + parentId + "/password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        ParentEntity updateParent = parentsRepository.findById(parentId).orElseThrow();
+        assertTrue(passwordEncoder.matches(newPassword, updateParent.getPassword()));
+    }
+
+    @Test
+    @Transactional
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    void when_changePasswordForNonexistentParent_then_throwParentNotFoundException() throws Exception{
+        Long parentId = 1L;
+        ChangePasswordRequest request = new ChangePasswordRequest();
+        request.setPassword("newPassword");
+
+        mockMvc.perform(put("/api/parents/" + parentId + "/password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound());
     }
 }
