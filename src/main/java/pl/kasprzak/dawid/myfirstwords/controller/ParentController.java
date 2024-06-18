@@ -35,7 +35,7 @@ public class ParentController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{parentId}")
-    public ParentInfoResponse getRegisterParentsById(@PathVariable Long parentId){
+    public ParentInfoResponse getParentsById(@PathVariable Long parentId){
         return getParentService.getById(parentId);
     }
 

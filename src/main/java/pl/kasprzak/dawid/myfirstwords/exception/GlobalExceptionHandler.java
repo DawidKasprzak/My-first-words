@@ -52,4 +52,14 @@ public class GlobalExceptionHandler {
     public String handleAccessDeniedException(AccessDeniedException exception) {
         return exception.getMessage();
     }
+    @ExceptionHandler(UsernameAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public String handleUsernameAlreadyExistsException(UsernameAlreadyExistsException exception){
+        return exception.getMessage();
+    }
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public String handleEmailAlreadyExistsException(EmailAlreadyExistsException exception){
+        return exception.getMessage();
+    }
 }

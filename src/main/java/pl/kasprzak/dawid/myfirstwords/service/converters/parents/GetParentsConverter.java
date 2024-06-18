@@ -38,5 +38,4 @@ public class GetParentsConverter implements Convertable<Void, ParentEntity, Pare
                 .children(children)
                 .build();
     }
-
 }
