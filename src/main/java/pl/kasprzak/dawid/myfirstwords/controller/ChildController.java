@@ -38,7 +38,7 @@ public class ChildController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
     public GetAllChildResponse getAllChildren(Authentication authentication){
-        return getChildService.getAllChildrenForParent(authentication);
+        return getChildService.getAllChildrenOfParent(authentication);
     }
 
     @ResponseStatus(HttpStatus.OK)

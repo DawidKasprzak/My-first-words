@@ -19,7 +19,6 @@ import pl.kasprzak.dawid.myfirstwords.repository.ParentsRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ParentEntity;
 
 
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -29,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 
 
 @SpringBootTest
@@ -97,8 +95,8 @@ class ParentControllerIntegrationTest {
     void when_registerParent_then_parentShouldBePersistedInDatabase() throws Exception {
 
         mockMvc.perform(post("/api/parents")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(createParentRequest)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createParentRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(content().json(objectMapper.writeValueAsString(createParentResponse)));
 
@@ -110,25 +108,25 @@ class ParentControllerIntegrationTest {
 
     @Test
     @Transactional
-    void when_usernameAlreadyExists_then_throwUsernameAlreadyExistsException() throws Exception{
+    void when_usernameAlreadyExists_then_throwUsernameAlreadyExistsException() throws Exception {
         createParentRequest.setUsername("parent1");
 
         mockMvc.perform(post("/api/parents")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(createParentRequest)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createParentRequest)))
                 .andExpect(status().isConflict())
                 .andExpect(content().string("Username already exists: parent1"));
     }
 
     @Test
     @Transactional
-    void when_emailAlreadyExists_then_throwEmailAlreadyExistsException() throws Exception{
+    void when_emailAlreadyExists_then_throwEmailAlreadyExistsException() throws Exception {
         createParentRequest.setUsername("usernameTest");
         createParentRequest.setMail("parent1@mail.com");
 
         mockMvc.perform(post("/api/parents")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(createParentRequest)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createParentRequest)))
                 .andExpect(status().isConflict())
                 .andExpect(content().string("Email already exists: parent1@mail.com"));
     }
@@ -203,8 +201,8 @@ class ParentControllerIntegrationTest {
         request.setPassword(newPassword);
 
         mockMvc.perform(put("/api/parents/" + parentId + "/password")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
 
         ParentEntity updateParent = parentsRepository.findById(parentId).orElseThrow();
@@ -214,14 +212,14 @@ class ParentControllerIntegrationTest {
     @Test
     @Transactional
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
-    void when_changePasswordForNonexistentParent_then_throwParentNotFoundException() throws Exception{
+    void when_changePasswordForNonexistentParent_then_throwParentNotFoundException() throws Exception {
         Long nonExistentParentId = 999L;
         ChangePasswordRequest request = new ChangePasswordRequest();
         request.setPassword("newPassword");
 
         mockMvc.perform(put("/api/parents/" + nonExistentParentId + "/password")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound());
     }
 }

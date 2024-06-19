@@ -60,11 +60,11 @@ class CreateParentServiceTest {
         CreateParentResponse result = createParentService.saveParent(createParentRequest);
 
         assertEquals(result, createParentResponse);
-        verify(parentsRepository).findByUsername("usernameTest");
-        verify(parentsRepository).findByMail("test@mail.com");
-        verify(createParentConverter).fromDto(createParentRequest);
-        verify(parentsRepository).save(parentEntity);
-        verify(createParentConverter).toDto(parentEntity);
+        verify(parentsRepository, times(1)).findByUsername("usernameTest");
+        verify(parentsRepository, times(1)).findByMail("test@mail.com");
+        verify(createParentConverter, times(1)).fromDto(createParentRequest);
+        verify(parentsRepository, times(1)).save(parentEntity);
+        verify(createParentConverter, times(1)).toDto(parentEntity);
     }
 
     @Test
@@ -75,7 +75,7 @@ class CreateParentServiceTest {
                 () -> createParentService.saveParent(createParentRequest));
 
         assertEquals("Username already exists: usernameTest", usernameAlreadyExistsException.getMessage());
-        verify(parentsRepository).findByUsername("usernameTest");
+        verify(parentsRepository, times(1)).findByUsername("usernameTest");
         verify(parentsRepository, never()).findByMail(anyString());
         verify(createParentConverter, never()).fromDto(any());
         verify(parentsRepository, never()).save(any());
@@ -91,8 +91,8 @@ class CreateParentServiceTest {
                 ()-> createParentService.saveParent(createParentRequest));
 
         assertEquals("Email already exists: test@mail.com", emailAlreadyExistsException.getMessage());
-        verify(parentsRepository).findByUsername("usernameTest");
-        verify(parentsRepository).findByMail("test@mail.com");
+        verify(parentsRepository, times(1)).findByUsername("usernameTest");
+        verify(parentsRepository, times(1)).findByMail("test@mail.com");
         verify(createParentConverter, never()).fromDto(any());
         verify(parentsRepository, never()).save(any());
         verify(createParentConverter, never()).toDto(any());

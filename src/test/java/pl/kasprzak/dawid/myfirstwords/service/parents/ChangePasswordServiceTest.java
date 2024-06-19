@@ -14,9 +14,7 @@ import pl.kasprzak.dawid.myfirstwords.repository.dao.ParentEntity;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -46,11 +44,10 @@ class ChangePasswordServiceTest {
 
         changePasswordService.changePasswordForParent(parentId, request);
 
-        verify(parentsRepository).findById(parentId);
-        verify(passwordEncoder).encode(newPassword);
-        verify(parentsRepository).save(parent);
-
         assertEquals(encodedPassword, parent.getPassword());
+        verify(parentsRepository, times(1)).findById(parentId);
+        verify(passwordEncoder, times(1)).encode(newPassword);
+        verify(parentsRepository, times(1)).save(parent);
     }
 
     @Test
@@ -61,6 +58,11 @@ class ChangePasswordServiceTest {
 
         when(parentsRepository.findById(parentId)).thenReturn(Optional.empty());
 
-        assertThrows(ParentNotFoundException.class, ()-> changePasswordService.changePasswordForParent(parentId, request));
+        ParentNotFoundException parentNotFoundException = assertThrows(ParentNotFoundException.class,
+                ()-> changePasswordService.changePasswordForParent(parentId, request));
+
+        assertEquals("Parent not found", parentNotFoundException.getMessage());
+        verify(parentsRepository, times(1)).findById(parentId);
+        verify(parentsRepository, never()).save(any());
     }
 }

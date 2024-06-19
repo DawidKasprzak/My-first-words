@@ -29,7 +29,7 @@ public class GetChildService {
     private final AuthorizationHelper authorizationHelper;
 
     @Transactional
-    public GetAllChildResponse getAllChildrenForParent(Authentication authentication) {
+    public GetAllChildResponse getAllChildrenOfParent(Authentication authentication) {
         ParentEntity parent = parentsRepository.findByUsername(authentication.getName())
                 .orElseThrow(()-> new ParentNotFoundException("Parent not found"));
         return GetAllChildResponse.builder()
@@ -45,6 +45,4 @@ public class GetChildService {
                 .map(getChildConverter::toDto)
                 .orElseThrow(() -> new ChildNotFoundException("Child not found with id: " + childId));
     }
-
-
 }

@@ -9,9 +9,7 @@ import pl.kasprzak.dawid.myfirstwords.exception.ParentNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.repository.ParentsRepository;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -30,8 +28,8 @@ class DeleteParentServiceTest {
 
         deleteParentService.deleteAccount(parentId);
 
-        verify(parentsRepository).existsById(parentId);
-        verify(parentsRepository).deleteById(parentId);
+        verify(parentsRepository, times(1)).existsById(parentId);
+        verify(parentsRepository, times(1)).deleteById(parentId);
 
     }
 
@@ -41,9 +39,10 @@ class DeleteParentServiceTest {
 
         when(parentsRepository.existsById(parentId)).thenReturn(false);
 
-        assertThrows(ParentNotFoundException.class, ()-> deleteParentService.deleteAccount(parentId));
+        ParentNotFoundException parentNotFoundException = assertThrows(ParentNotFoundException.class, ()-> deleteParentService.deleteAccount(parentId));
 
-        verify(parentsRepository).existsById(parentId);
+        assertEquals("Parent not found", parentNotFoundException.getMessage());
+        verify(parentsRepository, times(1)).existsById(parentId);
         verify(parentsRepository, never()).deleteById(parentId);
     }
 }
