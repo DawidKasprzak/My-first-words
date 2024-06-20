@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import pl.kasprzak.dawid.myfirstwords.exception.ParentNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.model.children.CreateChildResponse;
@@ -17,6 +18,7 @@ import pl.kasprzak.dawid.myfirstwords.repository.ParentsRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ChildEntity;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ParentEntity;
 import pl.kasprzak.dawid.myfirstwords.service.converters.children.GetChildConverter;
+import pl.kasprzak.dawid.myfirstwords.util.AuthorizationHelper;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -38,13 +40,17 @@ class GetChildServiceTest {
     private GetChildConverter getChildConverter;
     @Mock
     private Authentication authentication;
+    @Mock
+    private AuthorizationHelper authorizationHelper;
     @InjectMocks
     private GetChildService getChildService;
     private ParentEntity parentEntity;
+    private ParentEntity otherParent;
     private GetChildResponse getChildResponse1;
     private GetChildResponse getChildResponse2;
     private ChildEntity child1;
     private ChildEntity child2;
+    private ChildEntity child3;
 
 
     @BeforeEach
@@ -54,6 +60,9 @@ class GetChildServiceTest {
         parentEntity.setId(1L);
         parentEntity.setUsername("parent");
 
+        otherParent = new ParentEntity();
+        otherParent.setId(2L);
+        otherParent.setUsername("otherParent");
 
         child1 = new ChildEntity();
         child1.setId(1L);
@@ -69,6 +78,11 @@ class GetChildServiceTest {
         child2.setGender(Gender.BOY);
         child2.setParent(parentEntity);
 
+        child3 = new ChildEntity();
+        child3.setId(3L);
+        child3.setName("child3");
+        child3.setParent(otherParent);
+
         getChildResponse1 = GetChildResponse.builder()
                 .id(child1.getId())
                 .name(child1.getName())
@@ -80,10 +94,6 @@ class GetChildServiceTest {
                 .name(child2.getName())
                 .birthDate(child2.getBirthDate())
                 .build();
-
-        when(authentication.getName()).thenReturn("parent");
-
-
     }
 
 
@@ -107,13 +117,31 @@ class GetChildServiceTest {
     }
 
     @Test
-    void when_getAllChildrenOfParent_then_throwParentNotFoundException(){
+    void when_getAllChildrenOfParent_then_throwParentNotFoundException() {
         when(parentsRepository.findByUsername(authentication.getName())).thenReturn(Optional.empty());
 
-        assertThrows(ParentNotFoundException.class, ()-> getChildService.getAllChildrenOfParent(authentication));
+        ParentNotFoundException parentNotFoundException = assertThrows(ParentNotFoundException.class,
+                () -> getChildService.getAllChildrenOfParent(authentication));
+        assertEquals("Parent not found", parentNotFoundException.getMessage());
         verify(parentsRepository, times(1)).findByUsername(authentication.getName());
         verify(childrenRepository, never()).findByParentId(anyLong());
         verify(getChildConverter, never()).toDto(any());
 
+    }
+
+    @Test
+    void when_getChildById_then_returnChildWithSpecificId() {
+        Long childId = child1.getId();
+
+        when(childrenRepository.findById(childId)).thenReturn(Optional.of(child1));
+        when(getChildConverter.toDto(child1)).thenReturn(getChildResponse1);
+        when(authorizationHelper.validateAndAuthorizeChild(childId, authentication)).thenReturn(child1);
+
+        GetChildResponse response = getChildService.getChildById(childId, authentication);
+
+        assertEquals(getChildResponse1, response);
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childId, authentication);
+        verify(childrenRepository, times(1)).findById(childId);
+        verify(getChildConverter, times(1)).toDto(child1);
     }
 }
