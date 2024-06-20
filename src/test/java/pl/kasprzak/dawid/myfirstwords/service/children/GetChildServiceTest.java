@@ -133,15 +133,13 @@ class GetChildServiceTest {
     void when_getChildById_then_returnChildWithSpecificId() {
         Long childId = child1.getId();
 
-        when(childrenRepository.findById(childId)).thenReturn(Optional.of(child1));
-        when(getChildConverter.toDto(child1)).thenReturn(getChildResponse1);
         when(authorizationHelper.validateAndAuthorizeChild(childId, authentication)).thenReturn(child1);
+        when(getChildConverter.toDto(child1)).thenReturn(getChildResponse1);
 
         GetChildResponse response = getChildService.getChildById(childId, authentication);
 
         assertEquals(getChildResponse1, response);
         verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childId, authentication);
-        verify(childrenRepository, times(1)).findById(childId);
         verify(getChildConverter, times(1)).toDto(child1);
     }
 }

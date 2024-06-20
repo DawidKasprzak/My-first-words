@@ -11,6 +11,7 @@ import pl.kasprzak.dawid.myfirstwords.model.children.GetAllChildResponse;
 import pl.kasprzak.dawid.myfirstwords.model.children.GetChildResponse;
 import pl.kasprzak.dawid.myfirstwords.repository.ChildrenRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.ParentsRepository;
+import pl.kasprzak.dawid.myfirstwords.repository.dao.ChildEntity;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ParentEntity;
 import pl.kasprzak.dawid.myfirstwords.service.converters.children.CreateChildConverter;
 import pl.kasprzak.dawid.myfirstwords.service.converters.children.GetChildConverter;
@@ -40,9 +41,7 @@ public class GetChildService {
     }
 
     public GetChildResponse getChildById(Long childId, Authentication authentication) {
-        authorizationHelper.validateAndAuthorizeChild(childId, authentication);
-        return childrenRepository.findById(childId)
-                .map(getChildConverter::toDto)
-                .orElseThrow(() -> new ChildNotFoundException("Child not found with id: " + childId));
+        ChildEntity childEntity = authorizationHelper.validateAndAuthorizeChild(childId, authentication);
+        return getChildConverter.toDto(childEntity);
     }
 }

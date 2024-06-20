@@ -25,7 +25,7 @@ public class AuthorizationHelper {
         ChildEntity child = childrenRepository.findById(childId)
                 .orElseThrow(()-> new ChildNotFoundException("Child not found"));
         if (!child.getParent().getId().equals(parent.getId())){
-            throw new AccessDeniedException("Parent is not authorized to access this child");
+            throw new AccessDeniedException("The parent does not have access to this child");
         }
         return child;
     }
