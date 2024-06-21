@@ -102,6 +102,7 @@ class GetChildServiceTest {
         List<ChildEntity> children = Arrays.asList(child1, child2);
         List<GetChildResponse> expectResponse = Arrays.asList(getChildResponse1, getChildResponse2);
 
+        when(authentication.getName()).thenReturn("parent");
         when(parentsRepository.findByUsername("parent")).thenReturn(Optional.of(parentEntity));
         when(childrenRepository.findByParentId(1L)).thenReturn(children);
         when(getChildConverter.toDto(child1)).thenReturn(getChildResponse1);

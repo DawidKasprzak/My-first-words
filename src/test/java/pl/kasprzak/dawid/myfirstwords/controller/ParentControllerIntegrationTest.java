@@ -135,12 +135,12 @@ class ParentControllerIntegrationTest {
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getAllRegisterParents_then_allParentsShouldBeReturned() throws Exception {
         List<ParentInfoResponse> parents = Arrays.asList(parentInfoResponse1, parentInfoResponse2);
-        GetAllParentsResponse response = new GetAllParentsResponse(parents);
+        GetAllParentsResponse expectResponse = new GetAllParentsResponse(parents);
 
         mockMvc.perform(get("/api/parents")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(response)));
+                .andExpect(content().json(objectMapper.writeValueAsString(expectResponse)));
     }
 
 
@@ -175,8 +175,7 @@ class ParentControllerIntegrationTest {
         mockMvc.perform(delete("/api/parents/{parentId}", parentId))
                 .andExpect(status().isNoContent());
 
-        boolean exists = parentsRepository.existsById(parentId);
-        assertFalse(exists);
+        assertFalse(parentsRepository.findById(parentId).isPresent());
     }
 
     @Test

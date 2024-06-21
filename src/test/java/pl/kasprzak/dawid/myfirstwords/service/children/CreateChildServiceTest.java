@@ -72,15 +72,15 @@ class CreateChildServiceTest {
     }
 
     @Test
-    void when_parentNotFound_then_throwParentNotFoundException(){
+    void when_parentNotFound_then_throwParentNotFoundException() {
         when(authentication.getName()).thenReturn("parentUsername");
         when(parentsRepository.findByUsername("parentUsername")).thenReturn(Optional.empty());
 
         ParentNotFoundException parentNotFoundException = assertThrows(ParentNotFoundException.class,
-                ()-> createChildService.addChild(createChildRequest,authentication));
+                () -> createChildService.addChild(createChildRequest, authentication));
 
         assertEquals("Parent not found", parentNotFoundException.getMessage());
-        verify(parentsRepository,times(1)).findByUsername("parentUsername");
+        verify(parentsRepository, times(1)).findByUsername("parentUsername");
         verify(createChildConverter, never()).fromDto(any());
         verify(childrenRepository, never()).save(any());
     }

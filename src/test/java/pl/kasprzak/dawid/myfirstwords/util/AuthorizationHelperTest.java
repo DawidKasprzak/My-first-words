@@ -78,7 +78,7 @@ class AuthorizationHelperTest {
     }
 
     @Test
-    void when_childNotFound_then_throwChildNotFoundException(){
+    void when_childNotFound_then_throwChildNotFoundException() {
         Long childId = childEntity.getId();
 
         when(authentication.getName()).thenReturn("parent");
@@ -94,7 +94,7 @@ class AuthorizationHelperTest {
     }
 
     @Test
-    void when_childDoesNotBelongToParent_then_throwAccessDeniedException(){
+    void when_childDoesNotBelongToParent_then_throwAccessDeniedException() {
         Long childId = childEntity.getId();
         ParentEntity otherParent = new ParentEntity();
         otherParent.setId(2L);
