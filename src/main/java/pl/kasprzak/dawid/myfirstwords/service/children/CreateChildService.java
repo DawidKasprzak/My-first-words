@@ -1,6 +1,7 @@
 package pl.kasprzak.dawid.myfirstwords.service.children;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import pl.kasprzak.dawid.myfirstwords.exception.ParentNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.model.children.CreateChildRequest;
@@ -21,8 +22,8 @@ public class CreateChildService {
     private final ParentsRepository parentsRepository;
     private final CreateChildConverter createChildConverter;
 
-    public CreateChildResponse addChild(CreateChildRequest request, Principal principal) {
-        ParentEntity parent = parentsRepository.findByUsername(principal.getName())
+    public CreateChildResponse addChild(CreateChildRequest request, Authentication authentication) {
+        ParentEntity parent = parentsRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new ParentNotFoundException("Parent not found"));
         ChildEntity childEntity = createChildConverter.fromDto(request);
         childEntity.setParent(parent);

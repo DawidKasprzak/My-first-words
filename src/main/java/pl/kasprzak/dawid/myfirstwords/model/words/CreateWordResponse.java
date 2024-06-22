@@ -1,12 +1,14 @@
 package pl.kasprzak.dawid.myfirstwords.model.words;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 import java.time.LocalDate;
 
 @Getter
+@Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CreateWordResponse {
 
     private long id;

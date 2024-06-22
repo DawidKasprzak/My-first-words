@@ -32,6 +32,4 @@ public class ChildEntity {
     @OneToMany(mappedBy = "child", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MilestoneEntity> milestone = new ArrayList<>();
 
-
-
 }
