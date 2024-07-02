@@ -68,11 +68,13 @@ class GetWordServiceTest {
     void when_getByDateAchieveBefore_then_wordsShouldBeReturnedBeforeTheGivenDate() {
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(wordsRepository.findByChildIdAndDateAchieveBefore(childEntity.getId(), date)).thenReturn(wordEntities.subList(0, 2));
-        when(getWordsConverter.toDto(any(WordEntity.class))).thenReturn(new GetWordResponse());
+        when(getWordsConverter.toDto(any(WordEntity.class))).thenReturn(new GetWordResponse(0L, "testWord", LocalDate.now()));
 
         List<GetWordResponse> response = getWordService.getByDateAchieveBefore(childEntity.getId(), date, authentication);
 
         assertEquals(2, response.size());
+        assertEquals("testWord", response.get(0).getWord());
+        assertEquals(LocalDate.now(), response.get(0).getDateAchieve());
 
         verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
         verify(wordsRepository, times(1)).findByChildIdAndDateAchieveBefore(childEntity.getId(), date);
@@ -83,11 +85,13 @@ class GetWordServiceTest {
     void when_getByDateAchieveAfter_then_wordsShouldBeReturnedAfterTheGivenDate() {
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(wordsRepository.findByChildIdAndDateAchieveAfter(childEntity.getId(), date)).thenReturn(wordEntities.subList(2, 4));
-        when(getWordsConverter.toDto(any(WordEntity.class))).thenReturn(new GetWordResponse());
+        when(getWordsConverter.toDto(any(WordEntity.class))).thenReturn(new GetWordResponse(0L, "testWord", LocalDate.now()));
 
         List<GetWordResponse> response = getWordService.getByDateAchieveAfter(childEntity.getId(), date, authentication);
 
         assertEquals(2, response.size());
+        assertEquals("testWord", response.get(0).getWord());
+        assertEquals(LocalDate.now(), response.get(0).getDateAchieve());
 
         verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
         verify(wordsRepository, times(1)).findByChildIdAndDateAchieveAfter(childEntity.getId(), date);
@@ -95,7 +99,23 @@ class GetWordServiceTest {
     }
 
     @Test
-    void getWordsBetweenDays() {
+    void when_getWordsBetweenDays_then_wordsShouldBeReturnedBetweenTheGivenDates() {
+        LocalDate startDate = date.minusDays(2);
+        LocalDate endDate = date.plusDays(2);
+
+        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
+        when(wordsRepository.findByChildIdAndDateAchieveBetween(childEntity.getId(), startDate, endDate)).thenReturn(wordEntities);
+        when(getWordsConverter.toDto(any(WordEntity.class))).thenReturn(new GetWordResponse(0L, "testWord", LocalDate.now()));
+
+        List<GetWordResponse> response = getWordService.getWordsBetweenDays(childEntity.getId(), startDate, endDate, authentication);
+
+        assertEquals(4, response.size());
+        assertEquals("testWord", response.get(0).getWord());
+        assertEquals(LocalDate.now(), response.get(0).getDateAchieve());
+
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
+        verify(wordsRepository, times(1)).findByChildIdAndDateAchieveBetween(childEntity.getId(), startDate, endDate);
+        verify(getWordsConverter, times(4)).toDto(any(WordEntity.class));
     }
 
     @Test
