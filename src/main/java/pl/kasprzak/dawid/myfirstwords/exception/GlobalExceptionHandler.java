@@ -53,6 +53,7 @@ public class GlobalExceptionHandler {
         return exception.getMessage();
     }
     @ExceptionHandler(UsernameAlreadyExistsException.class)
+
     @ResponseStatus(HttpStatus.CONFLICT)
     public String handleUsernameAlreadyExistsException(UsernameAlreadyExistsException exception){
         return exception.getMessage();

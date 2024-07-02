@@ -1,13 +1,17 @@
 package pl.kasprzak.dawid.myfirstwords.repository.dao;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ChildEntity;
 
 import java.time.LocalDate;
 
 @Entity
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "words")
 public class WordEntity {
 

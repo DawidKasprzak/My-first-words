@@ -27,6 +27,7 @@ public class CreateParentConverter implements Convertable<CreateParentRequest, P
     @Override
     public CreateParentResponse toDto(ParentEntity parentEntity) {
         return CreateParentResponse.builder()
+                .id(parentEntity.getId())
                 .username(parentEntity.getUsername())
                 .mail(parentEntity.getMail())
                 .build();

@@ -98,7 +98,7 @@ class ParentControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createParentRequest)))
                 .andExpect(status().isCreated())
-                .andExpect(content().json(objectMapper.writeValueAsString(createParentResponse)));
+                .andExpect(content().json("{\"username\":\"testUser\", \"mail\": \"test@mail.com\"}", false));
 
         ParentEntity parentEntity = parentsRepository.findByUsername("testUser").orElse(null);
         assertNotNull(parentEntity);

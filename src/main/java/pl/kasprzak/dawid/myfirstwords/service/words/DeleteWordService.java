@@ -9,6 +9,8 @@ import pl.kasprzak.dawid.myfirstwords.util.AuthorizationHelper;
 import pl.kasprzak.dawid.myfirstwords.repository.WordsRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.WordEntity;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class DeleteWordService {
@@ -16,13 +18,10 @@ public class DeleteWordService {
     private final WordsRepository wordsRepository;
     private final AuthorizationHelper authorizationHelper;
 
-    public void deleteWord(Long childId, Long wordId, Authentication authentication){
+    public void deleteWord(Long childId, Long wordId, Authentication authentication) {
         authorizationHelper.validateAndAuthorizeChild(childId, authentication);
-        WordEntity word = wordsRepository.findById(wordId)
-                .orElseThrow(()-> new WordNotFoundException("Word not found"));
-        if (!word.getChild().getId().equals(childId)){
-            throw new AccessDeniedException("This word does not belong to this child");
-        }
-        wordsRepository.delete(word);
+        Optional<WordEntity> word = wordsRepository.findByChildIdAndId(childId, wordId);
+        WordEntity wordEntity = word.orElseThrow(() -> new WordNotFoundException("Word not found"));
+        wordsRepository.delete(wordEntity);
     }
 }

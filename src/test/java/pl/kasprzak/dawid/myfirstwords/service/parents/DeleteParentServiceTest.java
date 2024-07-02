@@ -43,6 +43,6 @@ class DeleteParentServiceTest {
 
         assertEquals("Parent not found", parentNotFoundException.getMessage());
         verify(parentsRepository, times(1)).existsById(parentId);
-        verify(parentsRepository, never()).deleteById(parentId);
+        verify(parentsRepository, never()).deleteById(anyLong());
     }
 }

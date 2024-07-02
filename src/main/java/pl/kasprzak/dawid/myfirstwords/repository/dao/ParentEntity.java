@@ -20,7 +20,7 @@ public class ParentEntity {
     private String password;
     private String mail;
 
-    @OneToMany(mappedBy = "parent")
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.REMOVE)
     private List<ChildEntity> children = new ArrayList<>();
 
     private String authority;

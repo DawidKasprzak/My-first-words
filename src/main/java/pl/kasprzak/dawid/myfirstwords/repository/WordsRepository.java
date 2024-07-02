@@ -12,7 +12,7 @@ public interface WordsRepository extends JpaRepository<WordEntity, Long> {
 
     Optional<WordEntity> findByWord(String word);
 
-    Void findByChildIdAndId(Long childId, Long id);
+    Optional findByChildIdAndId(Long childId, Long id);
 
     List<WordEntity> findAllByChildId(Long childId);
 
