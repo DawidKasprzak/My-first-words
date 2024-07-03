@@ -8,6 +8,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
+import pl.kasprzak.dawid.myfirstwords.exception.DateValidationException;
+import pl.kasprzak.dawid.myfirstwords.exception.InvalidDateOrderException;
 import pl.kasprzak.dawid.myfirstwords.model.words.GetWordResponse;
 import pl.kasprzak.dawid.myfirstwords.repository.WordsRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ChildEntity;
@@ -116,6 +118,49 @@ class GetWordServiceTest {
         verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
         verify(wordsRepository, times(1)).findByChildIdAndDateAchieveBetween(childEntity.getId(), startDate, endDate);
         verify(getWordsConverter, times(4)).toDto(any(WordEntity.class));
+    }
+
+    @Test
+    void when_getWordsBetweenDays_and_startDateIsNull_then_throwDateValidationException() {
+        LocalDate endDate = date.plusDays(2);
+
+        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
+
+        DateValidationException dateValidationException = assertThrows(DateValidationException.class,
+                () -> getWordService.getWordsBetweenDays(childEntity.getId(), null, endDate, authentication));
+
+        assertEquals("Start date and end date must not be null", dateValidationException.getMessage());
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
+        verify(wordsRepository, never()).findByChildIdAndDateAchieveBetween(anyLong(), any(LocalDate.class), any(LocalDate.class));
+    }
+
+    @Test
+    void when_getWordsBetweenDays_and_endDateIsNull_then_throwDateValidationException() {
+        LocalDate startDate = date.minusDays(2);
+
+        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
+
+        DateValidationException dateValidationException = assertThrows(DateValidationException.class,
+                () -> getWordService.getWordsBetweenDays(childEntity.getId(), startDate, null, authentication));
+
+        assertEquals("Start date and end date must not be null", dateValidationException.getMessage());
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
+        verify(wordsRepository, never()).findByChildIdAndDateAchieveBetween(anyLong(), any(LocalDate.class), any(LocalDate.class));
+    }
+
+    @Test
+    void when_getWordsBetweenDays_and_startDateIsAfterEndDate_then_throwInvalidDateOrderException() {
+        LocalDate startDate = date.plusDays(2);
+        LocalDate endDate = date.minusDays(2);
+
+        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
+
+        InvalidDateOrderException invalidDateOrderException = assertThrows(InvalidDateOrderException.class,
+                () -> getWordService.getWordsBetweenDays(childEntity.getId(), startDate, endDate, authentication));
+
+        assertEquals("Start date must be before or equal to end date", invalidDateOrderException.getMessage());
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
+        verify(wordsRepository, never()).findByChildIdAndDateAchieveBetween(anyLong(), any(LocalDate.class), any(LocalDate.class));
     }
 
     @Test
