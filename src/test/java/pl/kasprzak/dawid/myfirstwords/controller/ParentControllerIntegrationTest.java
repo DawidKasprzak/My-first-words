@@ -138,7 +138,7 @@ class ParentControllerIntegrationTest {
         GetAllParentsResponse expectResponse = new GetAllParentsResponse(parents);
 
         mockMvc.perform(get("/api/parents")
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(expectResponse)));
     }
@@ -150,7 +150,7 @@ class ParentControllerIntegrationTest {
         Long parentId = parentInfoResponse1.getId();
 
         mockMvc.perform(get("/api/parents/{parentId}", parentId)
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(parentInfoResponse1)));
     }
@@ -161,7 +161,7 @@ class ParentControllerIntegrationTest {
         Long nonExistentParentId = 999L;
 
         mockMvc.perform(get("/api/parents/{parentId}", nonExistentParentId)
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("Parent not found with id: 999"));
     }

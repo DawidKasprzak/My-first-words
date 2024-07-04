@@ -159,7 +159,7 @@ class ChildControllerIntegrationTest {
         GetAllChildResponse expectedResponse = new GetAllChildResponse(children);
 
         mockMvc.perform(get("/api/children")
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
     }
@@ -169,7 +169,7 @@ class ChildControllerIntegrationTest {
     @WithMockUser(username = "nonExistentUser", roles = "USER")
     void when_getAllChildrenOfParentAndParentNotFound_then_throwParentNotFoundException() throws Exception {
         mockMvc.perform(get("/api/children")
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("Parent not found"));
     }
@@ -181,7 +181,7 @@ class ChildControllerIntegrationTest {
         Long childId = childEntity.getId();
 
         mockMvc.perform(get("/api/children/{childId}", childId)
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(getChildResponse)));
 
