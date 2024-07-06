@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithUserDetails;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -17,6 +18,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 import pl.kasprzak.dawid.myfirstwords.model.words.CreateWordRequest;
 import pl.kasprzak.dawid.myfirstwords.model.words.CreateWordResponse;
+import pl.kasprzak.dawid.myfirstwords.model.words.GetAllWordsResponse;
 import pl.kasprzak.dawid.myfirstwords.model.words.GetWordResponse;
 import pl.kasprzak.dawid.myfirstwords.repository.ChildrenRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.ParentsRepository;
@@ -25,6 +27,7 @@ import pl.kasprzak.dawid.myfirstwords.repository.dao.ChildEntity;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ParentEntity;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.WordEntity;
 
+import java.rmi.server.ExportException;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
@@ -34,13 +37,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class WordsControllerIntegrationTest {
 
     @Autowired
@@ -62,17 +65,10 @@ class WordsControllerIntegrationTest {
     private CreateWordResponse createWordResponse;
     private WordEntity wordEntity;
     private List<WordEntity> wordEntities;
-    private List<GetWordResponse> expectedResponse;
     private LocalDate date;
 
     @BeforeEach
     void setUp() {
-
-        wordsRepository.deleteAll();
-
-        wordsRepository.deleteAll();
-        childrenRepository.deleteAll();
-        parentsRepository.deleteAll();
 
         parentEntity = new ParentEntity();
         parentEntity.setUsername("user");
@@ -124,10 +120,10 @@ class WordsControllerIntegrationTest {
         assertEquals(createWordRequest.getDateAchieve(), response.getDateAchieve());
 
         List<WordEntity> words = wordsRepository.findAll();
-        assertEquals(1, words.size());
+        assertEquals(5, words.size());
         WordEntity wordEntity = words.get(0);
-        assertEquals("wordTest", wordEntity.getWord());
-        assertEquals(LocalDate.of(2020, 01, 07), wordEntity.getDateAchieve());
+        assertEquals("word1", wordEntity.getWord());
+        assertEquals(LocalDate.of(2023, 12, 31), wordEntity.getDateAchieve());
         assertEquals(childEntity.getId(), wordEntity.getChild().getId());
     }
 
@@ -162,7 +158,7 @@ class WordsControllerIntegrationTest {
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getByDateAchieveBefore_then_wordsShouldBeReturnedBeforeTheGivenDate() throws Exception {
 
-        expectedResponse = wordEntities.stream()
+        List<GetWordResponse> expectedResponse = wordEntities.stream()
                 .filter(wordEntity -> wordEntity.getDateAchieve().isBefore(date))
                 .map(wordEntity -> new GetWordResponse(wordEntity.getId(), wordEntity.getWord(), wordEntity.getDateAchieve()))
                 .collect(Collectors.toList());
@@ -176,10 +172,11 @@ class WordsControllerIntegrationTest {
     }
 
     @Test
+    @Transactional
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getByDateAchieveAfter_then_wordsShouldBeReturnedAfterTheGivenDate() throws Exception {
 
-        expectedResponse = wordEntities.stream()
+        List<GetWordResponse> expectedResponse = wordEntities.stream()
                 .filter(wordEntity -> wordEntity.getDateAchieve().isAfter(date))
                 .map(wordEntity -> new GetWordResponse(wordEntity.getId(), wordEntity.getWord(), wordEntity.getDateAchieve()))
                 .collect(Collectors.toList());
@@ -190,6 +187,82 @@ class WordsControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
+    }
+
+    @Test
+    @Transactional
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    void when_getWordsBetweenDays_then_wordsShouldBeReturnedBetweenTheGivenDates() throws Exception {
+        LocalDate startDate = date.minusDays(2);
+        LocalDate endDate = date.plusDays(2);
+
+        List<GetWordResponse> expectedResponse = wordEntities.stream()
+                .filter(wordEntity -> !wordEntity.getDateAchieve().isBefore(startDate) && !wordEntity.getDateAchieve().isAfter(endDate))
+                .map(wordEntity -> new GetWordResponse(wordEntity.getId(), wordEntity.getWord(), wordEntity.getDateAchieve()))
+                .collect(Collectors.toList());
+
+        mockMvc.perform(get("/api/words/{childId}/between", childEntity.getId())
+                        .param("startDate", startDate.toString())
+                        .param("endDate", endDate.toString())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
+    }
+
+    //sprawdzić komunikat
+    @Test
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    void when_getWordsBetweenDays__and_startDateIsNull_then_throwDateValidationException() throws Exception {
+        LocalDate endDate = date.plusDays(2);
+
+        mockMvc.perform(get("/api/words/{childId}/between", childEntity.getId())
+                        .param("endDate", endDate.toString())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
+    }
+
+    //sprawdzić komunikat
+    @Test
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    void when_getWordsBetweenDays_and_endDateIsNull_then_throwDateValidationException() throws Exception {
+        LocalDate startDate = date.minusDays(2);
+
+        mockMvc.perform(get("/api/words/{childId}/between", childEntity.getId())
+                        .param("startDate", startDate.toString())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    void when_getWordsBetweenDays_and_startDateIsAfterEndDate_then_throwInvalidDateOrderException() throws Exception {
+        LocalDate startDate = date.plusDays(2);
+        LocalDate endDate = date.minusDays(2);
+
+        mockMvc.perform(get("/api/words/{childId}/between", childEntity.getId())
+                        .param("startDate", startDate.toString())
+                        .param("endDate", endDate.toString())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Start date must be before or equal to end date"));
+    }
+
+    @Test
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    void when_getAllWords_then_allWordsTheChildShouldBeReturned() throws Exception {
+        List<GetWordResponse> wordResponses = wordEntities.stream()
+                .map(wordEntity -> new GetWordResponse(wordEntity.getId(), wordEntity.getWord(), wordEntity.getDateAchieve()))
+                .collect(Collectors.toList());
+
+        GetAllWordsResponse expectedResponse = new GetAllWordsResponse(wordResponses);
+
+        mockMvc.perform(get("/api/words/{childId}", childEntity.getId())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
+
     }
 
 

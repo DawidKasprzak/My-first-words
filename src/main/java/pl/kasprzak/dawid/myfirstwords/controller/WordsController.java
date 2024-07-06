@@ -29,43 +29,41 @@ public class WordsController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(path = "/{childId}")
     public CreateWordResponse addWord(@PathVariable Long childId, @Valid @RequestBody CreateWordRequest request,
-                                      Authentication authentication){
-        return createWordService.addWord(childId, request,authentication);
+                                      Authentication authentication) {
+        return createWordService.addWord(childId, request, authentication);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping(path = "/{childId}/{wordId}")
     public void deleteWord(@PathVariable Long childId, @PathVariable Long wordId,
-                           Authentication authentication){
+                           Authentication authentication) {
         deleteWordService.deleteWord(childId, wordId, authentication);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}/before/{date}")
     public List<GetWordResponse> getByDateAchieveBefore(@PathVariable Long childId, @PathVariable LocalDate date,
-                                                        Authentication authentication){
+                                                        Authentication authentication) {
         return getWordService.getByDateAchieveBefore(childId, date, authentication);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}/after/{date}")
     public List<GetWordResponse> getByDateAchieveAfter(@PathVariable Long childId, @PathVariable LocalDate date,
-                                                       Authentication authentication){
+                                                       Authentication authentication) {
         return getWordService.getByDateAchieveAfter(childId, date, authentication);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}/between")
     public List<GetWordResponse> getWordsBetweenDays(@PathVariable Long childId, @RequestParam LocalDate startDate,
-                                                     @RequestParam LocalDate endDate, Authentication authentication){
+                                                     @RequestParam LocalDate endDate, Authentication authentication) {
         return getWordService.getWordsBetweenDays(childId, startDate, endDate, authentication);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}")
-    public GetAllWordsResponse getAllWords(@PathVariable Long childId, Authentication authentication){
+    public GetAllWordsResponse getAllWords(@PathVariable Long childId, Authentication authentication) {
         return getWordService.getAllWords(childId, authentication);
     }
-
-
 }

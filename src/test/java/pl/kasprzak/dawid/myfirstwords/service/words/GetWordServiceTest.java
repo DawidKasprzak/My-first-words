@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
 import pl.kasprzak.dawid.myfirstwords.exception.DateValidationException;
 import pl.kasprzak.dawid.myfirstwords.exception.InvalidDateOrderException;
+import pl.kasprzak.dawid.myfirstwords.model.words.GetAllWordsResponse;
 import pl.kasprzak.dawid.myfirstwords.model.words.GetWordResponse;
 import pl.kasprzak.dawid.myfirstwords.repository.WordsRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ChildEntity;
@@ -21,6 +22,7 @@ import pl.kasprzak.dawid.myfirstwords.util.AuthorizationHelper;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -44,6 +46,7 @@ class GetWordServiceTest {
     private ChildEntity childEntity;
     private List<WordEntity> wordEntities;
     private LocalDate date;
+    private List<GetWordResponse> wordResponses;
 
     @BeforeEach
     void setUp() {
@@ -63,7 +66,6 @@ class GetWordServiceTest {
                 new WordEntity(3L, "word3", date.plusDays(1), childEntity),
                 new WordEntity(4L, "word4", date.plusDays(2), childEntity)
         );
-
     }
 
     @Test
@@ -172,6 +174,25 @@ class GetWordServiceTest {
     }
 
     @Test
-    void getAllWords() {
+    void when_getAllWords_then_allWordsTheChildShouldBeReturned() {
+        List<GetWordResponse> expectedResponse = wordEntities.stream()
+                .map(wordEntity -> new GetWordResponse(wordEntity.getId(), wordEntity.getWord(), wordEntity.getDateAchieve()))
+                .collect(Collectors.toList());
+
+        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
+        when(wordsRepository.findAllByChildId(childEntity.getId())).thenReturn(wordEntities);
+        for (int i = 0; i < wordEntities.size(); i++) {
+            when(getWordsConverter.toDto(wordEntities.get(i))).thenReturn(expectedResponse.get(i));
+        }
+
+        GetAllWordsResponse response = getWordService.getAllWords(childEntity.getId(), authentication);
+
+        assertEquals(expectedResponse, response.getWords());
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
+        verify(wordsRepository, times(1)).findAllByChildId(childEntity.getId());
+        for (int i = 0; i < wordEntities.size(); i++) {
+            verify(getWordsConverter, times(1)).toDto(wordEntities.get(i));
+        }
+
     }
 }

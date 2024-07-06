@@ -15,7 +15,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 @Profile("!test")
-public class  SecurityConfig {
+public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -26,14 +26,14 @@ public class  SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/api/parents").permitAll()
-                        .requestMatchers(HttpMethod.GET,"/api/parents/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE,"/api/parents/**").authenticated()
-                        .requestMatchers(HttpMethod.PUT,"/api/parents/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/parents").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/parents/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/parents/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/parents/**").authenticated()
                         .requestMatchers("/api/children/**").authenticated()
                         .requestMatchers("/api/words/**").authenticated()
                         .requestMatchers("/api/milestones/**").authenticated()
-                .anyRequest().permitAll())
+                        .anyRequest().permitAll())
                 .csrf(csrf -> csrf.disable())
                 .formLogin(Customizer.withDefaults())
                 .httpBasic(Customizer.withDefaults())

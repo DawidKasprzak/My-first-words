@@ -43,12 +43,12 @@ public class GetWordService {
                 .collect(Collectors.toList());
     }
 
-    public List<GetWordResponse> getWordsBetweenDays(Long childId, LocalDate startDate, LocalDate endDate, Authentication authentication){
+    public List<GetWordResponse> getWordsBetweenDays(Long childId, LocalDate startDate, LocalDate endDate, Authentication authentication) {
         authorizationHelper.validateAndAuthorizeChild(childId, authentication);
-        if (startDate == null || endDate == null){
+        if (startDate == null || endDate == null) {
             throw new DateValidationException("Start date and end date must not be null");
         }
-        if (startDate.isAfter(endDate)){
+        if (startDate.isAfter(endDate)) {
             throw new InvalidDateOrderException("Start date must be before or equal to end date");
         }
         List<WordEntity> words = wordsRepository.findByChildIdAndDateAchieveBetween(childId, startDate, endDate);
@@ -60,13 +60,13 @@ public class GetWordService {
     public GetWordResponse getByWord(String word) {
         return wordsRepository.findByWord(word)
                 .map(getWordsConverter::toDto)
-                .orElseThrow(() -> new EntityNotFoundException());
+                .orElseThrow(() -> new WordNotFoundException("Word not found"));
     }
 
     public GetWordResponse getWordById(long id) {
         return wordsRepository.findById(id)
                 .map(getWordsConverter::toDto)
-                .orElseThrow(() -> new WordNotFoundException("Word not found with id: " + id));
+                .orElseThrow(() -> new WordNotFoundException("Word not found"));
     }
 
     public GetAllWordsResponse getAllWords(Long childId, Authentication authentication) {

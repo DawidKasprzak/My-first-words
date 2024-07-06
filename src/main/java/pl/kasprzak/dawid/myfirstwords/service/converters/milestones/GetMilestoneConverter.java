@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import pl.kasprzak.dawid.myfirstwords.model.milestones.GetMilestoneResponse;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.MilestoneEntity;
 import pl.kasprzak.dawid.myfirstwords.service.converters.Convertable;
+
 @Service
 public class GetMilestoneConverter implements Convertable<Void, MilestoneEntity, GetMilestoneResponse> {
     @Override

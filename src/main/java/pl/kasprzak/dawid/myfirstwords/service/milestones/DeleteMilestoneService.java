@@ -16,11 +16,11 @@ public class DeleteMilestoneService {
     private final MilestonesRepository milestonesRepository;
     private final AuthorizationHelper authorizationHelper;
 
-    public void deleteMilestone(Long childId, Long milestoneId, Authentication authentication){
+    public void deleteMilestone(Long childId, Long milestoneId, Authentication authentication) {
         authorizationHelper.validateAndAuthorizeChild(childId, authentication);
         MilestoneEntity milestone = milestonesRepository.findById(milestoneId)
-                .orElseThrow(()-> new MilestoneNotFoundException("Milestone not found"));
-        if(!milestone.getChild().getId().equals(childId)){
+                .orElseThrow(() -> new MilestoneNotFoundException("Milestone not found"));
+        if (!milestone.getChild().getId().equals(childId)) {
             throw new AccessDeniedException("This milestone does not belong to this child");
         }
         milestonesRepository.delete(milestone);

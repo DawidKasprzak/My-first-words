@@ -15,8 +15,8 @@ public class ChangePasswordService {
     private final ParentsRepository parentsRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public void changePasswordForParent(Long id, ChangePasswordRequest request){
-        ParentEntity parentEntity = parentsRepository.findById(id).orElseThrow(()-> new ParentNotFoundException("Parent not found"));
+    public void changePasswordForParent(Long id, ChangePasswordRequest request) {
+        ParentEntity parentEntity = parentsRepository.findById(id).orElseThrow(() -> new ParentNotFoundException("Parent not found"));
         parentEntity.setPassword(passwordEncoder.encode(request.getPassword()));
         parentsRepository.save(parentEntity);
     }

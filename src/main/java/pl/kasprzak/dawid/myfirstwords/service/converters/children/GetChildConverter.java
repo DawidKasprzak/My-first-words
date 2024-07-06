@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import pl.kasprzak.dawid.myfirstwords.model.children.GetChildResponse;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ChildEntity;
 import pl.kasprzak.dawid.myfirstwords.service.converters.Convertable;
+
 @Service
 public class GetChildConverter implements Convertable<Void, ChildEntity, GetChildResponse> {
     @Override

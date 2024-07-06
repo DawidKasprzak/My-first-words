@@ -5,6 +5,7 @@ import pl.kasprzak.dawid.myfirstwords.model.milestones.CreateMilestoneRequest;
 import pl.kasprzak.dawid.myfirstwords.model.milestones.CreateMilestoneResponse;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.MilestoneEntity;
 import pl.kasprzak.dawid.myfirstwords.service.converters.Convertable;
+
 @Service
 public class CreateMilestoneConverter implements Convertable<CreateMilestoneRequest, MilestoneEntity, CreateMilestoneResponse> {
     @Override

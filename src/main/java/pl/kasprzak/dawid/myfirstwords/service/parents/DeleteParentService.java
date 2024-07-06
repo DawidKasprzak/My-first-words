@@ -14,8 +14,8 @@ public class DeleteParentService {
 
     private final ParentsRepository parentsRepository;
 
-    public void deleteAccount(Long parentId){
-        if (parentsRepository.existsById(parentId)){
+    public void deleteAccount(Long parentId) {
+        if (parentsRepository.existsById(parentId)) {
             parentsRepository.deleteById(parentId);
         } else {
             throw new ParentNotFoundException("Parent not found");

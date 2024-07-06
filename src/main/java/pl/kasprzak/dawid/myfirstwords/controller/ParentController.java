@@ -10,6 +10,7 @@ import pl.kasprzak.dawid.myfirstwords.service.parents.ChangePasswordService;
 import pl.kasprzak.dawid.myfirstwords.service.parents.CreateParentService;
 import pl.kasprzak.dawid.myfirstwords.service.parents.DeleteParentService;
 import pl.kasprzak.dawid.myfirstwords.service.parents.GetParentService;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -23,31 +24,31 @@ public class ParentController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public CreateParentResponse registerParent(@Valid @RequestBody CreateParentRequest request){
+    public CreateParentResponse registerParent(@Valid @RequestBody CreateParentRequest request) {
         return createParentService.saveParent(request);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
-    public GetAllParentsResponse getAllRegisterParents(){
-       return getParentService.getAll();
+    public GetAllParentsResponse getAllRegisterParents() {
+        return getParentService.getAll();
     }
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{parentId}")
-    public ParentInfoResponse getParentsById(@PathVariable Long parentId){
+    public ParentInfoResponse getParentsById(@PathVariable Long parentId) {
         return getParentService.getById(parentId);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping(path = "/{parentId}")
-    public void deleteAccount(@PathVariable Long parentId){
+    public void deleteAccount(@PathVariable Long parentId) {
         deleteParentService.deleteAccount(parentId);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @PutMapping(path = "/{parentId}/password")
-    public void changePassword(@PathVariable Long parentId, @RequestBody ChangePasswordRequest request){
+    public void changePassword(@PathVariable Long parentId, @RequestBody ChangePasswordRequest request) {
         changePasswordService.changePasswordForParent(parentId, request);
     }
 }

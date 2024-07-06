@@ -19,12 +19,12 @@ public class AuthorizationHelper {
     public final ParentsRepository parentsRepository;
 
 
-    public ChildEntity validateAndAuthorizeChild(Long childId, Authentication authentication){
+    public ChildEntity validateAndAuthorizeChild(Long childId, Authentication authentication) {
         ParentEntity parent = parentsRepository.findByUsername(authentication.getName())
-                .orElseThrow(()-> new ParentNotFoundException("Parent not found"));
+                .orElseThrow(() -> new ParentNotFoundException("Parent not found"));
         ChildEntity child = childrenRepository.findById(childId)
-                .orElseThrow(()-> new ChildNotFoundException("Child not found"));
-        if (!child.getParent().getId().equals(parent.getId())){
+                .orElseThrow(() -> new ChildNotFoundException("Child not found"));
+        if (!child.getParent().getId().equals(parent.getId())) {
             throw new AccessDeniedException("The parent does not have access to this child");
         }
         return child;

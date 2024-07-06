@@ -17,7 +17,7 @@ public class DeleteChildService {
     private final ChildrenRepository childrenRepository;
 
 
-    public void deleteChild(Long childId, Authentication authentication){
+    public void deleteChild(Long childId, Authentication authentication) {
         ChildEntity child = authorizationHelper.validateAndAuthorizeChild(childId, authentication);
         childrenRepository.deleteById(child.getId());
     }

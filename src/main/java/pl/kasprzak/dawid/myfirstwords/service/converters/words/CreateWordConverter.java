@@ -5,6 +5,7 @@ import pl.kasprzak.dawid.myfirstwords.model.words.CreateWordRequest;
 import pl.kasprzak.dawid.myfirstwords.model.words.CreateWordResponse;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.WordEntity;
 import pl.kasprzak.dawid.myfirstwords.service.converters.Convertable;
+
 @Service
 public class CreateWordConverter implements Convertable<CreateWordRequest, WordEntity, CreateWordResponse> {
     @Override

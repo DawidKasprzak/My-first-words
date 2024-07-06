@@ -20,11 +20,11 @@ public class CustomUserDetails implements UserDetailsService {
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         System.out.println(username);
-        ParentEntity parentEntity = parentsRepository.findByUsername(username).orElseThrow(()-> new UsernameNotFoundException("user not found"));
+        ParentEntity parentEntity = parentsRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("user not found"));
         return User.builder()
                 .username(username)
                 .password(parentEntity.getPassword())
                 .build();
 
-        }
+    }
 }

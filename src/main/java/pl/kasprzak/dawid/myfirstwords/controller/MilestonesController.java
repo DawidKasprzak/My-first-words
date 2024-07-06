@@ -64,20 +64,20 @@ public class MilestonesController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}")
-    public GetAllMilestoneResponse getAllMilestones(@PathVariable Long childId, Authentication authentication){
+    public GetAllMilestoneResponse getAllMilestones(@PathVariable Long childId, Authentication authentication) {
         return getMilestoneService.getAllMilestone(childId, authentication);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}/title")
-    public GetMilestoneResponse getByTitle(@PathVariable Long childId, @RequestParam String title, Authentication authentication){
+    public GetMilestoneResponse getByTitle(@PathVariable Long childId, @RequestParam String title, Authentication authentication) {
         return getMilestoneService.getByTitle(childId, title, authentication);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @PutMapping(path = "/{childId}/{milestoneId}")
     public UpdateMilestoneResponse updateMilestone(@PathVariable Long childId, @PathVariable Long milestoneId,
-                                                   @Valid @RequestBody UpdateMilestoneRequest request, Authentication authentication){
+                                                   @Valid @RequestBody UpdateMilestoneRequest request, Authentication authentication) {
         MilestoneEntity milestone = updateMilestoneService.updateMilestone(childId, milestoneId, request, authentication);
         return updateMilestonesConverter.toDto(milestone);
     }

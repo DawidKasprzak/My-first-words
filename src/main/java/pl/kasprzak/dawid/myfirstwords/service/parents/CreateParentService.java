@@ -17,7 +17,7 @@ public class CreateParentService {
     private final ParentsRepository parentsRepository;
     private final CreateParentConverter createParentConverter;
 
-    public CreateParentResponse saveParent(CreateParentRequest parentRequest){
+    public CreateParentResponse saveParent(CreateParentRequest parentRequest) {
         if (parentsRepository.findByUsername(parentRequest.getUsername()).isPresent()) {
             throw new UsernameAlreadyExistsException("Username already exists: " + parentRequest.getUsername());
         }

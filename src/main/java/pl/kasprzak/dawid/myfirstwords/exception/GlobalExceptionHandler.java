@@ -2,6 +2,7 @@ package pl.kasprzak.dawid.myfirstwords.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -35,9 +36,16 @@ public class GlobalExceptionHandler {
         return exception.getMessage();
     }
 
+
     @ExceptionHandler(DateValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public String handleDateValidationException(DateValidationException exception) {
+        return exception.getMessage();
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String handleMissingParams(MissingServletRequestParameterException exception) {
         return exception.getMessage();
     }
 
@@ -52,15 +60,16 @@ public class GlobalExceptionHandler {
     public String handleAccessDeniedException(AccessDeniedException exception) {
         return exception.getMessage();
     }
-    @ExceptionHandler(UsernameAlreadyExistsException.class)
 
+    @ExceptionHandler(UsernameAlreadyExistsException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public String handleUsernameAlreadyExistsException(UsernameAlreadyExistsException exception){
+    public String handleUsernameAlreadyExistsException(UsernameAlreadyExistsException exception) {
         return exception.getMessage();
     }
+
     @ExceptionHandler(EmailAlreadyExistsException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public String handleEmailAlreadyExistsException(EmailAlreadyExistsException exception){
+    public String handleEmailAlreadyExistsException(EmailAlreadyExistsException exception) {
         return exception.getMessage();
     }
 }

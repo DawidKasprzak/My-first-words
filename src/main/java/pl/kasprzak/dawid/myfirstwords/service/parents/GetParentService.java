@@ -17,7 +17,7 @@ public class GetParentService {
     private final ParentsRepository parentsRepository;
     private final GetParentsConverter getParentsConverter;
 
-    public GetAllParentsResponse getAll(){
+    public GetAllParentsResponse getAll() {
         return GetAllParentsResponse.builder()
                 .parents(parentsRepository.findAll().stream()
                         .map(getParentsConverter::toDto)
@@ -25,9 +25,9 @@ public class GetParentService {
                 .build();
     }
 
-    public ParentInfoResponse getById(Long parentId){
+    public ParentInfoResponse getById(Long parentId) {
         return parentsRepository.findById(parentId)
                 .map(getParentsConverter::toDto)
-                .orElseThrow(()-> new ParentNotFoundException("Parent not found with id: " + parentId));
+                .orElseThrow(() -> new ParentNotFoundException("Parent not found with id: " + parentId));
     }
 }

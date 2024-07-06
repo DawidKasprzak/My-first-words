@@ -32,7 +32,7 @@ public class GetChildService {
     @Transactional
     public GetAllChildResponse getAllChildrenOfParent(Authentication authentication) {
         ParentEntity parent = parentsRepository.findByUsername(authentication.getName())
-                .orElseThrow(()-> new ParentNotFoundException("Parent not found"));
+                .orElseThrow(() -> new ParentNotFoundException("Parent not found"));
         return GetAllChildResponse.builder()
                 .children(childrenRepository.findByParentId(parent.getId()).stream()
                         .map(getChildConverter::toDto)

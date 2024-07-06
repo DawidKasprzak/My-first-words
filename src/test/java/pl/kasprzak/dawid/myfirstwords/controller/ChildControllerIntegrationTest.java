@@ -60,8 +60,7 @@ class ChildControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        childrenRepository.deleteAll();
-        parentsRepository.deleteAll();
+
 
         parentEntity = new ParentEntity();
         parentEntity.setUsername("user");

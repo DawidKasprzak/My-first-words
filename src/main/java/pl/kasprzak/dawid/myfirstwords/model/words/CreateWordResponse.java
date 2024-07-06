@@ -15,5 +15,4 @@ public class CreateWordResponse {
     private String word;
     private LocalDate dateAchieve;
 
-
 }

@@ -44,10 +44,10 @@ public class GetMilestoneService {
 
     public List<GetMilestoneResponse> getWordsBetweenDays(Long childId, LocalDate startDate, LocalDate endDate, Authentication authentication) {
         authorizationHelper.validateAndAuthorizeChild(childId, authentication);
-        if (startDate == null || endDate == null){
+        if (startDate == null || endDate == null) {
             throw new DateValidationException("Start date and end date must not be null");
         }
-        if (startDate.isAfter(endDate)){
+        if (startDate.isAfter(endDate)) {
             throw new InvalidDateOrderException("Start date must be before or equal to end date");
         }
         List<MilestoneEntity> milestones = milestonesRepository.findByChildIdAndDateAchieveBetween(childId, startDate, endDate);

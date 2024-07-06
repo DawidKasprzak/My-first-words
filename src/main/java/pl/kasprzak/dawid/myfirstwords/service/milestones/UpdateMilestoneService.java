@@ -19,13 +19,12 @@ public class UpdateMilestoneService {
     private final MilestonesRepository milestonesRepository;
 
 
-
     public MilestoneEntity updateMilestone(Long childId, Long milestoneId, UpdateMilestoneRequest request,
-                                                   Authentication authentication){
+                                           Authentication authentication) {
         authorizationHelper.validateAndAuthorizeChild(childId, authentication);
         MilestoneEntity milestone = milestonesRepository.findById(milestoneId)
-                .orElseThrow(()-> new MilestoneNotFoundException("milestone not found"));
-        if (!milestone.getChild().getId().equals(childId)){
+                .orElseThrow(() -> new MilestoneNotFoundException("milestone not found"));
+        if (!milestone.getChild().getId().equals(childId)) {
             throw new AccessDeniedException("Milestone does not belong to the specified child");
         }
         milestone.setTitle(request.getTitle());
