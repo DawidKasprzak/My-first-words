@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface WordsRepository extends JpaRepository<WordEntity, Long> {
 
-    Optional<WordEntity> findByWord(String word);
+    Optional<WordEntity> findByWordIgnoreCaseAndChildId(String word, Long childId);
 
     Optional findByChildIdAndId(Long childId, Long id);
 

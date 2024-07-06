@@ -35,8 +35,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @SpringBootTest
@@ -65,6 +64,10 @@ class WordsControllerIntegrationTest {
     private CreateWordResponse createWordResponse;
     private WordEntity wordEntity;
     private List<WordEntity> wordEntities;
+    private WordEntity wordEntity1;
+    private WordEntity wordEntity2;
+    private WordEntity wordEntity3;
+    private WordEntity wordEntity4;
     private LocalDate date;
 
     @BeforeEach
@@ -90,12 +93,12 @@ class WordsControllerIntegrationTest {
 
         date = LocalDate.of(2024, 1, 1);
 
-        wordEntities = Arrays.asList(
-                new WordEntity(1L, "word1", date.minusDays(1), childEntity),
-                new WordEntity(2L, "word2", date.minusDays(2), childEntity),
-                new WordEntity(3L, "word3", date.plusDays(1), childEntity),
-                new WordEntity(4L, "word4", date.plusDays(2), childEntity)
-        );
+        wordEntity1 = new WordEntity(1L, "word1", date.minusDays(1), childEntity);
+        wordEntity2 = new WordEntity(2L, "word2", date.minusDays(2), childEntity);
+        wordEntity3 = new WordEntity(3L, "word3", date.plusDays(1), childEntity);
+        wordEntity4 = new WordEntity(4L, "word4", date.plusDays(2), childEntity);
+
+        wordEntities = Arrays.asList(wordEntity1, wordEntity2, wordEntity3, wordEntity4);
 
         wordsRepository.saveAll(wordEntities);
     }
@@ -172,7 +175,6 @@ class WordsControllerIntegrationTest {
     }
 
     @Test
-    @Transactional
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getByDateAchieveAfter_then_wordsShouldBeReturnedAfterTheGivenDate() throws Exception {
 
@@ -190,7 +192,6 @@ class WordsControllerIntegrationTest {
     }
 
     @Test
-    @Transactional
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getWordsBetweenDays_then_wordsShouldBeReturnedBetweenTheGivenDates() throws Exception {
         LocalDate startDate = date.minusDays(2);
@@ -265,7 +266,31 @@ class WordsControllerIntegrationTest {
 
     }
 
+    @Test
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    void when_getWordByChildIdAndWord_then_wordShouldBeReturn() throws Exception {
+        String word = "word1";
 
+        mockMvc.perform(get("/api/words/{childId}/word", childEntity.getId())
+                        .param("word", word.toLowerCase())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.word").value(word));
+    }
+
+    @Test
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    void when_getWordByChildIdAndWord_then_throwWordNotFoundException() throws Exception {
+        String word = "nonexistentWord";
+
+        mockMvc.perform(get("/api/words/{childId}/word", childEntity.getId())
+                        .param("word", word.toLowerCase())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Word not found"));
+
+    }
 }
 
 

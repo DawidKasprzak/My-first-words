@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
 import pl.kasprzak.dawid.myfirstwords.exception.DateValidationException;
 import pl.kasprzak.dawid.myfirstwords.exception.InvalidDateOrderException;
+import pl.kasprzak.dawid.myfirstwords.exception.WordNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.model.words.GetAllWordsResponse;
 import pl.kasprzak.dawid.myfirstwords.model.words.GetWordResponse;
 import pl.kasprzak.dawid.myfirstwords.repository.WordsRepository;
@@ -22,6 +23,7 @@ import pl.kasprzak.dawid.myfirstwords.util.AuthorizationHelper;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -45,6 +47,10 @@ class GetWordServiceTest {
     private ParentEntity parentEntity;
     private ChildEntity childEntity;
     private List<WordEntity> wordEntities;
+    private WordEntity wordEntity1;
+    private WordEntity wordEntity2;
+    private WordEntity wordEntity3;
+    private WordEntity wordEntity4;
     private LocalDate date;
     private List<GetWordResponse> wordResponses;
 
@@ -60,12 +66,14 @@ class GetWordServiceTest {
 
         date = LocalDate.of(2024, 5, 5);
 
-        wordEntities = Arrays.asList(
-                new WordEntity(1L, "word1", date.minusDays(1), childEntity),
-                new WordEntity(2L, "word2", date.minusDays(2), childEntity),
-                new WordEntity(3L, "word3", date.plusDays(1), childEntity),
-                new WordEntity(4L, "word4", date.plusDays(2), childEntity)
-        );
+
+        wordEntity1 = new WordEntity(1L, "word1", date.minusDays(1), childEntity);
+        wordEntity2 = new WordEntity(2L, "word2", date.minusDays(2), childEntity);
+        wordEntity3 = new WordEntity(3L, "word3", date.plusDays(1), childEntity);
+        wordEntity4 = new WordEntity(4L, "word4", date.plusDays(2), childEntity);
+
+        wordEntities = Arrays.asList(wordEntity1, wordEntity2, wordEntity3, wordEntity4);
+
     }
 
     @Test
@@ -166,10 +174,6 @@ class GetWordServiceTest {
     }
 
     @Test
-    void getByWord() {
-    }
-
-    @Test
     void getWordById() {
     }
 
@@ -193,6 +197,41 @@ class GetWordServiceTest {
         for (int i = 0; i < wordEntities.size(); i++) {
             verify(getWordsConverter, times(1)).toDto(wordEntities.get(i));
         }
+    }
+
+
+    @Test
+    void when_getByWord_then_theChildWordShouldBeReturned() {
+        String word = "word1";
+
+        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
+        when(wordsRepository.findByWordIgnoreCaseAndChildId(word.toLowerCase(), childEntity.getId())).thenReturn(Optional.of(wordEntity1));
+        when(getWordsConverter.toDto(wordEntity1)).thenReturn(new GetWordResponse(wordEntity1.getId(), wordEntity1.getWord(), wordEntity1.getDateAchieve()));
+
+        GetWordResponse response = getWordService.getByWord(childEntity.getId(), word, authentication);
+
+        assertNotNull(response);
+        assertEquals(word, response.getWord());
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
+        verify(wordsRepository, times(1)).findByWordIgnoreCaseAndChildId(word.toLowerCase(), childEntity.getId());
+        verify(getWordsConverter, times(1)).toDto(wordEntity1);
+
+    }
+
+    @Test
+    void when_getByWord_and_wordNotExist_then_throwWordNotFoundException() {
+        String word = "word1";
+
+        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
+        when(wordsRepository.findByWordIgnoreCaseAndChildId(word.toLowerCase(), childEntity.getId())).thenReturn(Optional.empty());
+
+        WordNotFoundException wordNotFoundException = assertThrows(WordNotFoundException.class,
+                () -> getWordService.getByWord(childEntity.getId(), word, authentication));
+
+        assertEquals("Word not found", wordNotFoundException.getMessage());
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
+        verify(wordsRepository, times(1)).findByWordIgnoreCaseAndChildId(word.toLowerCase(), childEntity.getId());
+        verify(getWordsConverter, never()).toDto(any(WordEntity.class));
 
     }
 }

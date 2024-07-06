@@ -66,4 +66,10 @@ public class WordsController {
     public GetAllWordsResponse getAllWords(@PathVariable Long childId, Authentication authentication) {
         return getWordService.getAllWords(childId, authentication);
     }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping(path = "{childId}/word")
+    public GetWordResponse getWordByChildIdAndWord(@PathVariable Long childId, @RequestParam String word, Authentication authentication){
+        return getWordService.getByWord(childId, word, authentication);
+    }
 }

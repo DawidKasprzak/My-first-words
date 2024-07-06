@@ -57,8 +57,9 @@ public class GetWordService {
                 .collect(Collectors.toList());
     }
 
-    public GetWordResponse getByWord(String word) {
-        return wordsRepository.findByWord(word)
+    public GetWordResponse getByWord(Long childId, String word, Authentication authentication) {
+        authorizationHelper.validateAndAuthorizeChild(childId, authentication);
+        return wordsRepository.findByWordIgnoreCaseAndChildId(word.toLowerCase(), childId)
                 .map(getWordsConverter::toDto)
                 .orElseThrow(() -> new WordNotFoundException("Word not found"));
     }

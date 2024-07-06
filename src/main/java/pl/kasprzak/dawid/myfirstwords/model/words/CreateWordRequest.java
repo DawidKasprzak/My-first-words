@@ -11,8 +11,6 @@ import org.hibernate.validator.constraints.Length;
 import java.time.LocalDate;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class CreateWordRequest {
     @NotBlank
     @Length(min = 2, max = 20)
