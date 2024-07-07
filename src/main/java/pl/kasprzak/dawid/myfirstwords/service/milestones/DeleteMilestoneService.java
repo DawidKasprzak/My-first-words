@@ -9,6 +9,8 @@ import pl.kasprzak.dawid.myfirstwords.repository.MilestonesRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.MilestoneEntity;
 import pl.kasprzak.dawid.myfirstwords.util.AuthorizationHelper;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class DeleteMilestoneService {
@@ -18,11 +20,8 @@ public class DeleteMilestoneService {
 
     public void deleteMilestone(Long childId, Long milestoneId, Authentication authentication) {
         authorizationHelper.validateAndAuthorizeChild(childId, authentication);
-        MilestoneEntity milestone = milestonesRepository.findById(milestoneId)
-                .orElseThrow(() -> new MilestoneNotFoundException("Milestone not found"));
-        if (!milestone.getChild().getId().equals(childId)) {
-            throw new AccessDeniedException("This milestone does not belong to this child");
-        }
-        milestonesRepository.delete(milestone);
+        Optional<MilestoneEntity> milestone = milestonesRepository.findByChildIdAndId(childId, milestoneId);
+        MilestoneEntity milestoneEntity = milestone.orElseThrow(() -> new MilestoneNotFoundException("Milestone not found"));
+        milestonesRepository.delete(milestoneEntity);
     }
 }

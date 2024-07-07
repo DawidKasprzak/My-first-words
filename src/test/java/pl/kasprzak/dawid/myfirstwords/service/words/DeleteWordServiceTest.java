@@ -60,8 +60,9 @@ class DeleteWordServiceTest {
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(wordsRepository.findByChildIdAndId(childEntity.getId(), wordEntity.getId())).thenReturn(Optional.empty());
 
-        assertThrows(WordNotFoundException.class, () -> deleteWordService.deleteWord(childEntity.getId(), wordEntity.getId(), authentication));
+        WordNotFoundException wordNotFoundException = assertThrows(WordNotFoundException.class, () -> deleteWordService.deleteWord(childEntity.getId(), wordEntity.getId(), authentication));
 
+        assertEquals("Word not found", wordNotFoundException.getMessage());
         verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
         verify(wordsRepository, never()).delete(any());
     }

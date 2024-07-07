@@ -11,6 +11,8 @@ import java.util.Optional;
 public interface MilestonesRepository extends JpaRepository<MilestoneEntity, Long> {
     Optional<MilestoneEntity> findByTitleContaining(String title);
 
+    Optional<MilestoneEntity> findByChildIdAndId(Long childId, Long milestoneId);
+
     List<MilestoneEntity> findByChildId(Long id);
 
     List<MilestoneEntity> findByChildIdAndDateAchieveAfter(Long childId, LocalDate date);
