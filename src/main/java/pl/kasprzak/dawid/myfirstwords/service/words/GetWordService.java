@@ -64,12 +64,6 @@ public class GetWordService {
                 .orElseThrow(() -> new WordNotFoundException("Word not found"));
     }
 
-    public GetWordResponse getWordById(long id) {
-        return wordsRepository.findById(id)
-                .map(getWordsConverter::toDto)
-                .orElseThrow(() -> new WordNotFoundException("Word not found"));
-    }
-
     public GetAllWordsResponse getAllWords(Long childId, Authentication authentication) {
         authorizationHelper.validateAndAuthorizeChild(childId, authentication);
         return GetAllWordsResponse.builder()

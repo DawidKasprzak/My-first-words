@@ -61,18 +61,16 @@ class CreateWordServiceTest {
     }
 
     @Test
-    void when_addWord_then_wordShouldBeAdded() {
-        Long childId = childEntity.getId();
-
-        when(authorizationHelper.validateAndAuthorizeChild(childId, authentication)).thenReturn(childEntity);
+    void when_addWord_then_wordShouldBeAddedToTheChild() {
+        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(createWordConverter.fromDto(createWordRequest)).thenReturn(wordEntity);
         when(wordsRepository.save(wordEntity)).thenReturn(wordEntity);
         when(createWordConverter.toDto(wordEntity)).thenReturn(createWordResponse);
 
-        CreateWordResponse response = createWordService.addWord(childId, createWordRequest, authentication);
+        CreateWordResponse response = createWordService.addWord(childEntity.getId(), createWordRequest, authentication);
 
         assertEquals(createWordResponse, response);
-        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childId, authentication);
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
         verify(createWordConverter, times(1)).fromDto(createWordRequest);
         verify(wordsRepository, times(1)).save(wordEntity);
         verify(createWordConverter, times(1)).toDto(wordEntity);

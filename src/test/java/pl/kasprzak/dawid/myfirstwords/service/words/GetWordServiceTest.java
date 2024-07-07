@@ -1,6 +1,5 @@
 package pl.kasprzak.dawid.myfirstwords.service.words;
 
-import jakarta.persistence.GeneratedValue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,7 +51,7 @@ class GetWordServiceTest {
     private WordEntity wordEntity3;
     private WordEntity wordEntity4;
     private LocalDate date;
-    private List<GetWordResponse> wordResponses;
+
 
     @BeforeEach
     void setUp() {

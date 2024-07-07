@@ -27,7 +27,6 @@ import pl.kasprzak.dawid.myfirstwords.repository.dao.ChildEntity;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ParentEntity;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.WordEntity;
 
-import java.rmi.server.ExportException;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
