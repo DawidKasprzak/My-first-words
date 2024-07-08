@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithUserDetails;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -35,6 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class MilestonesControllerIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
@@ -51,7 +53,11 @@ class MilestonesControllerIntegrationTest {
 
     private ParentEntity parentEntity;
     private ChildEntity childEntity;
+    private List<MilestoneEntity> milestoneEntities;
     private MilestoneEntity milestoneEntity;
+    private MilestoneEntity milestoneEntity2;
+    private MilestoneEntity milestoneEntity3;
+    private MilestoneEntity milestoneEntity4;
     private CreateMilestoneRequest createMilestoneRequest;
     private CreateMilestoneResponse createMilestoneResponse;
     private LocalDate date;
@@ -79,6 +85,16 @@ class MilestonesControllerIntegrationTest {
         createMilestoneResponse.setDescription(createMilestoneRequest.getDescription());
         createMilestoneResponse.setDateAchieve(createMilestoneRequest.getDateAchieve());
 
+        milestoneEntity = new MilestoneEntity();
+        milestoneEntity.setTitle(createMilestoneRequest.getTitle());
+        milestoneEntity.setDescription(createMilestoneRequest.getDescription());
+        milestoneEntity.setDateAchieve(createMilestoneRequest.getDateAchieve());
+        milestoneEntity.setChild(childEntity);
+        milestoneEntity = milestonesRepository.save(milestoneEntity);
+
+
+
+
         date = LocalDate.of(2024, 7, 7);
 
     }
@@ -102,7 +118,7 @@ class MilestonesControllerIntegrationTest {
         assertEquals(createMilestoneRequest.getDateAchieve(), response.getDateAchieve());
 
         List<MilestoneEntity> milestones = milestonesRepository.findAll();
-        assertEquals(1, milestones.size());
+        assertEquals(2, milestones.size());
         MilestoneEntity milestoneEntity = milestones.get(0);
         String expectedTitlePart = "example";
         assertTrue(milestoneEntity.getTitle().contains(expectedTitlePart));
@@ -112,7 +128,27 @@ class MilestonesControllerIntegrationTest {
     }
 
     @Test
-    void deleteMilestone() {
+    @Transactional
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    void when_deleteMilestone_then_milestoneShouldBeDeletedFromChildAccount() throws Exception {
+        mockMvc.perform(delete("/api/milestones/{childId}/{milestoneId}", childEntity.getId(), milestoneEntity.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+
+        assertFalse(milestonesRepository.findByChildIdAndId(childEntity.getId(), milestoneEntity.getId()).isPresent());
+    }
+
+    @Test
+    @Transactional
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    void when_deleteMilestoneAndMilestoneNotFound_then_throwMilestoneNotFoundException() throws Exception {
+        Long nonExistentMilestoneId = 999L;
+
+        mockMvc.perform(delete("/api/milestones/{childId}/{milestoneId}", childEntity.getId(), nonExistentMilestoneId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Milestone not found"));
+
     }
 
     @Test

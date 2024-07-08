@@ -90,6 +90,11 @@ class WordsControllerIntegrationTest {
         createWordResponse.setWord(createWordRequest.getWord());
         createWordResponse.setDateAchieve(createWordRequest.getDateAchieve());
 
+        wordEntity = new WordEntity();
+        wordEntity.setWord(createWordRequest.getWord());
+        wordEntity.setChild(childEntity);
+        wordEntity = wordsRepository.save(wordEntity);
+
         date = LocalDate.of(2024, 1, 1);
 
         wordEntity1 = new WordEntity(1L, "word1", date.minusDays(1), childEntity);
@@ -135,11 +140,6 @@ class WordsControllerIntegrationTest {
     @Transactional
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_deleteWord_then_wordShouldBeDeletedFromChildAccount() throws Exception {
-        wordEntity = new WordEntity();
-        wordEntity.setWord(createWordRequest.getWord());
-        wordEntity.setChild(childEntity);
-        wordEntity = wordsRepository.save(wordEntity);
-
         mockMvc.perform(delete("/api/words/{childId}/{wordId}", childEntity.getId(), wordEntity.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
@@ -155,7 +155,8 @@ class WordsControllerIntegrationTest {
 
         mockMvc.perform(delete("/api/words/{childId}/{wordId}", childEntity.getId(), nonExistentWordId)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Word not found"));
     }
 
     @Test
