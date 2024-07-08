@@ -108,13 +108,15 @@ class WordsControllerIntegrationTest {
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_addWord_then_wordShouldBeAddedToSpecificChild() throws Exception {
 
-        MvcResult result = mockMvc.perform(post("/api/words/{childId}", childEntity.getId())
+        String jsonResponse = mockMvc.perform(post("/api/words/{childId}", childEntity.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createWordRequest)))
                 .andExpect(status().isCreated())
-                .andReturn();
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
 
-        String jsonResponse = result.getResponse().getContentAsString();
+
         CreateWordResponse response = objectMapper.readValue(jsonResponse, CreateWordResponse.class);
 
         assertNotNull(response.getId());

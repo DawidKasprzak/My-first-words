@@ -42,7 +42,7 @@ public class GetMilestoneService {
                 .collect(Collectors.toList());
     }
 
-    public List<GetMilestoneResponse> getWordsBetweenDays(Long childId, LocalDate startDate, LocalDate endDate, Authentication authentication) {
+    public List<GetMilestoneResponse> getMilestonesBetweenDays(Long childId, LocalDate startDate, LocalDate endDate, Authentication authentication) {
         authorizationHelper.validateAndAuthorizeChild(childId, authentication);
         if (startDate == null || endDate == null) {
             throw new DateValidationException("Start date and end date must not be null");

@@ -59,7 +59,7 @@ public class MilestonesController {
     @GetMapping(path = "/{childId}/between")
     public List<GetMilestoneResponse> getMilestoneBetweenDays(@PathVariable Long childId, @RequestParam LocalDate startDate,
                                                               @RequestParam LocalDate endDate, Authentication authentication) {
-        return getMilestoneService.getWordsBetweenDays(childId, startDate, endDate, authentication);
+        return getMilestoneService.getMilestonesBetweenDays(childId, startDate, endDate, authentication);
     }
 
     @ResponseStatus(HttpStatus.OK)
