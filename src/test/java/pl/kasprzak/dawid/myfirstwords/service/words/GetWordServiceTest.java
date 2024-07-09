@@ -46,12 +46,9 @@ class GetWordServiceTest {
     private ParentEntity parentEntity;
     private ChildEntity childEntity;
     private List<WordEntity> wordEntities;
-    private WordEntity wordEntity1;
-    private WordEntity wordEntity2;
-    private WordEntity wordEntity3;
-    private WordEntity wordEntity4;
+    private WordEntity wordEntity1, wordEntity2, wordEntity3, wordEntity4;
     private LocalDate date;
-
+    private GetWordResponse exampleResponse;
 
     @BeforeEach
     void setUp() {
@@ -73,13 +70,18 @@ class GetWordServiceTest {
 
         wordEntities = Arrays.asList(wordEntity1, wordEntity2, wordEntity3, wordEntity4);
 
+        exampleResponse = GetWordResponse.builder()
+                .id(0L)
+                .word("testWord")
+                .dateAchieve(LocalDate.now())
+                .build();
     }
 
     @Test
     void when_getByDateAchieveBefore_then_wordsShouldBeReturnedBeforeTheGivenDate() {
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(wordsRepository.findByChildIdAndDateAchieveBefore(childEntity.getId(), date)).thenReturn(wordEntities.subList(0, 2));
-        when(getWordsConverter.toDto(any(WordEntity.class))).thenReturn(new GetWordResponse(0L, "testWord", LocalDate.now()));
+        when(getWordsConverter.toDto(any(WordEntity.class))).thenReturn(exampleResponse);
 
         List<GetWordResponse> response = getWordService.getByDateAchieveBefore(childEntity.getId(), date, authentication);
 
@@ -96,7 +98,7 @@ class GetWordServiceTest {
     void when_getByDateAchieveAfter_then_wordsShouldBeReturnedAfterTheGivenDate() {
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(wordsRepository.findByChildIdAndDateAchieveAfter(childEntity.getId(), date)).thenReturn(wordEntities.subList(2, 4));
-        when(getWordsConverter.toDto(any(WordEntity.class))).thenReturn(new GetWordResponse(0L, "testWord", LocalDate.now()));
+        when(getWordsConverter.toDto(any(WordEntity.class))).thenReturn(exampleResponse);
 
         List<GetWordResponse> response = getWordService.getByDateAchieveAfter(childEntity.getId(), date, authentication);
 
@@ -116,7 +118,7 @@ class GetWordServiceTest {
 
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(wordsRepository.findByChildIdAndDateAchieveBetween(childEntity.getId(), startDate, endDate)).thenReturn(wordEntities);
-        when(getWordsConverter.toDto(any(WordEntity.class))).thenReturn(new GetWordResponse(0L, "testWord", LocalDate.now()));
+        when(getWordsConverter.toDto(any(WordEntity.class))).thenReturn(exampleResponse);
 
         List<GetWordResponse> response = getWordService.getWordsBetweenDays(childEntity.getId(), startDate, endDate, authentication);
 
@@ -173,13 +175,13 @@ class GetWordServiceTest {
     }
 
     @Test
-    void getWordById() {
-    }
-
-    @Test
     void when_getAllWords_then_allWordsTheChildShouldBeReturned() {
         List<GetWordResponse> expectedResponse = wordEntities.stream()
-                .map(wordEntity -> new GetWordResponse(wordEntity.getId(), wordEntity.getWord(), wordEntity.getDateAchieve()))
+                .map(wordEntity -> GetWordResponse.builder()
+                        .id(wordEntity.getId())
+                        .word(wordEntity.getWord())
+                        .dateAchieve(wordEntity.getDateAchieve())
+                        .build())
                 .collect(Collectors.toList());
 
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
@@ -205,7 +207,12 @@ class GetWordServiceTest {
 
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(wordsRepository.findByWordIgnoreCaseAndChildId(word.toLowerCase(), childEntity.getId())).thenReturn(Optional.of(wordEntity1));
-        when(getWordsConverter.toDto(wordEntity1)).thenReturn(new GetWordResponse(wordEntity1.getId(), wordEntity1.getWord(), wordEntity1.getDateAchieve()));
+        when(getWordsConverter.toDto(wordEntity1)).thenReturn(
+                GetWordResponse.builder()
+                        .id(wordEntity1.getId())
+                        .word(wordEntity1.getWord())
+                        .dateAchieve(wordEntity1.getDateAchieve())
+                        .build());
 
         GetWordResponse response = getWordService.getByWord(childEntity.getId(), word, authentication);
 

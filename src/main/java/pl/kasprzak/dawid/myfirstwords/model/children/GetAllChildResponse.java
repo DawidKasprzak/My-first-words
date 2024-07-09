@@ -9,7 +9,6 @@ import java.util.List;
 
 @Getter
 @Builder
-@AllArgsConstructor
 public class GetAllChildResponse {
 
     private List<GetChildResponse> children;

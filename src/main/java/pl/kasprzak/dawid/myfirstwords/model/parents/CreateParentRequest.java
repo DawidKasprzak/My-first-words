@@ -8,8 +8,6 @@ import org.hibernate.validator.constraints.Length;
 @Getter
 @Setter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class CreateParentRequest {
     @NotNull
     private String username;

@@ -44,14 +44,16 @@ class CreateMilestoneServiceTest {
         childEntity.setId(1L);
         childEntity.setName("childName");
 
-        createMilestoneRequest = new CreateMilestoneRequest();
-        createMilestoneRequest.setTitle("first word");
-        createMilestoneRequest.setDescription("first word - dad");
+        createMilestoneRequest = CreateMilestoneRequest.builder()
+                .title("first word")
+                .description("first word - dad")
+                .build();
 
-        createMilestoneResponse = new CreateMilestoneResponse();
-        createMilestoneResponse.setId(1L);
-        createMilestoneResponse.setTitle(createMilestoneRequest.getTitle());
-        createMilestoneResponse.setDescription(createMilestoneRequest.getDescription());
+        createMilestoneResponse = CreateMilestoneResponse.builder()
+                .id(1L)
+                .title(createMilestoneRequest.getTitle())
+                .description(createMilestoneRequest.getDescription())
+                .build();
 
         milestoneEntity = new MilestoneEntity();
         milestoneEntity.setId(createMilestoneResponse.getId());

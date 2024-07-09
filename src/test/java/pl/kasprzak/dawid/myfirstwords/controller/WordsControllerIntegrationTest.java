@@ -63,10 +63,8 @@ class WordsControllerIntegrationTest {
     private CreateWordResponse createWordResponse;
     private WordEntity wordEntity;
     private List<WordEntity> wordEntities;
-    private WordEntity wordEntity1;
-    private WordEntity wordEntity2;
-    private WordEntity wordEntity3;
-    private WordEntity wordEntity4;
+    private List<GetWordResponse> allWordResponses;
+    private WordEntity wordEntity1, wordEntity2, wordEntity3, wordEntity4;
     private LocalDate date;
 
     @BeforeEach
@@ -82,13 +80,15 @@ class WordsControllerIntegrationTest {
         childEntity.setParent(parentEntity);
         childEntity = childrenRepository.save(childEntity);
 
-        createWordRequest = new CreateWordRequest();
-        createWordRequest.setWord("wordTest");
-        createWordRequest.setDateAchieve(LocalDate.of(2020, 01, 07));
+        createWordRequest = CreateWordRequest.builder()
+                .word("wordTest")
+                .dateAchieve(LocalDate.of(2020, 01, 07))
+                .build();
 
-        createWordResponse = new CreateWordResponse();
-        createWordResponse.setWord(createWordRequest.getWord());
-        createWordResponse.setDateAchieve(createWordRequest.getDateAchieve());
+        createWordResponse = CreateWordResponse.builder()
+                .word(createWordRequest.getWord())
+                .dateAchieve(createWordRequest.getDateAchieve())
+                .build();
 
         wordEntity = new WordEntity();
         wordEntity.setWord(createWordRequest.getWord());
@@ -105,6 +105,14 @@ class WordsControllerIntegrationTest {
         wordEntities = Arrays.asList(wordEntity1, wordEntity2, wordEntity3, wordEntity4);
 
         wordsRepository.saveAll(wordEntities);
+
+        allWordResponses = wordEntities.stream()
+                .map(wordEntity -> GetWordResponse.builder()
+                        .id(wordEntity.getId())
+                        .word(wordEntity.getWord())
+                        .dateAchieve(wordEntity.getDateAchieve())
+                        .build())
+                .collect(Collectors.toList());
     }
 
 
@@ -163,9 +171,8 @@ class WordsControllerIntegrationTest {
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getByDateAchieveBefore_then_wordsShouldBeReturnedBeforeTheGivenDate() throws Exception {
 
-        List<GetWordResponse> expectedResponse = wordEntities.stream()
-                .filter(wordEntity -> wordEntity.getDateAchieve().isBefore(date))
-                .map(wordEntity -> new GetWordResponse(wordEntity.getId(), wordEntity.getWord(), wordEntity.getDateAchieve()))
+        List<GetWordResponse> expectedResponse = allWordResponses.stream()
+                .filter(getWordResponse -> getWordResponse.getDateAchieve().isBefore(date))
                 .collect(Collectors.toList());
 
         mockMvc.perform(get("/api/words/{childId}/before/{date}", childEntity.getId(), date)
@@ -180,10 +187,10 @@ class WordsControllerIntegrationTest {
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getByDateAchieveAfter_then_wordsShouldBeReturnedAfterTheGivenDate() throws Exception {
 
-        List<GetWordResponse> expectedResponse = wordEntities.stream()
-                .filter(wordEntity -> wordEntity.getDateAchieve().isAfter(date))
-                .map(wordEntity -> new GetWordResponse(wordEntity.getId(), wordEntity.getWord(), wordEntity.getDateAchieve()))
+        List<GetWordResponse> expectedResponse = allWordResponses.stream()
+                .filter(getWordResponse -> getWordResponse.getDateAchieve().isAfter(date))
                 .collect(Collectors.toList());
+
 
         mockMvc.perform(get("/api/words/{childId}/after/{date}", childEntity.getId(), date)
                         .param("date", date.toString())
@@ -199,9 +206,8 @@ class WordsControllerIntegrationTest {
         LocalDate startDate = date.minusDays(2);
         LocalDate endDate = date.plusDays(2);
 
-        List<GetWordResponse> expectedResponse = wordEntities.stream()
-                .filter(wordEntity -> !wordEntity.getDateAchieve().isBefore(startDate) && !wordEntity.getDateAchieve().isAfter(endDate))
-                .map(wordEntity -> new GetWordResponse(wordEntity.getId(), wordEntity.getWord(), wordEntity.getDateAchieve()))
+        List<GetWordResponse> expectedResponse = allWordResponses.stream()
+                .filter(getWordResponse -> !getWordResponse.getDateAchieve().isBefore(startDate) && !getWordResponse.getDateAchieve().isAfter(endDate))
                 .collect(Collectors.toList());
 
         mockMvc.perform(get("/api/words/{childId}/between", childEntity.getId())
@@ -255,11 +261,10 @@ class WordsControllerIntegrationTest {
     @Test
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getAllWords_then_allWordsTheChildShouldBeReturned() throws Exception {
-        List<GetWordResponse> wordResponses = wordEntities.stream()
-                .map(wordEntity -> new GetWordResponse(wordEntity.getId(), wordEntity.getWord(), wordEntity.getDateAchieve()))
-                .collect(Collectors.toList());
 
-        GetAllWordsResponse expectedResponse = new GetAllWordsResponse(wordResponses);
+        GetAllWordsResponse expectedResponse = GetAllWordsResponse.builder()
+                .words(allWordResponses)
+                .build();
 
         mockMvc.perform(get("/api/words/{childId}", childEntity.getId())
                         .accept(MediaType.APPLICATION_JSON))

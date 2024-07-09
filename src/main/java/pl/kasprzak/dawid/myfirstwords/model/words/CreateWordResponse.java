@@ -7,8 +7,6 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class CreateWordResponse {
 
     private long id;

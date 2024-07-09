@@ -41,11 +41,14 @@ class CreateChildServiceTest {
     @BeforeEach
     void setUp() {
 
-        createChildRequest = new CreateChildRequest();
-        createChildRequest.setName("childName");
 
-        createChildResponse = new CreateChildResponse();
-        createChildResponse.setName("childName");
+        createChildRequest = CreateChildRequest.builder()
+                .name("childName")
+                .build();
+
+        createChildResponse = CreateChildResponse.builder()
+                .name(createChildRequest.getName())
+                .build();
 
         childEntity = new ChildEntity();
         childEntity.setName("childName");

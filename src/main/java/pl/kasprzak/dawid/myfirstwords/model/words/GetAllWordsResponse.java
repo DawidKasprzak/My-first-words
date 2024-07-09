@@ -6,7 +6,6 @@ import java.util.List;
 
 @Getter
 @Builder
-@AllArgsConstructor
 public class GetAllWordsResponse {
 
     private List<GetWordResponse> words;

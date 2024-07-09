@@ -46,12 +46,8 @@ class GetChildServiceTest {
     private GetChildService getChildService;
     private ParentEntity parentEntity;
     private ParentEntity otherParent;
-    private GetChildResponse getChildResponse1;
-    private GetChildResponse getChildResponse2;
-    private ChildEntity child1;
-    private ChildEntity child2;
-    private ChildEntity child3;
-
+    private GetChildResponse getChildResponse1, getChildResponse2;
+    private ChildEntity child1, child2, child3;
 
     @BeforeEach
     void setUp() {

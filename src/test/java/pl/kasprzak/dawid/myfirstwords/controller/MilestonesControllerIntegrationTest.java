@@ -75,15 +75,17 @@ class MilestonesControllerIntegrationTest {
         childEntity.setParent(parentEntity);
         childEntity = childrenRepository.save(childEntity);
 
-        createMilestoneRequest = new CreateMilestoneRequest();
-        createMilestoneRequest.setTitle("this is example title");
-        createMilestoneRequest.setDescription("this is test description");
-        createMilestoneRequest.setDateAchieve(LocalDate.of(2024, 5, 5));
+        createMilestoneRequest = CreateMilestoneRequest.builder()
+                .title("this is example title")
+                .description("this is test description")
+                .dateAchieve(LocalDate.of(2024, 5, 5))
+                .build();
 
-        createMilestoneResponse = new CreateMilestoneResponse();
-        createMilestoneResponse.setTitle(createMilestoneRequest.getTitle());
-        createMilestoneResponse.setDescription(createMilestoneRequest.getDescription());
-        createMilestoneResponse.setDateAchieve(createMilestoneRequest.getDateAchieve());
+        createMilestoneResponse = CreateMilestoneResponse.builder()
+                .title(createMilestoneRequest.getTitle())
+                .description(createMilestoneRequest.getDescription())
+                .dateAchieve(createMilestoneRequest.getDateAchieve())
+                .build();
 
         milestoneEntity = new MilestoneEntity();
         milestoneEntity.setTitle(createMilestoneRequest.getTitle());
@@ -91,9 +93,6 @@ class MilestonesControllerIntegrationTest {
         milestoneEntity.setDateAchieve(createMilestoneRequest.getDateAchieve());
         milestoneEntity.setChild(childEntity);
         milestoneEntity = milestonesRepository.save(milestoneEntity);
-
-
-
 
         date = LocalDate.of(2024, 7, 7);
 

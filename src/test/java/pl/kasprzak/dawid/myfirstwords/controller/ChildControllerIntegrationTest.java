@@ -50,12 +50,10 @@ class ChildControllerIntegrationTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
     private ParentEntity parentEntity;
-    private ChildEntity childEntity;
-    private ChildEntity childEntity2;
+    private ChildEntity childEntity, childEntity2;
     private CreateChildRequest createChildRequest;
     private CreateChildResponse createChildResponse;
-    private GetChildResponse getChildResponse;
-    private GetChildResponse getChildResponse2;
+    private GetChildResponse getChildResponse, getChildResponse2;
 
 
     @BeforeEach
@@ -67,10 +65,11 @@ class ChildControllerIntegrationTest {
         parentEntity.setPassword(passwordEncoder.encode("password"));
         parentsRepository.save(parentEntity);
 
-        createChildRequest = new CreateChildRequest();
-        createChildRequest.setName("childName");
-        createChildRequest.setBirthDate(LocalDate.of(2024, 01, 22));
-        createChildRequest.setGender(Gender.GIRL);
+        createChildRequest = CreateChildRequest.builder()
+                .name("childName")
+                .birthDate(LocalDate.of(2024, 01, 22))
+                .gender(Gender.GIRL)
+                .build();
 
         childEntity = new ChildEntity();
         childEntity.setId(1L);
@@ -86,7 +85,6 @@ class ChildControllerIntegrationTest {
         childEntity2.setBirthDate(LocalDate.of(2023, 05, 15));
         childEntity2.setParent(parentEntity);
         childrenRepository.save(childEntity2);
-
 
         createChildResponse = CreateChildResponse.builder()
                 .name(createChildRequest.getName())
@@ -155,7 +153,9 @@ class ChildControllerIntegrationTest {
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getAllChildrenOfParent_then_allChildrenShouldBeReturned() throws Exception {
         List<GetChildResponse> children = Arrays.asList(getChildResponse, getChildResponse2);
-        GetAllChildResponse expectedResponse = new GetAllChildResponse(children);
+        GetAllChildResponse expectedResponse = GetAllChildResponse.builder()
+                .children(children)
+                .build();
 
         mockMvc.perform(get("/api/children")
                         .accept(MediaType.APPLICATION_JSON))

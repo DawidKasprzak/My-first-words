@@ -7,8 +7,6 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class CreateMilestoneResponse {
     private long id;
     private String title;

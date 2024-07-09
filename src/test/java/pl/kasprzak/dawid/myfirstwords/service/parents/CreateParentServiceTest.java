@@ -35,17 +35,20 @@ class CreateParentServiceTest {
 
     @BeforeEach
     void setUp() {
-        createParentRequest = new CreateParentRequest();
-        createParentRequest.setUsername("usernameTest");
-        createParentRequest.setMail("test@mail.com");
+
+        createParentRequest = CreateParentRequest.builder()
+                .username("usernameTest")
+                .mail("test@mail.com")
+                .build();
 
         parentEntity = new ParentEntity();
         parentEntity.setUsername("usernameTest");
         parentEntity.setMail("test@mail.com");
 
-        createParentResponse = new CreateParentResponse();
-        createParentResponse.setUsername("usernameTest");
-        createParentResponse.setMail("test@mail.com");
+        createParentResponse = CreateParentResponse.builder()
+                .username(createParentRequest.getUsername())
+                .mail(createParentRequest.getMail())
+                .build();
     }
 
     @Test

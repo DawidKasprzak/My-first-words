@@ -46,12 +46,14 @@ class CreateWordServiceTest {
         childEntity.setId(1L);
         childEntity.setName("childName");
 
-        createWordRequest = new CreateWordRequest();
-        createWordRequest.setWord("wordTest");
+        createWordRequest = CreateWordRequest.builder()
+                .word("wordTest")
+                .build();
 
-        createWordResponse = new CreateWordResponse();
-        createWordResponse.setId(1L);
-        createWordResponse.setWord(createWordRequest.getWord());
+        createWordResponse = CreateWordResponse.builder()
+                .id(1L)
+                .word(createWordRequest.getWord())
+                .build();
 
         wordEntity = new WordEntity();
         wordEntity.setId(createWordResponse.getId());

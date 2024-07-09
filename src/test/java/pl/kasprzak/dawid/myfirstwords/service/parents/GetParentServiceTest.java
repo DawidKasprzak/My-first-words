@@ -32,10 +32,8 @@ class GetParentServiceTest {
     @InjectMocks
     private GetParentService getParentService;
 
-    private ParentEntity parent1;
-    private ParentEntity parent2;
-    private ParentInfoResponse parentInfoResponse1;
-    private ParentInfoResponse parentInfoResponse2;
+    private ParentEntity parent1, parent2;
+    private ParentInfoResponse parentInfoResponse1, parentInfoResponse2;
 
     @BeforeEach
     void setUp(){

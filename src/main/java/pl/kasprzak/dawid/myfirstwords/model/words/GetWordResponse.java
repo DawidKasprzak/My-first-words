@@ -10,8 +10,6 @@ import java.time.LocalDate;
 
 @Getter
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class GetWordResponse {
 
     private long id;

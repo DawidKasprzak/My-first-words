@@ -46,22 +46,23 @@ class ParentControllerIntegrationTest {
     private ParentsRepository parentsRepository;
     private CreateParentRequest createParentRequest;
     private CreateParentResponse createParentResponse;
-    private ParentInfoResponse parentInfoResponse1;
-    private ParentInfoResponse parentInfoResponse2;
+    private ParentInfoResponse parentInfoResponse1, parentInfoResponse2;
 
 
     @BeforeEach
     void setUp() {
         parentsRepository.deleteAll();
 
-        createParentRequest = new CreateParentRequest();
-        createParentRequest.setUsername("testUser");
-        createParentRequest.setPassword("testPassword");
-        createParentRequest.setMail("test@mail.com");
+        createParentRequest = CreateParentRequest.builder()
+                .username("testUser")
+                .password("testPassword")
+                .mail("test@mail.com")
+                .build();
 
-        createParentResponse = new CreateParentResponse();
-        createParentResponse.setUsername("testUser");
-        createParentResponse.setMail("test@mail.com");
+        createParentResponse = CreateParentResponse.builder()
+                .username(createParentRequest.getUsername())
+                .mail(createParentRequest.getMail())
+                .build();
 
         ParentEntity parent1 = new ParentEntity();
         parent1.setUsername("parent1");
@@ -135,7 +136,9 @@ class ParentControllerIntegrationTest {
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getAllRegisterParents_then_allParentsShouldBeReturned() throws Exception {
         List<ParentInfoResponse> parents = Arrays.asList(parentInfoResponse1, parentInfoResponse2);
-        GetAllParentsResponse expectResponse = new GetAllParentsResponse(parents);
+        GetAllParentsResponse expectResponse = GetAllParentsResponse.builder()
+                .parents(parents)
+                .build();
 
         mockMvc.perform(get("/api/parents")
                         .accept(MediaType.APPLICATION_JSON))

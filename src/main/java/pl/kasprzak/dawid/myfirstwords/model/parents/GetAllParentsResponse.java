@@ -8,7 +8,6 @@ import java.util.List;
 
 @Getter
 @Builder
-@AllArgsConstructor
 public class GetAllParentsResponse {
 
     private List<ParentInfoResponse> parents;
