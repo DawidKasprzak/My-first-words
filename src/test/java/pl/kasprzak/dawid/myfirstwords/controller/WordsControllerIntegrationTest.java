@@ -97,10 +97,29 @@ class WordsControllerIntegrationTest {
 
         date = LocalDate.of(2024, 1, 1);
 
-        wordEntity1 = new WordEntity(1L, "word1", date.minusDays(1), childEntity);
-        wordEntity2 = new WordEntity(2L, "word2", date.minusDays(2), childEntity);
-        wordEntity3 = new WordEntity(3L, "word3", date.plusDays(1), childEntity);
-        wordEntity4 = new WordEntity(4L, "word4", date.plusDays(2), childEntity);
+        wordEntity1 = new WordEntity();
+        wordEntity1.setId(1L);
+        wordEntity1.setWord("word1");
+        wordEntity1.setDateAchieve(date.minusDays(1));
+        wordEntity1.setChild(childEntity);
+
+        wordEntity2 = new WordEntity();
+        wordEntity2.setId(2L);
+        wordEntity2.setWord("word2");
+        wordEntity2.setDateAchieve(date.minusDays(2));
+        wordEntity2.setChild(childEntity);
+
+        wordEntity3 = new WordEntity();
+        wordEntity3.setId(3L);
+        wordEntity3.setWord("word3");
+        wordEntity3.setDateAchieve(date.plusDays(1));
+        wordEntity3.setChild(childEntity);
+
+        wordEntity4 = new WordEntity();
+        wordEntity4.setId(4L);
+        wordEntity4.setWord("word4");
+        wordEntity4.setDateAchieve(date.plusDays(2));
+        wordEntity4.setChild(childEntity);
 
         wordEntities = Arrays.asList(wordEntity1, wordEntity2, wordEntity3, wordEntity4);
 
