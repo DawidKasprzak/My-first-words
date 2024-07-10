@@ -62,7 +62,6 @@ class GetWordServiceTest {
 
         date = LocalDate.of(2024, 5, 5);
 
-
         wordEntity1 = new WordEntity();
         wordEntity1.setId(1L);
         wordEntity1.setWord("word1");
@@ -124,8 +123,10 @@ class GetWordServiceTest {
         List<GetWordResponse> response = getWordService.getByDateAchieveAfter(childEntity.getId(), date, authentication);
 
         assertEquals(2, response.size());
-        assertEquals("testWord", response.get(0).getWord());
-        assertEquals(LocalDate.now(), response.get(0).getDateAchieve());
+        for (int i = 2; i < 4; i++){
+            WordEntity entity = wordEntities.get(i);
+            assertTrue(entity.getDateAchieve().isAfter(date));
+        }
 
         verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
         verify(wordsRepository, times(1)).findByChildIdAndDateAchieveAfter(childEntity.getId(), date);

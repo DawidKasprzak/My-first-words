@@ -44,7 +44,7 @@ class GetMilestoneServiceTest {
     private GetMilestoneResponse exampleResponse;
 
     @BeforeEach
-    void setUp(){
+    void setUp() {
         parentEntity = new ParentEntity();
         parentEntity.setUsername("parentName");
         parentEntity.setPassword("password");
@@ -53,7 +53,7 @@ class GetMilestoneServiceTest {
         childEntity.setName("childName");
         childEntity.setParent(parentEntity);
 
-        date = LocalDate.of(2024,6,6);
+        date = LocalDate.of(2024, 6, 6);
 
         milestoneEntity1 = new MilestoneEntity();
         milestoneEntity1.setId(1L);
@@ -94,10 +94,10 @@ class GetMilestoneServiceTest {
         when(milestonesRepository.findByChildIdAndDateAchieveBefore(childEntity.getId(), date)).thenReturn(milestoneEntities.subList(0, 2));
         when(getMilestoneConverter.toDto(any(MilestoneEntity.class))).thenReturn(exampleResponse);
 
-        List<GetMilestoneResponse> response = getMilestoneService.getByDateAchieveBefore(childEntity.getId(), date,authentication);
+        List<GetMilestoneResponse> response = getMilestoneService.getByDateAchieveBefore(childEntity.getId(), date, authentication);
 
         assertEquals(2, response.size());
-        for (int i = 0; i < response.size(); i++){
+        for (int i = 0; i < response.size(); i++) {
             MilestoneEntity entity = milestoneEntities.get(i);
             assertTrue(entity.getDateAchieve().isBefore(date));
         }
@@ -108,7 +108,23 @@ class GetMilestoneServiceTest {
     }
 
     @Test
-    void getByDateAchieveAfter() {
+    void when_getByDateAchieveAfter_then_milestonesShouldBeReturnedAfterTheGivenDate() {
+        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
+        when(milestonesRepository.findByChildIdAndDateAchieveAfter(childEntity.getId(), date)).thenReturn(milestoneEntities.subList(2, 4));
+        when(getMilestoneConverter.toDto(any(MilestoneEntity.class))).thenReturn(exampleResponse);
+
+        List<GetMilestoneResponse> response = getMilestoneService.getByDateAchieveAfter(childEntity.getId(), date, authentication);
+
+        assertEquals(2, response.size());
+        for (int i = 2; i < 4; i++){
+            MilestoneEntity entity = milestoneEntities.get(i);
+            assertTrue(entity.getDateAchieve().isAfter(date));
+        }
+
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
+        verify(milestonesRepository, times(1)).findByChildIdAndDateAchieveAfter(childEntity.getId(), date);
+        verify(getMilestoneConverter, times(2)).toDto(any(MilestoneEntity.class));
+
     }
 
     @Test

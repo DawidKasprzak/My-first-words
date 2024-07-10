@@ -182,22 +182,34 @@ class MilestonesControllerIntegrationTest {
 
     @Test
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
-    void when_getByDateAchieveBefore_then_milestoneShouldBeReturnedBeforeTheGivenDate() throws Exception{
+    void when_getByDateAchieveBefore_then_milestoneShouldBeReturnedBeforeTheGivenDate() throws Exception {
 
         List<GetMilestoneResponse> expectedResponse = allMilestoneResponses.stream()
                 .filter(getMilestoneResponse -> getMilestoneResponse.getDateAchieve().isBefore(date))
                 .collect(Collectors.toList());
 
         mockMvc.perform(get("/api/milestones/{childId}/before/{date}", childEntity.getId(), date)
-                .param("date", date.toString())
-                .accept(MediaType.APPLICATION_JSON))
+                        .param("date", date.toString())
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
     }
 
     @Test
-    void getByDateAchieveAfter() {
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    void when_getByDateAchieveAfter_then_milestonesShouldBeReturnedAfterTheGivenDate() throws Exception {
+
+        List<GetMilestoneResponse> expectedResponse = allMilestoneResponses.stream()
+                .filter(getMilestoneResponse -> getMilestoneResponse.getDateAchieve().isAfter(date))
+                .collect(Collectors.toList());
+
+        mockMvc.perform(get("/api/milestones/{childId}/after/{date}", childEntity.getId(), date)
+                        .param("date", date.toString())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
     }
 
     @Test
