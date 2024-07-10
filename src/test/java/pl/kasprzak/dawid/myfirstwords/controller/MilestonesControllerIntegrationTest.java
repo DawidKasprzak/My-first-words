@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import pl.kasprzak.dawid.myfirstwords.model.milestones.CreateMilestoneRequest;
 import pl.kasprzak.dawid.myfirstwords.model.milestones.CreateMilestoneResponse;
+import pl.kasprzak.dawid.myfirstwords.model.milestones.GetMilestoneResponse;
 import pl.kasprzak.dawid.myfirstwords.repository.ChildrenRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.MilestonesRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.ParentsRepository;
@@ -25,7 +26,9 @@ import pl.kasprzak.dawid.myfirstwords.repository.dao.MilestoneEntity;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ParentEntity;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -54,16 +57,15 @@ class MilestonesControllerIntegrationTest {
     private ParentEntity parentEntity;
     private ChildEntity childEntity;
     private List<MilestoneEntity> milestoneEntities;
-    private MilestoneEntity milestoneEntity;
-    private MilestoneEntity milestoneEntity2;
-    private MilestoneEntity milestoneEntity3;
-    private MilestoneEntity milestoneEntity4;
+    private MilestoneEntity milestoneEntity1, milestoneEntity2, milestoneEntity3, milestoneEntity4;
     private CreateMilestoneRequest createMilestoneRequest;
     private CreateMilestoneResponse createMilestoneResponse;
+    private List<GetMilestoneResponse> allMilestoneResponses;
     private LocalDate date;
 
     @BeforeEach
     void setUp() {
+        milestonesRepository.deleteAll();
 
         parentEntity = new ParentEntity();
         parentEntity.setUsername("user");
@@ -76,9 +78,9 @@ class MilestonesControllerIntegrationTest {
         childEntity = childrenRepository.save(childEntity);
 
         createMilestoneRequest = CreateMilestoneRequest.builder()
-                .title("this is example title")
+                .title("milestone title1")
                 .description("this is test description")
-                .dateAchieve(LocalDate.of(2024, 5, 5))
+                .dateAchieve(LocalDate.of(2024, 7, 7))
                 .build();
 
         createMilestoneResponse = CreateMilestoneResponse.builder()
@@ -87,15 +89,43 @@ class MilestonesControllerIntegrationTest {
                 .dateAchieve(createMilestoneRequest.getDateAchieve())
                 .build();
 
-        milestoneEntity = new MilestoneEntity();
-        milestoneEntity.setTitle(createMilestoneRequest.getTitle());
-        milestoneEntity.setDescription(createMilestoneRequest.getDescription());
-        milestoneEntity.setDateAchieve(createMilestoneRequest.getDateAchieve());
-        milestoneEntity.setChild(childEntity);
-        milestoneEntity = milestonesRepository.save(milestoneEntity);
-
         date = LocalDate.of(2024, 7, 7);
 
+        milestoneEntity1 = new MilestoneEntity();
+        milestoneEntity1.setId(1L);
+        milestoneEntity1.setTitle(createMilestoneRequest.getTitle());
+        milestoneEntity1.setDateAchieve(createMilestoneRequest.getDateAchieve().minusDays(1));
+        milestoneEntity1.setChild(childEntity);
+
+        milestoneEntity2 = new MilestoneEntity();
+        milestoneEntity2.setId(2L);
+        milestoneEntity2.setTitle("milestone title2");
+        milestoneEntity2.setDateAchieve(date.minusDays(2));
+        milestoneEntity2.setChild(childEntity);
+
+        milestoneEntity3 = new MilestoneEntity();
+        milestoneEntity3.setId(3L);
+        milestoneEntity3.setTitle("milestone title3");
+        milestoneEntity3.setDateAchieve(date.plusDays(1));
+        milestoneEntity3.setChild(childEntity);
+
+        milestoneEntity4 = new MilestoneEntity();
+        milestoneEntity4.setId(4L);
+        milestoneEntity4.setTitle("milestone title4");
+        milestoneEntity4.setDateAchieve(date.plusDays(2));
+        milestoneEntity4.setChild(childEntity);
+
+        milestoneEntities = Arrays.asList(milestoneEntity1, milestoneEntity2, milestoneEntity3, milestoneEntity4);
+
+        milestonesRepository.saveAll(milestoneEntities);
+
+        allMilestoneResponses = milestoneEntities.stream()
+                .map(milestoneEntity -> GetMilestoneResponse.builder()
+                        .id(milestoneEntity.getId())
+                        .title(milestoneEntity.getTitle())
+                        .dateAchieve(milestoneEntity.getDateAchieve())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     @Test
@@ -117,11 +147,11 @@ class MilestonesControllerIntegrationTest {
         assertEquals(createMilestoneRequest.getDateAchieve(), response.getDateAchieve());
 
         List<MilestoneEntity> milestones = milestonesRepository.findAll();
-        assertEquals(2, milestones.size());
+        assertEquals(5, milestones.size());
         MilestoneEntity milestoneEntity = milestones.get(0);
-        String expectedTitlePart = "example";
+        String expectedTitlePart = "title1";
         assertTrue(milestoneEntity.getTitle().contains(expectedTitlePart));
-        assertEquals(LocalDate.of(2024, 5, 5), milestoneEntity.getDateAchieve());
+        assertEquals(LocalDate.of(2024, 7, 6), milestoneEntity.getDateAchieve());
         assertEquals(childEntity.getId(), milestoneEntity.getChild().getId());
 
     }
@@ -130,11 +160,11 @@ class MilestonesControllerIntegrationTest {
     @Transactional
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_deleteMilestone_then_milestoneShouldBeDeletedFromChildAccount() throws Exception {
-        mockMvc.perform(delete("/api/milestones/{childId}/{milestoneId}", childEntity.getId(), milestoneEntity.getId())
+        mockMvc.perform(delete("/api/milestones/{childId}/{milestoneId}", childEntity.getId(), milestoneEntity1.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
 
-        assertFalse(milestonesRepository.findByChildIdAndId(childEntity.getId(), milestoneEntity.getId()).isPresent());
+        assertFalse(milestonesRepository.findByChildIdAndId(childEntity.getId(), milestoneEntity1.getId()).isPresent());
     }
 
     @Test
@@ -151,7 +181,19 @@ class MilestonesControllerIntegrationTest {
     }
 
     @Test
-    void getByDateAchieveBefore() {
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    void when_getByDateAchieveBefore_then_milestoneShouldBeReturnedBeforeTheGivenDate() throws Exception{
+
+        List<GetMilestoneResponse> expectedResponse = allMilestoneResponses.stream()
+                .filter(getMilestoneResponse -> getMilestoneResponse.getDateAchieve().isBefore(date))
+                .collect(Collectors.toList());
+
+        mockMvc.perform(get("/api/milestones/{childId}/before/{date}", childEntity.getId(), date)
+                .param("date", date.toString())
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
     }
 
     @Test

@@ -61,7 +61,6 @@ class WordsControllerIntegrationTest {
     private ChildEntity childEntity;
     private CreateWordRequest createWordRequest;
     private CreateWordResponse createWordResponse;
-    private WordEntity wordEntity;
     private List<WordEntity> wordEntities;
     private List<GetWordResponse> allWordResponses;
     private WordEntity wordEntity1, wordEntity2, wordEntity3, wordEntity4;
@@ -81,8 +80,8 @@ class WordsControllerIntegrationTest {
         childEntity = childrenRepository.save(childEntity);
 
         createWordRequest = CreateWordRequest.builder()
-                .word("wordTest")
-                .dateAchieve(LocalDate.of(2020, 01, 07))
+                .word("word1")
+                .dateAchieve(LocalDate.of(2024, 01, 01))
                 .build();
 
         createWordResponse = CreateWordResponse.builder()
@@ -90,17 +89,12 @@ class WordsControllerIntegrationTest {
                 .dateAchieve(createWordRequest.getDateAchieve())
                 .build();
 
-        wordEntity = new WordEntity();
-        wordEntity.setWord(createWordRequest.getWord());
-        wordEntity.setChild(childEntity);
-        wordEntity = wordsRepository.save(wordEntity);
-
         date = LocalDate.of(2024, 1, 1);
 
         wordEntity1 = new WordEntity();
         wordEntity1.setId(1L);
-        wordEntity1.setWord("word1");
-        wordEntity1.setDateAchieve(date.minusDays(1));
+        wordEntity1.setWord(createWordRequest.getWord());
+        wordEntity1.setDateAchieve(createWordRequest.getDateAchieve().minusDays(1));
         wordEntity1.setChild(childEntity);
 
         wordEntity2 = new WordEntity();
@@ -167,11 +161,11 @@ class WordsControllerIntegrationTest {
     @Transactional
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_deleteWord_then_wordShouldBeDeletedFromChildAccount() throws Exception {
-        mockMvc.perform(delete("/api/words/{childId}/{wordId}", childEntity.getId(), wordEntity.getId())
+        mockMvc.perform(delete("/api/words/{childId}/{wordId}", childEntity.getId(), wordEntity1.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
 
-        assertFalse(wordsRepository.findByChildIdAndId(childEntity.getId(), wordEntity.getId()).isPresent());
+        assertFalse(wordsRepository.findByChildIdAndId(childEntity.getId(), wordEntity1.getId()).isPresent());
     }
 
     @Test

@@ -105,9 +105,6 @@ class GetMilestoneServiceTest {
         verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
         verify(milestonesRepository, times(1)).findByChildIdAndDateAchieveBefore(childEntity.getId(), date);
         verify(getMilestoneConverter, times(2)).toDto(any(MilestoneEntity.class));
-
-
-
     }
 
     @Test
