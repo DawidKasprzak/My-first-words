@@ -116,7 +116,7 @@ class GetMilestoneServiceTest {
         List<GetMilestoneResponse> response = getMilestoneService.getByDateAchieveAfter(childEntity.getId(), date, authentication);
 
         assertEquals(2, response.size());
-        for (int i = 2; i < 4; i++){
+        for (int i = 2; i < 4; i++) {
             MilestoneEntity entity = milestoneEntities.get(i);
             assertTrue(entity.getDateAchieve().isAfter(date));
         }
@@ -128,7 +128,25 @@ class GetMilestoneServiceTest {
     }
 
     @Test
-    void getMilestonesBetweenDays() {
+    void when_getMilestonesBetweenDays_then_milestonesShouldBeReturnedBetweenTheGivenDates() {
+        LocalDate startDate = date.minusDays(2);
+        LocalDate endDate = date.plusDays(2);
+
+        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
+        when(milestonesRepository.findByChildIdAndDateAchieveBetween(childEntity.getId(), startDate, endDate)).thenReturn(milestoneEntities);
+        when(getMilestoneConverter.toDto(any(MilestoneEntity.class))).thenReturn(exampleResponse);
+
+        List<GetMilestoneResponse> response = getMilestoneService.getMilestonesBetweenDays(childEntity.getId(), startDate, endDate, authentication);
+
+        assertEquals(4, response.size());
+        for (int i = 0; i < response.size(); i++) {
+            MilestoneEntity entity = milestoneEntities.get(i);
+            assertTrue(entity.getDateAchieve().isAfter(startDate.minusDays(1))
+                    && entity.getDateAchieve().isBefore(endDate.plusDays(1)));
+        }
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
+        verify(milestonesRepository, times(1)).findByChildIdAndDateAchieveBetween(childEntity.getId(), startDate, endDate);
+        verify(getMilestoneConverter, times(4)).toDto(any(MilestoneEntity.class));
     }
 
     @Test

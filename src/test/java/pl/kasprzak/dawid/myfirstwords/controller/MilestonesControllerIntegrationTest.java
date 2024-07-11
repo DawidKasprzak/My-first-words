@@ -213,7 +213,22 @@ class MilestonesControllerIntegrationTest {
     }
 
     @Test
-    void getMilestoneBetweenDays() {
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    void when_getMilestonesBetweenDays_then_milestonesShouldBeReturnedBetweenTheGivenDates() throws Exception {
+        LocalDate startDate = date.minusDays(2);
+        LocalDate endDate = date.plusDays(2);
+
+        List<GetMilestoneResponse> expectedResponse = allMilestoneResponses.stream()
+                .filter(getMilestoneResponse -> !getMilestoneResponse.getDateAchieve().isBefore(startDate) && !getMilestoneResponse.getDateAchieve().isAfter(endDate))
+                .collect(Collectors.toList());
+
+        mockMvc.perform(get("/api/milestones/{childId}/between", childEntity.getId())
+                        .param("startDate", startDate.toString())
+                        .param("endDate", endDate.toString())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
     }
 
     @Test

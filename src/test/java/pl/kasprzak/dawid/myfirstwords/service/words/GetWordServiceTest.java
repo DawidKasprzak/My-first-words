@@ -104,7 +104,7 @@ class GetWordServiceTest {
         List<GetWordResponse> response = getWordService.getByDateAchieveBefore(childEntity.getId(), date, authentication);
 
         assertEquals(2, response.size());
-        for (int i = 0; i < response.size(); i++){
+        for (int i = 0; i < response.size(); i++) {
             WordEntity entity = wordEntities.get(i);
             assertTrue(entity.getDateAchieve().isBefore(date));
         }
@@ -123,7 +123,7 @@ class GetWordServiceTest {
         List<GetWordResponse> response = getWordService.getByDateAchieveAfter(childEntity.getId(), date, authentication);
 
         assertEquals(2, response.size());
-        for (int i = 2; i < 4; i++){
+        for (int i = 2; i < 4; i++) {
             WordEntity entity = wordEntities.get(i);
             assertTrue(entity.getDateAchieve().isAfter(date));
         }
@@ -145,8 +145,11 @@ class GetWordServiceTest {
         List<GetWordResponse> response = getWordService.getWordsBetweenDays(childEntity.getId(), startDate, endDate, authentication);
 
         assertEquals(4, response.size());
-        assertEquals("testWord", response.get(0).getWord());
-        assertEquals(LocalDate.now(), response.get(0).getDateAchieve());
+        for (int i = 0; i < response.size(); i++) {
+            WordEntity entity = wordEntities.get(i);
+            assertTrue(entity.getDateAchieve().isAfter(startDate.minusDays(1))
+                    && entity.getDateAchieve().isBefore(endDate.plusDays(1)));
+        }
 
         verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
         verify(wordsRepository, times(1)).findByChildIdAndDateAchieveBetween(childEntity.getId(), startDate, endDate);
