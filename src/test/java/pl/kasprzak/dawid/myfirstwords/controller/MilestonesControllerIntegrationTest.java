@@ -232,6 +232,29 @@ class MilestonesControllerIntegrationTest {
     }
 
     @Test
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    void when_getMilestonesBetweenDays__and_startDateIsNull_then_throwDateValidationException() throws Exception {
+        LocalDate endDate = date.plusDays(2);
+
+        mockMvc.perform(get("/api/milestones/{childId}/between", childEntity.getId())
+                        .param("endDate", endDate.toString())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    void when_getMilestonesBetweenDays_and_endDateIsNull_then_throwDateValidationException() throws Exception {
+        LocalDate startDate = date.minusDays(2);
+
+        mockMvc.perform(get("/api/milestones/{childId}/between", childEntity.getId())
+                        .param("startDate", startDate.toString())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
     void getAllMilestones() {
     }
 

@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cglib.core.Local;
 import org.springframework.security.core.Authentication;
+import pl.kasprzak.dawid.myfirstwords.exception.DateValidationException;
 import pl.kasprzak.dawid.myfirstwords.model.milestones.GetMilestoneResponse;
 import pl.kasprzak.dawid.myfirstwords.repository.MilestonesRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ChildEntity;
@@ -147,6 +148,35 @@ class GetMilestoneServiceTest {
         verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
         verify(milestonesRepository, times(1)).findByChildIdAndDateAchieveBetween(childEntity.getId(), startDate, endDate);
         verify(getMilestoneConverter, times(4)).toDto(any(MilestoneEntity.class));
+    }
+
+    @Test
+    void when_getMilestonesBetweenDays_and_startDateIsNull_then_throwDateValidationException() {
+        LocalDate endDate = date.plusDays(2);
+
+        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
+
+        DateValidationException dateValidationException = assertThrows(DateValidationException.class,
+                () -> getMilestoneService.getMilestonesBetweenDays(childEntity.getId(), null, endDate, authentication));
+
+        assertEquals("Start date and end date must not be null", dateValidationException.getMessage());
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
+        verify(milestonesRepository, never()).findByChildIdAndDateAchieveBetween(anyLong(), any(LocalDate.class), any(LocalDate.class));
+    }
+
+    @Test
+    void when_getMilestonesBetweenDays_and_endDateIsNull_then_throwDateValidationException(){
+        LocalDate startDate = date.minusDays(2);
+
+        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
+
+        DateValidationException dateValidationException = assertThrows(DateValidationException.class,
+                () -> getMilestoneService.getMilestonesBetweenDays(childEntity.getId(), startDate, null, authentication));
+
+        assertEquals("Start date and end date must not be null", dateValidationException.getMessage());
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
+        verify(milestonesRepository, never()).findByChildIdAndDateAchieveBetween(anyLong(), any(LocalDate.class), any(LocalDate.class));
+
     }
 
     @Test
