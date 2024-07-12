@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import pl.kasprzak.dawid.myfirstwords.model.milestones.CreateMilestoneRequest;
 import pl.kasprzak.dawid.myfirstwords.model.milestones.CreateMilestoneResponse;
+import pl.kasprzak.dawid.myfirstwords.model.milestones.GetAllMilestoneResponse;
 import pl.kasprzak.dawid.myfirstwords.model.milestones.GetMilestoneResponse;
 import pl.kasprzak.dawid.myfirstwords.repository.ChildrenRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.MilestonesRepository;
@@ -251,11 +252,34 @@ class MilestonesControllerIntegrationTest {
                         .param("startDate", startDate.toString())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
-
     }
 
     @Test
-    void getAllMilestones() {
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    void when_getMilestonesBetweenDays_and_startDateIsAfterEndDate_then_throwInvalidDateOrderException() throws Exception {
+        LocalDate startDate = date.plusDays(2);
+        LocalDate endDate = date.minusDays(2);
+
+        mockMvc.perform(get("/api/milestones/{childId}/between", childEntity.getId())
+                        .param("startDate", startDate.toString())
+                        .param("endDate", endDate.toString())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Start date must be before or equal to end date"));
+    }
+
+    @Test
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    void when_getAllMilestones_then_allMilestonesTheChildShouldBeReturned() throws Exception {
+
+        GetAllMilestoneResponse expectedResponse = GetAllMilestoneResponse.builder()
+                .milestones(allMilestoneResponses)
+                .build();
+
+        mockMvc.perform(get("/api/milestones/{childId}", childEntity.getId())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
     }
 
     @Test

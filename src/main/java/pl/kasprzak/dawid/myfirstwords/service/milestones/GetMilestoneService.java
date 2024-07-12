@@ -58,7 +58,7 @@ public class GetMilestoneService {
 
     public GetAllMilestoneResponse getAllMilestone(Long childId, Authentication authentication) {
         authorizationHelper.validateAndAuthorizeChild(childId, authentication);
-        List<MilestoneEntity> milestones = milestonesRepository.findByChildId(childId);
+        List<MilestoneEntity> milestones = milestonesRepository.findAllByChildId(childId);
         return GetAllMilestoneResponse.builder()
                 .milestones(milestones.stream()
                         .map(getMilestoneConverter::toDto)

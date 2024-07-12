@@ -9,6 +9,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cglib.core.Local;
 import org.springframework.security.core.Authentication;
 import pl.kasprzak.dawid.myfirstwords.exception.DateValidationException;
+import pl.kasprzak.dawid.myfirstwords.exception.InvalidDateOrderException;
+import pl.kasprzak.dawid.myfirstwords.model.milestones.GetAllMilestoneResponse;
 import pl.kasprzak.dawid.myfirstwords.model.milestones.GetMilestoneResponse;
 import pl.kasprzak.dawid.myfirstwords.repository.MilestonesRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ChildEntity;
@@ -20,6 +22,7 @@ import pl.kasprzak.dawid.myfirstwords.util.AuthorizationHelper;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -180,7 +183,44 @@ class GetMilestoneServiceTest {
     }
 
     @Test
-    void getAllMilestone() {
+    void when_getMilestonesBetweenDays_and_startDateIsAfterEndDate_then_throwInvalidDateOrderException(){
+        LocalDate startDate = date.plusDays(2);
+        LocalDate endDate = date.minusDays(2);
+
+        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
+
+        InvalidDateOrderException invalidDateOrderException = assertThrows(InvalidDateOrderException.class,
+                () -> getMilestoneService.getMilestonesBetweenDays(childEntity.getId(), startDate, endDate, authentication));
+
+        assertEquals("Start date must be before or equal to end date", invalidDateOrderException.getMessage());
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
+        verify(milestonesRepository, never()).findByChildIdAndDateAchieveBetween(anyLong(), any(LocalDate.class), any(LocalDate.class));
+    }
+
+    @Test
+    void when_getAllMilestones_then_allMilestonesTheChildShouldBeReturned() {
+        List<GetMilestoneResponse> expectedResponse = milestoneEntities.stream()
+                .map(milestoneEntity -> GetMilestoneResponse.builder()
+                        .id(milestoneEntity.getId())
+                        .title(milestoneEntity.getTitle())
+                        .dateAchieve(milestoneEntity.getDateAchieve())
+                        .build())
+                .collect(Collectors.toList());
+
+        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
+        when(milestonesRepository.findAllByChildId(childEntity.getId())).thenReturn(milestoneEntities);
+        for (int i = 0; i < milestoneEntities.size(); i++){
+            when(getMilestoneConverter.toDto(milestoneEntities.get(i))).thenReturn(expectedResponse.get(i));
+        }
+
+        GetAllMilestoneResponse response = getMilestoneService.getAllMilestone(childEntity.getId(), authentication);
+
+        assertEquals(expectedResponse, response.getMilestones());
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
+        verify(milestonesRepository, times(1)).findAllByChildId(childEntity.getId());
+        for (int i = 0; i < milestoneEntities.size(); i++){
+            verify(getMilestoneConverter, times(1)).toDto(milestoneEntities.get(i));
+        }
     }
 
     @Test

@@ -13,7 +13,7 @@ public interface MilestonesRepository extends JpaRepository<MilestoneEntity, Lon
 
     Optional<MilestoneEntity> findByChildIdAndId(Long childId, Long milestoneId);
 
-    List<MilestoneEntity> findByChildId(Long id);
+    List<MilestoneEntity> findAllByChildId(Long id);
 
     List<MilestoneEntity> findByChildIdAndDateAchieveAfter(Long childId, LocalDate date);
 
