@@ -10,6 +10,7 @@ import org.springframework.cglib.core.Local;
 import org.springframework.security.core.Authentication;
 import pl.kasprzak.dawid.myfirstwords.exception.DateValidationException;
 import pl.kasprzak.dawid.myfirstwords.exception.InvalidDateOrderException;
+import pl.kasprzak.dawid.myfirstwords.exception.MilestoneNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.model.milestones.GetAllMilestoneResponse;
 import pl.kasprzak.dawid.myfirstwords.model.milestones.GetMilestoneResponse;
 import pl.kasprzak.dawid.myfirstwords.repository.MilestonesRepository;
@@ -21,6 +22,8 @@ import pl.kasprzak.dawid.myfirstwords.util.AuthorizationHelper;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -262,5 +265,21 @@ class GetMilestoneServiceTest {
         verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
         verify(milestonesRepository, times(1)).findByTitleContainingIgnoreCaseAndChildId(title.toLowerCase(), childEntity.getId());
         verify(getMilestoneConverter, times(response.getMilestones().size())).toDto(any(MilestoneEntity.class));
+    }
+
+    @Test
+    void when_getByTitle_and_titleNonExistent_then_throwMilestoneNotFoundException(){
+        String title = "titleNonExistent";
+
+        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(),authentication)).thenReturn(childEntity);
+        when(milestonesRepository.findByTitleContainingIgnoreCaseAndChildId(title.toLowerCase(), childEntity.getId())).thenReturn(Collections.emptyList());
+
+        MilestoneNotFoundException milestoneNotFoundException = assertThrows(MilestoneNotFoundException.class,
+                () -> getMilestoneService.getByTitle(childEntity.getId(), title.toLowerCase(), authentication));
+
+        assertEquals("Milestone not found", milestoneNotFoundException.getMessage());
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
+        verify(milestonesRepository, times(1)).findByTitleContainingIgnoreCaseAndChildId(title.toLowerCase(), childEntity.getId());
+        verify(getMilestoneConverter, never()).toDto(any(MilestoneEntity.class));
     }
 }
