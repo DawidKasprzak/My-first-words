@@ -28,6 +28,7 @@ import pl.kasprzak.dawid.myfirstwords.repository.dao.ParentEntity;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -283,7 +284,58 @@ class MilestonesControllerIntegrationTest {
     }
 
     @Test
-    void getByTitle() {
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    void when_getByTitle_then_correctMilestonesShouldBeReturned() throws Exception {
+
+        // Prepare expected milestone responses
+        List<GetMilestoneResponse> expectedMilestones = Arrays.asList(
+                GetMilestoneResponse.builder()
+                        .id(milestoneEntity1.getId())
+                        .title(milestoneEntity1.getTitle())
+                        .dateAchieve(milestoneEntity1.getDateAchieve())
+                        .build(),
+                GetMilestoneResponse.builder()
+                        .id(milestoneEntity2.getId())
+                        .title(milestoneEntity2.getTitle())
+                        .dateAchieve(milestoneEntity2.getDateAchieve())
+                        .build(),
+                GetMilestoneResponse.builder()
+                        .id(milestoneEntity3.getId())
+                        .title(milestoneEntity3.getTitle())
+                        .dateAchieve(milestoneEntity3.getDateAchieve())
+                        .build(),
+                GetMilestoneResponse.builder()
+                        .id(milestoneEntity4.getId())
+                        .title(milestoneEntity4.getTitle())
+                        .dateAchieve(milestoneEntity4.getDateAchieve())
+                        .build()
+        );
+
+        // Expected response for a single milestone
+        GetAllMilestoneResponse expectedSingleResponse = GetAllMilestoneResponse.builder()
+                .milestones(Collections.singletonList(expectedMilestones.get(0)))
+                .build();
+
+        // Test retrieving a single milestone by title
+        String singleTitle = "Title1";
+        mockMvc.perform(get("/api/milestones/{childId}/title", childEntity.getId())
+                        .param("title", singleTitle.toLowerCase().toString())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedSingleResponse)));
+
+        // Expected response for a multiple milestones
+        GetAllMilestoneResponse expectedResponse = GetAllMilestoneResponse.builder()
+                .milestones(expectedMilestones)
+                .build();
+
+        // Test retrieving multiple milestones by a common word in the title
+        String multipleTitle = "title";
+        mockMvc.perform(get("/api/milestones/{childId}/title", childEntity.getId())
+                        .param("title", multipleTitle.toLowerCase().toString())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
     }
 
     @Test
