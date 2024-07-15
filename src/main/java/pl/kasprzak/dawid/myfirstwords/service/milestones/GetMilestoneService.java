@@ -66,10 +66,16 @@ public class GetMilestoneService {
                 .build();
     }
 
-    public GetMilestoneResponse getByTitle(Long childId, String title, Authentication authentication) {
+    public GetAllMilestoneResponse getByTitle(Long childId, String title, Authentication authentication) {
         authorizationHelper.validateAndAuthorizeChild(childId, authentication);
-        return milestonesRepository.findByTitleContaining(title)
-                .map(getMilestoneConverter::toDto)
-                .orElseThrow(() -> new MilestoneNotFoundException("Milestone not found"));
+        List<MilestoneEntity> milestones = milestonesRepository.findByTitleContainingIgnoreCaseAndChildId(title, childId);
+        if (milestones.isEmpty()){
+            throw new MilestoneNotFoundException("Milestone not found");
+        }
+        return GetAllMilestoneResponse.builder()
+                .milestones(milestones.stream()
+                        .map(getMilestoneConverter::toDto)
+                        .collect(Collectors.toList()))
+                .build();
     }
 }

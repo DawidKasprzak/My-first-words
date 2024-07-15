@@ -45,7 +45,7 @@ class GetMilestoneServiceTest {
     private MilestoneEntity milestoneEntity1, milestoneEntity2, milestoneEntity3, milestoneEntity4;
     private List<MilestoneEntity> milestoneEntities;
     private LocalDate date;
-    private GetMilestoneResponse exampleResponse;
+    private GetMilestoneResponse exampleResponse, milestoneResponse;
 
     @BeforeEach
     void setUp() {
@@ -84,6 +84,12 @@ class GetMilestoneServiceTest {
         milestoneEntity4.setChild(childEntity);
 
         milestoneEntities = Arrays.asList(milestoneEntity1, milestoneEntity2, milestoneEntity3, milestoneEntity4);
+
+        milestoneResponse = GetMilestoneResponse.builder()
+                .id(milestoneEntity1.getId())
+                .title(milestoneEntity1.getTitle())
+                .dateAchieve(milestoneEntity1.getDateAchieve())
+                .build();
 
         exampleResponse = GetMilestoneResponse.builder()
                 .id(0L)
@@ -168,7 +174,7 @@ class GetMilestoneServiceTest {
     }
 
     @Test
-    void when_getMilestonesBetweenDays_and_endDateIsNull_then_throwDateValidationException(){
+    void when_getMilestonesBetweenDays_and_endDateIsNull_then_throwDateValidationException() {
         LocalDate startDate = date.minusDays(2);
 
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
@@ -183,7 +189,7 @@ class GetMilestoneServiceTest {
     }
 
     @Test
-    void when_getMilestonesBetweenDays_and_startDateIsAfterEndDate_then_throwInvalidDateOrderException(){
+    void when_getMilestonesBetweenDays_and_startDateIsAfterEndDate_then_throwInvalidDateOrderException() {
         LocalDate startDate = date.plusDays(2);
         LocalDate endDate = date.minusDays(2);
 
@@ -209,7 +215,7 @@ class GetMilestoneServiceTest {
 
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(milestonesRepository.findAllByChildId(childEntity.getId())).thenReturn(milestoneEntities);
-        for (int i = 0; i < milestoneEntities.size(); i++){
+        for (int i = 0; i < milestoneEntities.size(); i++) {
             when(getMilestoneConverter.toDto(milestoneEntities.get(i))).thenReturn(expectedResponse.get(i));
         }
 
@@ -218,12 +224,43 @@ class GetMilestoneServiceTest {
         assertEquals(expectedResponse, response.getMilestones());
         verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
         verify(milestonesRepository, times(1)).findAllByChildId(childEntity.getId());
-        for (int i = 0; i < milestoneEntities.size(); i++){
+        for (int i = 0; i < milestoneEntities.size(); i++) {
             verify(getMilestoneConverter, times(1)).toDto(milestoneEntities.get(i));
         }
     }
 
     @Test
-    void getByTitle() {
+    void when_getByTitle_then_milestonesByTitleShouldBeReturned() {
+        String title = "tiTLe1";
+
+        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
+        when(milestonesRepository.findByTitleContainingIgnoreCaseAndChildId(title.toLowerCase(), childEntity.getId())).thenReturn(milestoneEntities.subList(0, 1));
+        when(getMilestoneConverter.toDto(milestoneEntity1)).thenReturn(milestoneResponse);
+
+        List<GetMilestoneResponse> expectedMilestones = Arrays.asList(milestoneResponse);
+        GetAllMilestoneResponse expectedResponse = GetAllMilestoneResponse.builder().milestones(expectedMilestones).build();
+
+        GetAllMilestoneResponse response = getMilestoneService.getByTitle(childEntity.getId(), title.toLowerCase(), authentication);
+
+        assertEquals(expectedResponse, response);
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
+        verify(milestonesRepository, times(1)).findByTitleContainingIgnoreCaseAndChildId(title.toLowerCase(), childEntity.getId());
+        verify(getMilestoneConverter, times(1)).toDto(milestoneEntity1);
+    }
+
+    @Test
+    void when_getByTitle_then_allMilestonesByTitleShouldBeReturned() {
+        String title = "miLeStoNe";
+
+        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
+        when(milestonesRepository.findByTitleContainingIgnoreCaseAndChildId(title.toLowerCase(), childEntity.getId())).thenReturn(milestoneEntities);
+        when(getMilestoneConverter.toDto(any(MilestoneEntity.class))).thenReturn(exampleResponse);
+
+        GetAllMilestoneResponse response = getMilestoneService.getByTitle(childEntity.getId(), title.toLowerCase(), authentication);
+
+        assertEquals(4, response.getMilestones().size());
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
+        verify(milestonesRepository, times(1)).findByTitleContainingIgnoreCaseAndChildId(title.toLowerCase(), childEntity.getId());
+        verify(getMilestoneConverter, times(response.getMilestones().size())).toDto(any(MilestoneEntity.class));
     }
 }

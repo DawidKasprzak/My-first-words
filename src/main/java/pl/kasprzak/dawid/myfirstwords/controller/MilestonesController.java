@@ -70,7 +70,7 @@ public class MilestonesController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}/title")
-    public GetMilestoneResponse getByTitle(@PathVariable Long childId, @RequestParam String title, Authentication authentication) {
+    public GetAllMilestoneResponse getByTitle(@PathVariable Long childId, @RequestParam String title, Authentication authentication) {
         return getMilestoneService.getByTitle(childId, title, authentication);
     }
 

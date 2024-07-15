@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface MilestonesRepository extends JpaRepository<MilestoneEntity, Long> {
-    Optional<MilestoneEntity> findByTitleContaining(String title);
+    List<MilestoneEntity> findByTitleContainingIgnoreCaseAndChildId(String title, Long childId);
 
     Optional<MilestoneEntity> findByChildIdAndId(Long childId, Long milestoneId);
 
