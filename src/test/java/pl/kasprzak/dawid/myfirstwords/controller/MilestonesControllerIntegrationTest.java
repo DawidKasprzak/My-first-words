@@ -15,10 +15,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import pl.kasprzak.dawid.myfirstwords.model.milestones.CreateMilestoneRequest;
-import pl.kasprzak.dawid.myfirstwords.model.milestones.CreateMilestoneResponse;
-import pl.kasprzak.dawid.myfirstwords.model.milestones.GetAllMilestoneResponse;
-import pl.kasprzak.dawid.myfirstwords.model.milestones.GetMilestoneResponse;
+import pl.kasprzak.dawid.myfirstwords.model.milestones.*;
 import pl.kasprzak.dawid.myfirstwords.repository.ChildrenRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.MilestonesRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.ParentsRepository;
@@ -62,6 +59,8 @@ class MilestonesControllerIntegrationTest {
     private MilestoneEntity milestoneEntity1, milestoneEntity2, milestoneEntity3, milestoneEntity4;
     private CreateMilestoneRequest createMilestoneRequest;
     private CreateMilestoneResponse createMilestoneResponse;
+    private UpdateMilestoneRequest updateMilestoneRequest;
+    private UpdateMilestoneResponse updateMilestoneResponse;
     private List<GetMilestoneResponse> allMilestoneResponses;
     private LocalDate date;
 
@@ -128,6 +127,20 @@ class MilestonesControllerIntegrationTest {
                         .dateAchieve(milestoneEntity.getDateAchieve())
                         .build())
                 .collect(Collectors.toList());
+
+        updateMilestoneRequest = UpdateMilestoneRequest.builder()
+                .title("new title")
+                .description("new description")
+                .dateAchieve(date.minusDays(3))
+                .build();
+
+        updateMilestoneResponse = UpdateMilestoneResponse.builder()
+                .id(milestoneEntity1.getId())
+                .title(updateMilestoneRequest.getTitle())
+                .description(updateMilestoneRequest.getDescription())
+                .dateAchieve(updateMilestoneRequest.getDateAchieve())
+                .build();
+
     }
 
     @Test
@@ -367,6 +380,30 @@ class MilestonesControllerIntegrationTest {
     }
 
     @Test
-    void updateMilestone() {
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    void when_updateMilestone_then_milestoneShouldBeUpdated() throws Exception {
+
+        mockMvc.perform(put("/api/milestones/{childId}/{milestoneId}", childEntity.getId(), milestoneEntity1.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateMilestoneRequest))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(updateMilestoneResponse)));
+    }
+
+
+    @Test
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    void when_updateMilestone_andMilestoneNotFound_then_throwMilestoneNotFoundException() throws Exception {
+
+        Long milestoneId = 999L;
+
+        mockMvc.perform(put("/api/milestones/{childId}/{milestoneId}", childEntity.getId(), milestoneId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateMilestoneRequest))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Milestone not found"));
+
     }
 }
