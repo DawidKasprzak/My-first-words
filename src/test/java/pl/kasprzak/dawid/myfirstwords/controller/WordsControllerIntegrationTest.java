@@ -285,11 +285,19 @@ class WordsControllerIntegrationTest {
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
     }
 
+    /**
+     * Integration test for retrieving a word by word and child ID.
+     * Verifies that the correct word is returned for a given child ID and word.
+     *
+     * @throws Exception if any error occurs during the HTTP request/response handling.
+     */
     @Test
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getWordByChildIdAndWord_then_wordShouldBeReturn() throws Exception {
+        // Define the word to search for
         String word = "word1";
 
+        // Perform the HTTP GET request and verify the response fot the given word
         mockMvc.perform(get("/api/words/{childId}/word", childEntity.getId())
                         .param("word", word.toLowerCase())
                         .accept(MediaType.APPLICATION_JSON))
@@ -298,11 +306,19 @@ class WordsControllerIntegrationTest {
                 .andExpect(jsonPath("$.word").value(word));
     }
 
+    /**
+     * Integration test for retrieving word by non-existent word and child ID.
+     * Verifies that WordNotFoundException is thrown and the appropriate error message is returned when no word is found.
+     *
+     * @throws Exception if any error occurs during the HTTP request/response handling.
+     */
     @Test
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getWordByChildIdAndWord_then_throwWordNotFoundException() throws Exception {
+        // Define a non-existent word to search for
         String word = "nonexistentWord";
 
+        // Perform the HTTP GET request and verify the response for the non-existent word
         mockMvc.perform(get("/api/words/{childId}/word", childEntity.getId())
                         .param("word", word.toLowerCase())
                         .accept(MediaType.APPLICATION_JSON))

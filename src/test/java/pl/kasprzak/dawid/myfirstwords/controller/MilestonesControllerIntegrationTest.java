@@ -297,7 +297,7 @@ class MilestonesControllerIntegrationTest {
     }
 
     /**
-     * Integration test for retrieving milestones by title.
+     * Integration test for retrieving milestones by title and child ID.
      * Verifies single and multiple milestone retrieval scenarios through the endpoint.
      *
      * @throws Exception if any error occurs during the HTTP request/response handling.
@@ -305,7 +305,6 @@ class MilestonesControllerIntegrationTest {
     @Test
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getByTitle_then_correctMilestonesShouldBeReturned() throws Exception {
-
         // Prepare expected milestone responses
         List<GetMilestoneResponse> expectedMilestones = Arrays.asList(
                 GetMilestoneResponse.builder()
@@ -335,7 +334,7 @@ class MilestonesControllerIntegrationTest {
                 .milestones(Collections.singletonList(expectedMilestones.get(0)))
                 .build();
 
-        // Test retrieving a single milestone by title
+        // Perform the HTTP GET request and verify the response for a single milestone
         String singleTitle = "Title1";
         mockMvc.perform(get("/api/milestones/{childId}/title", childEntity.getId())
                         .param("title", singleTitle.toLowerCase())
@@ -343,12 +342,12 @@ class MilestonesControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedSingleResponse)));
 
-        // Expected response for a multiple milestones
+        // Expected response for multiple milestones
         GetAllMilestoneResponse expectedResponse = GetAllMilestoneResponse.builder()
                 .milestones(expectedMilestones)
                 .build();
 
-        // Test retrieving multiple milestones by a common word in the title
+        // Perform the HTTP GET request and verify the response for multiple milestones
         String multipleTitle = "title";
         mockMvc.perform(get("/api/milestones/{childId}/title", childEntity.getId())
                         .param("title", multipleTitle.toLowerCase())
@@ -358,20 +357,18 @@ class MilestonesControllerIntegrationTest {
     }
 
     /**
-     * Integration test for retrieving milestones by a non-existent title.
+     * Integration test for retrieving milestones by a non-existent title and child ID.
      * Verifies that a MilestoneNotFoundException is thrown and the appropriate error message is returned when no milestones are found.
      *
      * @throws Exception if any error occurs during the HTTP request/response handling.
      */
-
     @Test
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getByTitle_and_titleNonExistent_then_throwMilestoneNotFoundException() throws Exception {
-
         // Define a non-existent title to search for
         String title = "nonExistentTitle";
 
-        // Test retrieving a milestone by a non-existent title
+        // Perform the HTTP GET request and verify the response for a non-existent title
         mockMvc.perform(get("/api/milestones/{childId}/title", childEntity.getId())
                         .param("title", title.toLowerCase())
                         .accept(MediaType.APPLICATION_JSON))

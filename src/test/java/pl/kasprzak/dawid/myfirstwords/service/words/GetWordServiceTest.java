@@ -225,11 +225,17 @@ class GetWordServiceTest {
         }
     }
 
-
+    /**
+     * Unit test for retrieving a word by word and child ID.
+     * Verifies that the correct word is returned for a given child ID and word.
+     * Also verifies that the child belongs to the authenticated parent.
+     */
     @Test
     void when_getByWord_then_theChildWordShouldBeReturned() {
+        // Define the word to search for
         String word = "word1";
 
+        // Mock the behavior of the authorization, repository and conversion methods
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(wordsRepository.findByWordIgnoreCaseAndChildId(word.toLowerCase(), childEntity.getId())).thenReturn(Optional.of(wordEntity1));
         when(getWordsConverter.toDto(wordEntity1)).thenReturn(
@@ -239,8 +245,10 @@ class GetWordServiceTest {
                         .dateAchieve(wordEntity1.getDateAchieve())
                         .build());
 
+        // Call the service method
         GetWordResponse response = getWordService.getByWord(childEntity.getId(), word, authentication);
 
+        // Assert the response and verify the interactions
         assertNotNull(response);
         assertEquals(word, response.getWord());
         verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
@@ -249,20 +257,28 @@ class GetWordServiceTest {
 
     }
 
+    /**
+     * Unit test for retrieving a word by word and child ID when the word does not exist.
+     * Verifies that a WordNotFoundException is thrown and the appropriate error message is returned.
+     * Also verifies that the child belongs to the authenticated parent.
+     */
     @Test
     void when_getByWord_and_wordNotExist_then_throwWordNotFoundException() {
-        String word = "word1";
+        // Define the word to search for
+        String word = "nonExistentWord";
 
+        // Mock the behavior of the authorization and repository methods
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(wordsRepository.findByWordIgnoreCaseAndChildId(word.toLowerCase(), childEntity.getId())).thenReturn(Optional.empty());
 
+        // Assert that the WordNotFoundException is thrown
         WordNotFoundException wordNotFoundException = assertThrows(WordNotFoundException.class,
                 () -> getWordService.getByWord(childEntity.getId(), word, authentication));
 
+        // Assert the exception message and verify the interaction
         assertEquals("Word not found", wordNotFoundException.getMessage());
         verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
         verify(wordsRepository, times(1)).findByWordIgnoreCaseAndChildId(word.toLowerCase(), childEntity.getId());
         verify(getWordsConverter, never()).toDto(any(WordEntity.class));
-
     }
 }
