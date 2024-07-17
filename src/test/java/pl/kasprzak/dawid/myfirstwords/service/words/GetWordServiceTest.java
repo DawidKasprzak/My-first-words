@@ -48,7 +48,6 @@ class GetWordServiceTest {
     private List<WordEntity> wordEntities;
     private WordEntity wordEntity1, wordEntity2, wordEntity3, wordEntity4;
     private LocalDate date;
-    private GetWordResponse exampleResponse;
 
     @BeforeEach
     void setUp() {
@@ -87,11 +86,13 @@ class GetWordServiceTest {
         wordEntity4.setChild(childEntity);
 
         wordEntities = Arrays.asList(wordEntity1, wordEntity2, wordEntity3, wordEntity4);
+    }
 
-        exampleResponse = GetWordResponse.builder()
-                .id(0L)
-                .word("testWord")
-                .dateAchieve(LocalDate.now())
+    private GetWordResponse createGetWordResponse(WordEntity entity) {
+        return GetWordResponse.builder()
+                .id(entity.getId())
+                .word(entity.getWord())
+                .dateAchieve(entity.getDateAchieve())
                 .build();
     }
 
@@ -99,14 +100,16 @@ class GetWordServiceTest {
     void when_getByDateAchieveBefore_then_wordsShouldBeReturnedBeforeTheGivenDate() {
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(wordsRepository.findByChildIdAndDateAchieveBefore(childEntity.getId(), date)).thenReturn(wordEntities.subList(0, 2));
-        when(getWordsConverter.toDto(any(WordEntity.class))).thenReturn(exampleResponse);
+        when(getWordsConverter.toDto(any(WordEntity.class))).thenAnswer(invocationOnMock -> {
+            WordEntity entity = invocationOnMock.getArgument(0);
+            return createGetWordResponse(entity);
+        });
 
         List<GetWordResponse> response = getWordService.getByDateAchieveBefore(childEntity.getId(), date, authentication);
 
         assertEquals(2, response.size());
-        for (int i = 0; i < response.size(); i++) {
-            WordEntity entity = wordEntities.get(i);
-            assertTrue(entity.getDateAchieve().isBefore(date));
+        for (GetWordResponse wordResponse : response) {
+            assertTrue(wordResponse.getDateAchieve().isBefore(date));
         }
 
         verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
@@ -118,14 +121,16 @@ class GetWordServiceTest {
     void when_getByDateAchieveAfter_then_wordsShouldBeReturnedAfterTheGivenDate() {
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(wordsRepository.findByChildIdAndDateAchieveAfter(childEntity.getId(), date)).thenReturn(wordEntities.subList(2, 4));
-        when(getWordsConverter.toDto(any(WordEntity.class))).thenReturn(exampleResponse);
+        when(getWordsConverter.toDto(any(WordEntity.class))).thenAnswer(invocationOnMock -> {
+            WordEntity entity = invocationOnMock.getArgument(0);
+            return createGetWordResponse(entity);
+        });
 
         List<GetWordResponse> response = getWordService.getByDateAchieveAfter(childEntity.getId(), date, authentication);
 
         assertEquals(2, response.size());
-        for (int i = 2; i < 4; i++) {
-            WordEntity entity = wordEntities.get(i);
-            assertTrue(entity.getDateAchieve().isAfter(date));
+        for (GetWordResponse wordResponse : response) {
+            assertTrue(wordResponse.getDateAchieve().isAfter(date));
         }
 
         verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
@@ -140,15 +145,17 @@ class GetWordServiceTest {
 
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(wordsRepository.findByChildIdAndDateAchieveBetween(childEntity.getId(), startDate, endDate)).thenReturn(wordEntities);
-        when(getWordsConverter.toDto(any(WordEntity.class))).thenReturn(exampleResponse);
+        when(getWordsConverter.toDto(any(WordEntity.class))).thenAnswer(invocationOnMock -> {
+            WordEntity entity = invocationOnMock.getArgument(0);
+            return createGetWordResponse(entity);
+        });
 
         List<GetWordResponse> response = getWordService.getWordsBetweenDays(childEntity.getId(), startDate, endDate, authentication);
 
         assertEquals(4, response.size());
-        for (int i = 0; i < response.size(); i++) {
-            WordEntity entity = wordEntities.get(i);
-            assertTrue(entity.getDateAchieve().isAfter(startDate.minusDays(1))
-                    && entity.getDateAchieve().isBefore(endDate.plusDays(1)));
+        for (GetWordResponse wordResponse : response) {
+            assertTrue(wordResponse.getDateAchieve().isAfter(startDate.minusDays(1))
+                    && wordResponse.getDateAchieve().isBefore(endDate.plusDays(1)));
         }
 
         verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
@@ -201,29 +208,30 @@ class GetWordServiceTest {
 
     @Test
     void when_getAllWords_then_allWordsTheChildShouldBeReturned() {
-        List<GetWordResponse> expectedResponse = wordEntities.stream()
-                .map(wordEntity -> GetWordResponse.builder()
-                        .id(wordEntity.getId())
-                        .word(wordEntity.getWord())
-                        .dateAchieve(wordEntity.getDateAchieve())
-                        .build())
-                .collect(Collectors.toList());
 
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(wordsRepository.findAllByChildId(childEntity.getId())).thenReturn(wordEntities);
-        for (int i = 0; i < wordEntities.size(); i++) {
-            when(getWordsConverter.toDto(wordEntities.get(i))).thenReturn(expectedResponse.get(i));
-        }
+        when(getWordsConverter.toDto(any(WordEntity.class))).thenAnswer(invocationOnMock -> {
+            WordEntity entity = invocationOnMock.getArgument(0);
+            return createGetWordResponse(entity);
+        });
 
         GetAllWordsResponse response = getWordService.getAllWords(childEntity.getId(), authentication);
 
-        assertEquals(expectedResponse, response.getWords());
+        assertEquals(wordEntities.size(), response.getWords().size());
+
+        for (GetWordResponse wordResponse : response.getWords()) {
+            assertTrue(wordEntities.stream().anyMatch(entity ->
+                    entity.getId().equals(wordResponse.getId()) &&
+                            entity.getWord().equals(wordResponse.getWord()) &&
+                            entity.getDateAchieve().equals(wordResponse.getDateAchieve())));
+        }
+
         verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
         verify(wordsRepository, times(1)).findAllByChildId(childEntity.getId());
-        for (int i = 0; i < wordEntities.size(); i++) {
-            verify(getWordsConverter, times(1)).toDto(wordEntities.get(i));
-        }
+        verify(getWordsConverter, times(wordEntities.size())).toDto(any(WordEntity.class));
     }
+
 
     /**
      * Unit test for retrieving a word by word and child ID.
