@@ -13,7 +13,6 @@ import pl.kasprzak.dawid.myfirstwords.repository.MilestonesRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ChildEntity;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.MilestoneEntity;
 import pl.kasprzak.dawid.myfirstwords.service.converters.milestones.CreateMilestoneConverter;
-import pl.kasprzak.dawid.myfirstwords.service.words.CreateWordService;
 import pl.kasprzak.dawid.myfirstwords.util.AuthorizationHelper;
 
 import static org.junit.jupiter.api.Assertions.*;

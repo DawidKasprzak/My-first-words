@@ -10,11 +10,9 @@ import org.springframework.security.core.Authentication;
 import pl.kasprzak.dawid.myfirstwords.exception.MilestoneNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.model.milestones.UpdateMilestoneRequest;
 import pl.kasprzak.dawid.myfirstwords.repository.MilestonesRepository;
-import pl.kasprzak.dawid.myfirstwords.repository.ParentsRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ChildEntity;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.MilestoneEntity;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ParentEntity;
-import pl.kasprzak.dawid.myfirstwords.service.converters.milestones.UpdateMilestonesConverter;
 import pl.kasprzak.dawid.myfirstwords.util.AuthorizationHelper;
 
 import java.time.LocalDate;
