@@ -25,12 +25,14 @@ class CreateParentConverterTest {
 
     @BeforeEach
     void setUp() {
+        // Initialize a CreateParentRequest with test data
         createParentRequest = CreateParentRequest.builder()
                 .username("parentUsername")
                 .mail("parent@mail.com")
                 .password("testPassword")
                 .build();
 
+        // Initialize ParentEntity with test data
         parentEntity = new ParentEntity();
         parentEntity.setId(1L);
         parentEntity.setUsername(createParentRequest.getUsername());
@@ -38,24 +40,40 @@ class CreateParentConverterTest {
         parentEntity.setPassword("encodedPassword");
     }
 
+    /**
+     * Unit test for converting CreateParentRequest to ParentEntity.
+     * Verifies that the ParentEntity is correctly created from the CreateParentRequest.
+     * Ensures that the password is encoded using the PasswordEncoder.
+     */
     @Test
     void when_fromDto_then_returnParentEntity() {
+        // Mock the behavior of the password encoder to return "encodedPassword" when encoding the test password
         when(passwordEncoder.encode(createParentRequest.getPassword())).thenReturn("encodedPassword");
 
+        // Convert the request to entity
         ParentEntity entity = createParentConverter.fromDto(createParentRequest);
 
+        // Verify the conversion
         assertEquals(createParentRequest.getUsername(), entity.getUsername());
         assertEquals(createParentRequest.getMail(), entity.getMail());
         assertEquals("encodedPassword", entity.getPassword());
+
+        // Verify that the password encoder is called once
         verify(passwordEncoder, times(1)).encode(createParentRequest.getPassword());
     }
 
+    /**
+     * Unit test for converting ParentEntity to CreateParentResponse.
+     * Verifies that the CreateParentResponse is correctly created from ParentEntity.
+     */
     @Test
     void when_toDto_then_returnCreateParentResponse() {
-        CreateParentResponse result = createParentConverter.toDto(parentEntity);
+        // Convert the entity to response
+        CreateParentResponse response = createParentConverter.toDto(parentEntity);
 
-        assertEquals("parentUsername", result.getUsername());
-        assertEquals("parent@mail.com", result.getMail());
-        assertEquals(parentEntity.getId(), result.getId());
+        // Verify the conversion
+        assertEquals("parentUsername", response.getUsername());
+        assertEquals("parent@mail.com", response.getMail());
+        assertEquals(parentEntity.getId(), response.getId());
     }
 }

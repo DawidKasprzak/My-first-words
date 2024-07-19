@@ -5,13 +5,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.repository.cdi.Eager;
 import pl.kasprzak.dawid.myfirstwords.model.children.GetChildResponse;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ChildEntity;
 
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 @ExtendWith(MockitoExtension.class)
 class GetChildConverterTest {
 
@@ -20,8 +20,9 @@ class GetChildConverterTest {
     private ChildEntity childEntity;
 
     @BeforeEach
-    void setUp(){
+    void setUp() {
 
+        // Initialize ChildEntity with test data
         childEntity = new ChildEntity();
         childEntity.setId(1L);
         childEntity.setName("childName");
@@ -29,17 +30,28 @@ class GetChildConverterTest {
 
     }
 
+    /**
+     * Unit test for calling fromDto method on GetChildConverter.
+     * Verifies that an UnsupportedOperationException is thrown when fromDto is called.
+     */
     @Test
     void when_callFromDto_then_throwUnsupportedOperationException() {
+        // Assert that UnsupportedOperationException is thrown when calling fromDto with null input
         assertThrows(UnsupportedOperationException.class, () -> getChildConverter.fromDto(null));
     }
 
+    /**
+     * Unit test for converting ChildEntity to GetChildResponse.
+     * Verifies that the GetChildResponse is correctly created from ChildEntity.
+     */
     @Test
     void when_toDto_then_returnGetChildResponse() {
-        GetChildResponse result = getChildConverter.toDto(childEntity);
+        // Convert the entity to response
+        GetChildResponse response = getChildConverter.toDto(childEntity);
 
-        assertEquals(childEntity.getId(), result.getId());
-        assertEquals(childEntity.getName(), result.getName());
-        assertEquals(childEntity.getBirthDate(), result.getBirthDate());
+        // Verify the conversion
+        assertEquals(childEntity.getId(), response.getId());
+        assertEquals(childEntity.getName(), response.getName());
+        assertEquals(childEntity.getBirthDate(), response.getBirthDate());
     }
 }

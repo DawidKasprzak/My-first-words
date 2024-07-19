@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
-import pl.kasprzak.dawid.myfirstwords.model.children.CreateChildResponse;
 import pl.kasprzak.dawid.myfirstwords.model.words.CreateWordRequest;
 import pl.kasprzak.dawid.myfirstwords.model.words.CreateWordResponse;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.WordEntity;
@@ -25,31 +24,45 @@ class CreateWordConverterTest {
     @BeforeEach
     void setUp() {
 
+        // Initialize a CreateWordRequest with test data
         createWordRequest = CreateWordRequest.builder()
                 .word("testWord")
                 .dateAchieve(LocalDate.now().minusDays(10))
                 .build();
 
+        // Initialize WordEntity with test data
         wordEntity = new WordEntity();
         wordEntity.setId(1L);
         wordEntity.setWord(createWordRequest.getWord());
         wordEntity.setDateAchieve(createWordRequest.getDateAchieve());
     }
 
+    /**
+     * Unit test for converting CreateWordRequest to WordEntity.
+     * Verifies that the WordEntity is correctly created from the CreateWordRequest.
+     */
     @Test
     void when_fromDto_then_returnWordEntity() {
+        // Convert the request to entity
         WordEntity entity = createWordConverter.fromDto(createWordRequest);
 
+        // Verify the conversion
         assertEquals(createWordRequest.getWord(), entity.getWord());
         assertEquals(createWordRequest.getDateAchieve(), entity.getDateAchieve());
     }
 
+    /**
+     * Unit test for converting WordEntity to CreateWordResponse.
+     * Verifies that the CreateWordResponse is correctly created from the WordEntity.
+     */
     @Test
     void when_toDto_then_returnCreateWordResponse() {
-        CreateWordResponse result = createWordConverter.toDto(wordEntity);
+        // Convert the entity to response
+        CreateWordResponse response = createWordConverter.toDto(wordEntity);
 
-        assertEquals(wordEntity.getId(), result.getId());
-        assertEquals(wordEntity.getWord(), result.getWord());
-        assertEquals(wordEntity.getDateAchieve(), result.getDateAchieve());
+        // Verify the conversion
+        assertEquals(wordEntity.getId(), response.getId());
+        assertEquals(wordEntity.getWord(), response.getWord());
+        assertEquals(wordEntity.getDateAchieve(), response.getDateAchieve());
     }
 }
