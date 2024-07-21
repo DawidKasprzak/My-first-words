@@ -41,7 +41,7 @@ class CreateParentConverterTest {
     }
 
     /**
-     * Unit test for converting CreateParentRequest to ParentEntity.
+     * Unit test for the fromDto method of CreateParentConverter.
      * Verifies that the ParentEntity is correctly created from the CreateParentRequest.
      * Ensures that the password is encoded using the PasswordEncoder.
      */
@@ -63,7 +63,7 @@ class CreateParentConverterTest {
     }
 
     /**
-     * Unit test for converting ParentEntity to CreateParentResponse.
+     * Unit test for the toDto method of CreateParentConverter.
      * Verifies that the CreateParentResponse is correctly created from ParentEntity.
      */
     @Test

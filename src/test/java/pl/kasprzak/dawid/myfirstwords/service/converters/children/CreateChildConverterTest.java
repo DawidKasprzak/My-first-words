@@ -39,7 +39,7 @@ class CreateChildConverterTest {
     }
 
     /**
-     * Unit test for converting CreateChildRequest to ChildEntity.
+     * Unit test for the fromDto method of CreateChildConverter.
      * Verifies that the ChildEntity is correctly created from the CreateChildRequest.
      */
     @Test
@@ -54,7 +54,7 @@ class CreateChildConverterTest {
     }
 
     /**
-     * Unit test for converting ChildEntity to CreateChildResponse.
+     * Unit test for the toDto method of CreateChildConverter.
      * Verifies that the CreateChildResponse is correctly created from the ChildEntity.
      */
     @Test

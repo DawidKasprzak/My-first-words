@@ -40,7 +40,7 @@ class GetWordsConverterTest {
     }
 
     /**
-     * Unit test for converting WordEntity to GetWordResponse.
+     * Unit test for the toDto method of GetWordsConverter.
      * Verifies that the GetWordResponse is correctly created from the WordEntity.
      */
     @Test

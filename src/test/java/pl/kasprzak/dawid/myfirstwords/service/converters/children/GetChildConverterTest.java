@@ -41,7 +41,7 @@ class GetChildConverterTest {
     }
 
     /**
-     * Unit test for converting ChildEntity to GetChildResponse.
+     * Unit test for toDto method of GetChildConverter.
      * Verifies that the GetChildResponse is correctly created from ChildEntity.
      */
     @Test

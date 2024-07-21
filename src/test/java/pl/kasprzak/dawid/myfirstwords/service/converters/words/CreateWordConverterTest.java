@@ -38,7 +38,7 @@ class CreateWordConverterTest {
     }
 
     /**
-     * Unit test for converting CreateWordRequest to WordEntity.
+     * Unit test for the fromDto method of CreateWordConverter.
      * Verifies that the WordEntity is correctly created from the CreateWordRequest.
      */
     @Test
@@ -52,7 +52,7 @@ class CreateWordConverterTest {
     }
 
     /**
-     * Unit test for converting WordEntity to CreateWordResponse.
+     * Unit test for the toDto method of CreateWordConverter.
      * Verifies that the CreateWordResponse is correctly created from the WordEntity.
      */
     @Test

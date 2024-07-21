@@ -233,7 +233,7 @@ class GetWordServiceTest {
 
 
     /**
-     * Unit test for retrieving a word by word and child ID.
+     * Unit test for getByWord method.
      * Verifies that the correct word is returned for a given child ID and word.
      * Also verifies that the child belongs to the authenticated parent.
      */
@@ -265,7 +265,7 @@ class GetWordServiceTest {
     }
 
     /**
-     * Unit test for retrieving a word by word and child ID when the word does not exist.
+     * Unit test for getByWord method when the word does not exist.
      * Verifies that a WordNotFoundException is thrown and the appropriate error message is returned.
      * Also verifies that the child belongs to the authenticated parent.
      */

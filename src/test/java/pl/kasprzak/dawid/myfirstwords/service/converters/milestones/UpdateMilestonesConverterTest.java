@@ -39,7 +39,7 @@ class UpdateMilestonesConverterTest {
     }
 
     /**
-     * Unit test for converting UpdateMilestoneRequest to MilestoneEntity.
+     * Unit test for the fromDto method of UpdateMilestoneConverter.
      * Verifies that the MilestoneEntity is correctly created from the UpdateMilestoneRequest.
      */
     @Test
@@ -54,7 +54,7 @@ class UpdateMilestonesConverterTest {
     }
 
     /**
-     * Unit test for converting MilestoneEntity to UpdateMilestoneResponse.
+     * Unit test for the toDto method of UpdateMilestoneConverter.
      * Verifies that the UpdateMilestoneResponse is correctly created from MilestoneEntity.
      */
     @Test

@@ -40,7 +40,7 @@ class GetMilestoneConverterTest {
     }
 
     /**
-     * Unit test for converting MilestoneEntity to GetMilestoneResponse.
+     * Unit test for the toDto method of GetMilestoneConverter.
      * Verifies that the GetMilestoneResponse is correctly created from MilestoneEntity.
      */
     @Test

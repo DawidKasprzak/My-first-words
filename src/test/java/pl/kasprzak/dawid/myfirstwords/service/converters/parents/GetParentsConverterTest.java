@@ -60,7 +60,7 @@ class GetParentsConverterTest {
     }
 
     /**
-     * Unit test for converting ParentEntity to ParentInfoResponse.
+     * Unit test for the toDto method of GetParentsConverter.
      * Verifies that the ParentInfoResponse is correctly created from the ParentEntity.
      * and that the children are correctly converted using GetChildConverter.
      */
