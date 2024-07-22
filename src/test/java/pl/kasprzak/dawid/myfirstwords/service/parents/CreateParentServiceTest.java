@@ -51,6 +51,10 @@ class CreateParentServiceTest {
                 .build();
     }
 
+    /**
+     * Unit test for the saveParent method in CreateParentService.
+     * Verifies that a new parent is saved successfully when the username and email do not already exist.
+     */
     @Test
     void when_createNewParent_then_parentShouldBeSaved() {
 
@@ -70,6 +74,10 @@ class CreateParentServiceTest {
         verify(createParentConverter, times(1)).toDto(parentEntity);
     }
 
+    /**
+     * Unit test for the saveParent method in CreateParentService.
+     * Verifies that a UsernameAlreadyExistsException is thrown when the username already exists.
+     */
     @Test
     void when_usernameAlreadyExists_then_throwUsernameAlreadyExistsException() {
         when(parentsRepository.findByUsername("usernameTest")).thenReturn(Optional.of(parentEntity));
@@ -85,6 +93,10 @@ class CreateParentServiceTest {
         verify(createParentConverter, never()).toDto(any());
     }
 
+    /**
+     * Unit test for the saveParent method in CreateParentService.
+     * Verifies that a EmailAlreadyExistsException is thrown when the email already exists.
+     */
     @Test
     void when_emailAlreadyExists_then_throwEmailAlreadyExistsException(){
         when(parentsRepository.findByUsername("usernameTest")).thenReturn(Optional.empty());

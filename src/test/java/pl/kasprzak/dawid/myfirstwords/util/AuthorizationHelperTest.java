@@ -48,7 +48,7 @@ class AuthorizationHelperTest {
     }
 
     /**
-     * Unit test for validateAndAuthorizeChild metohd.
+     * Unit test for validateAndAuthorizeChild method.
      * Verifies that the child is returned when the parent is authenticated and authorized.
      */
     @Test
