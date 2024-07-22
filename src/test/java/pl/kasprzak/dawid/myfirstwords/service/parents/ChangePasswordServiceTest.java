@@ -25,7 +25,12 @@ class ChangePasswordServiceTest {
     private PasswordEncoder passwordEncoder;
     @InjectMocks
     private ChangePasswordService changePasswordService;
+    private ChangePasswordRequest request;
 
+    /**
+     * Unit test for changePasswordForParent method in ChangePasswordService.
+     * Verifies that the parent's password is successfully changed when the parent ID exists.
+     */
     @Test
     void when_changePassword_then_passwordShouldBeChanged() {
         Long parentId = 1L;
@@ -36,7 +41,7 @@ class ChangePasswordServiceTest {
         parent.setId(parentId);
         parent.setPassword("oldPassword");
 
-        ChangePasswordRequest request = new ChangePasswordRequest();
+        request = new ChangePasswordRequest();
         request.setPassword(newPassword);
 
         when(parentsRepository.findById(parentId)).thenReturn(Optional.of(parent));
@@ -50,10 +55,14 @@ class ChangePasswordServiceTest {
         verify(parentsRepository, times(1)).save(parent);
     }
 
+    /**
+     * Unit test for changePasswordForParent method in ChangePasswordService.
+     * Verifies that a ParentNotFoundException is thrown when the parent ID does not exist.
+     */
     @Test
     void when_changePassword_parentNotFound_then_throwParentNotFoundException(){
         Long parentId = 1L;
-        ChangePasswordRequest request = new ChangePasswordRequest();
+        request = new ChangePasswordRequest();
         request.setPassword("newPassword");
 
         when(parentsRepository.findById(parentId)).thenReturn(Optional.empty());

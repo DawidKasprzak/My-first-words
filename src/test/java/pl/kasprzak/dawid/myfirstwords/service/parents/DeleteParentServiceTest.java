@@ -20,6 +20,10 @@ class DeleteParentServiceTest {
     @InjectMocks
     private DeleteParentService deleteParentService;
 
+    /**
+     * Unit test for deleteAccount method in DeleteParentService.
+     * Verifies that a parent is removed when the parent ID exists.
+     */
     @Test
     void when_deleteParent_then_parentShouldBeRemoved() {
         Long parentId = 1L;
@@ -33,6 +37,10 @@ class DeleteParentServiceTest {
 
     }
 
+    /**
+     * Unit test for deleteAccount method in DeleteParentService.
+     * Verifies that a ParentNotFoundException is thrown when the parent ID does not exist.
+     */
     @Test
     void when_deleteNonexistentParent_then_throwParentNotFoundException(){
         Long parentId = 1L;
