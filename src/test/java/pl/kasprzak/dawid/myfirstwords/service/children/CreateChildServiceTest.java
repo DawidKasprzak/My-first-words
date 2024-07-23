@@ -58,6 +58,10 @@ class CreateChildServiceTest {
 
     }
 
+    /**
+     * Unit test for addChild method in CreateChildService.
+     * Verifies that a child is successfully added to the parent's account.
+     */
     @Test
     void when_addChild_then_childShouldBeSavedToParentAccount() {
         when(authentication.getName()).thenReturn("parentUsername");
@@ -74,6 +78,10 @@ class CreateChildServiceTest {
 
     }
 
+    /**
+     * Unit test for addChild method in CreateChildService.
+     * Verifies that a ParentNotFoundException is thrown when the parent is not found.
+     */
     @Test
     void when_parentNotFound_then_throwParentNotFoundException() {
         when(authentication.getName()).thenReturn("parentUsername");

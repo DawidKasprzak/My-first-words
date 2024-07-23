@@ -91,6 +91,10 @@ class GetChildServiceTest {
     }
 
 
+    /**
+     * Unit test for getAllChildrenOfParent method in GetChildService.
+     * Verifies that all children of the authenticated parent are retrieved and correctly converted to DTOs.
+     */
     @Test
     void when_getAllChildrenOfParent_then_returnAllChildren() {
         List<ChildEntity> children = Arrays.asList(child1, child2);
@@ -111,6 +115,10 @@ class GetChildServiceTest {
         verify(getChildConverter, times(1)).toDto(child2);
     }
 
+    /**
+     * Unit test for getAllChildrenOfParent method in GetChildService.
+     * Verifies that a ParentNotFoundException is thrown when the parent is not found.
+     */
     @Test
     void when_getAllChildrenOfParent_then_throwParentNotFoundException() {
         when(parentsRepository.findByUsername(authentication.getName())).thenReturn(Optional.empty());
@@ -124,6 +132,10 @@ class GetChildServiceTest {
 
     }
 
+    /**
+     * Unit test for getChildById method in GetChildService.
+     * Verifies that a child with a specific ID is retrieved and correctly converted to a DTO.
+     */
     @Test
     void when_getChildById_then_returnChildWithSpecificId() {
         Long childId = child1.getId();
