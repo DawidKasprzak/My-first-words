@@ -17,6 +17,12 @@ public class GetParentService {
     private final ParentsRepository parentsRepository;
     private final GetParentsConverter getParentsConverter;
 
+    /**
+     * Service method for retrieving all parents from the repository and converts them to DTOs.
+     * This method fetches all parent entities, converts them to DTOs, and returns them wrapped in a GetAllParentsResponse.
+     *
+     * @return a GetAllParentsResponse containing a list of all parent DTOs.
+     */
     public GetAllParentsResponse getAll() {
         return GetAllParentsResponse.builder()
                 .parents(parentsRepository.findAll().stream()
@@ -25,6 +31,15 @@ public class GetParentService {
                 .build();
     }
 
+    /**
+     * Service method for retrieving a parent by the given ID and converts it to a DTO.
+     * This method fetches a parent entity by its ID, converts it to a DTO, and returns it.
+     * If the parent is not found, a ParentNotFoundException is thrown.
+     *
+     * @param parentId the ID of the parent to be retrieved.
+     * @return a ParentInfoResponse containing the parent DTO.
+     * @throws ParentNotFoundException if a parent with the specified ID is not found.
+     */
     public ParentInfoResponse getById(Long parentId) {
         return parentsRepository.findById(parentId)
                 .map(getParentsConverter::toDto)

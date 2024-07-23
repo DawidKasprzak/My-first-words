@@ -64,11 +64,15 @@ class GetParentServiceTest {
     }
 
 
+    /**
+     * Unit test for getAll method in GetParentService.
+     * Verifies that all parents are retrieved and correctly converted to DTOs.
+     */
     @Test
     void when_getAll_then_returnAllParents() {
 
         List<ParentEntity> parents = Arrays.asList(parent1, parent2);
-        List<ParentInfoResponse> responses = Arrays.asList(parentInfoResponse1, parentInfoResponse2);
+        List<ParentInfoResponse> result = Arrays.asList(parentInfoResponse1, parentInfoResponse2);
 
         when(parentsRepository.findAll()).thenReturn(parents);
         when(getParentsConverter.toDto(parent1)).thenReturn(parentInfoResponse1);
@@ -76,13 +80,17 @@ class GetParentServiceTest {
 
         GetAllParentsResponse response = getParentService.getAll();
 
-        assertEquals(responses, response.getParents());
+        assertEquals(result, response.getParents());
         verify(parentsRepository, times(1)).findAll();
         verify(getParentsConverter, times(1)).toDto(parent1);
         verify(getParentsConverter, times(1)).toDto(parent2);
 
     }
 
+    /**
+     * Unit test for getByID method in GetParentService.
+     * Verifies that a parent is retrieved by ID and correctly converted to a DTO.
+     */
     @Test
     void when_getById_then_returnParent() {
         Long parentId = 1L;
@@ -97,6 +105,10 @@ class GetParentServiceTest {
         verify(getParentsConverter, times(1)).toDto(parent1);
     }
 
+    /**
+     * Unit test for getByID method in GetParentService.
+     * Verifies that a ParentNotFoundException is thrown when the parent ID does not exist.
+     */
     @Test
     void when_getById_then_throwParentNotFoundException(){
         Long parentId = 1L;
