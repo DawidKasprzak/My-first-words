@@ -60,7 +60,7 @@ class ChangePasswordServiceTest {
      * Verifies that a ParentNotFoundException is thrown when the parent ID does not exist.
      */
     @Test
-    void when_changePassword_parentNotFound_then_throwParentNotFoundException(){
+    void when_changePassword_parentNotFound_then_throwParentNotFoundException() {
         Long parentId = 1L;
         request = new ChangePasswordRequest();
         request.setPassword("newPassword");
@@ -68,7 +68,7 @@ class ChangePasswordServiceTest {
         when(parentsRepository.findById(parentId)).thenReturn(Optional.empty());
 
         ParentNotFoundException parentNotFoundException = assertThrows(ParentNotFoundException.class,
-                ()-> changePasswordService.changePasswordForParent(parentId, request));
+                () -> changePasswordService.changePasswordForParent(parentId, request));
 
         assertEquals("Parent not found", parentNotFoundException.getMessage());
         verify(parentsRepository, times(1)).findById(parentId);

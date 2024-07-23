@@ -19,7 +19,7 @@ public class ChangePasswordService {
      * Service method for changing the password for a parent identified by the given ID.
      * This method retrieves the parent by ID, encodes the new password, and updates the parent's password in the repository.
      *
-     * @param id the ID of the parent whose password is to be changed.
+     * @param id      the ID of the parent whose password is to be changed.
      * @param request the ChangePasswordRequest containing the new password.
      * @throws ParentNotFoundException if the parent with the specified ID is not found.
      */

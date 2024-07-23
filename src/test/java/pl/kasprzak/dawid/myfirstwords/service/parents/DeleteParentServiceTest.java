@@ -42,12 +42,12 @@ class DeleteParentServiceTest {
      * Verifies that a ParentNotFoundException is thrown when the parent ID does not exist.
      */
     @Test
-    void when_deleteNonexistentParent_then_throwParentNotFoundException(){
+    void when_deleteNonexistentParent_then_throwParentNotFoundException() {
         Long parentId = 1L;
 
         when(parentsRepository.existsById(parentId)).thenReturn(false);
 
-        ParentNotFoundException parentNotFoundException = assertThrows(ParentNotFoundException.class, ()-> deleteParentService.deleteAccount(parentId));
+        ParentNotFoundException parentNotFoundException = assertThrows(ParentNotFoundException.class, () -> deleteParentService.deleteAccount(parentId));
 
         assertEquals("Parent not found", parentNotFoundException.getMessage());
         verify(parentsRepository, times(1)).existsById(parentId);

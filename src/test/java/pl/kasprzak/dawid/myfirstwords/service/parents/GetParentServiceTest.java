@@ -36,7 +36,7 @@ class GetParentServiceTest {
     private ParentInfoResponse parentInfoResponse1, parentInfoResponse2;
 
     @BeforeEach
-    void setUp(){
+    void setUp() {
         parent1 = new ParentEntity();
         parent1.setId(1L);
         parent1.setUsername("parent1");
@@ -110,14 +110,14 @@ class GetParentServiceTest {
      * Verifies that a ParentNotFoundException is thrown when the parent ID does not exist.
      */
     @Test
-    void when_getById_then_throwParentNotFoundException(){
+    void when_getById_then_throwParentNotFoundException() {
         Long parentId = 1L;
 
         when(parentsRepository.findById(parentId)).thenReturn(Optional.empty());
 
         ParentNotFoundException parentNotFoundException = assertThrows(ParentNotFoundException.class, () -> getParentService.getById(parentId));
 
-        assertEquals("Parent not found with id: " + parentId,parentNotFoundException.getMessage());
+        assertEquals("Parent not found with id: " + parentId, parentNotFoundException.getMessage());
         verify(parentsRepository, times(1)).findById(parentId);
         verify(getParentsConverter, never()).toDto(any());
     }

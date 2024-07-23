@@ -25,7 +25,7 @@ public class CreateParentService {
      * @param parentRequest the CreateParentRequest DTO containing the details of the new parent to be created.
      * @return CreateParentResponse DTO containing the details of the newly created parent.
      * @throws UsernameAlreadyExistsException if a parent with the specified username already exists.
-     * @throws EmailAlreadyExistsException if a parent with the specified email already exists.
+     * @throws EmailAlreadyExistsException    if a parent with the specified email already exists.
      */
     public CreateParentResponse saveParent(CreateParentRequest parentRequest) {
         if (parentsRepository.findByUsername(parentRequest.getUsername()).isPresent()) {

@@ -28,7 +28,6 @@ class DeleteWordServiceTest {
     private WordsRepository wordsRepository;
     @InjectMocks
     private DeleteWordService deleteWordService;
-
     private WordEntity wordEntity;
     private ChildEntity childEntity;
 
@@ -44,6 +43,10 @@ class DeleteWordServiceTest {
 
     }
 
+    /**
+     * Unit test for deleteWord method in DeleteWordService.
+     * Verifies that a word is successfully deleted from the child's account.
+     */
     @Test
     void when_deleteWord_then_wordShouldBeDeletedFromChildAccount() {
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
@@ -55,6 +58,10 @@ class DeleteWordServiceTest {
         verify(wordsRepository, times(1)).delete(wordEntity);
     }
 
+    /**
+     * Unit test for deleteWord method in DeleteWordService.
+     * Verifies that a WordNotFoundException is thrown when the word is not found.
+     */
     @Test
     void when_deleteWordAndWordNotFound_then_throwWordNotFoundException() {
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);

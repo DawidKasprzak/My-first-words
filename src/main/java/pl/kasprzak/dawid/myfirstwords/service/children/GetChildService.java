@@ -16,6 +16,7 @@ import pl.kasprzak.dawid.myfirstwords.service.converters.children.GetChildConver
 import pl.kasprzak.dawid.myfirstwords.util.AuthorizationHelper;
 
 import org.springframework.security.access.AccessDeniedException;
+
 import java.util.stream.Collectors;
 
 @Service
@@ -52,12 +53,12 @@ public class GetChildService {
      * This method validates and authorizes the parent using the AuthorizationHelper, and if authorized,
      * converts the child entity to a DTO and returns it.
      *
-     * @param childId the ID of the child to be retrieved.
+     * @param childId        the ID of the child to be retrieved.
      * @param authentication the authentication object containing the parent's credentials.
      * @return a GetChildResponse containing the child DTO.
      * @throws ParentNotFoundException if the authenticated parent is not found.
-     * @throws ChildNotFoundException if the child with the given ID is not found.
-     * @throws AccessDeniedException if the authenticated parent does not have access to the child.
+     * @throws ChildNotFoundException  if the child with the given ID is not found.
+     * @throws AccessDeniedException   if the authenticated parent does not have access to the child.
      */
     public GetChildResponse getChildById(Long childId, Authentication authentication) {
         ChildEntity childEntity = authorizationHelper.validateAndAuthorizeChild(childId, authentication);

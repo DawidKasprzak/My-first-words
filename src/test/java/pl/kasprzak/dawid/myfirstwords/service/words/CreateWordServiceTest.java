@@ -20,8 +20,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CreateWordServiceTest {
-
-
     @Mock
     private AuthorizationHelper authorizationHelper;
     @Mock
@@ -61,6 +59,10 @@ class CreateWordServiceTest {
 
     }
 
+    /**
+     * Unit test for addWord method in CreateWordService.
+     * Verifies that a word is successfully added to the child's account.
+     */
     @Test
     void when_addWord_then_wordShouldBeAddedToTheChild() {
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);

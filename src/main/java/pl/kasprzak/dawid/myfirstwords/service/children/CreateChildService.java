@@ -27,7 +27,7 @@ public class CreateChildService {
      * This method converts the CreateChildRequest DTO to a ChildEntity, sets the parent of the child,
      * saves the child entity to the repository, and converts the saved entity to a CreateChildResponse DTO.
      *
-     * @param request the CreateChildRequest containing the child's details.
+     * @param request        the CreateChildRequest containing the child's details.
      * @param authentication the authentication object containing the parent's credentials.
      * @return a CreateChildResponse DTO containing the details of the newly created child.
      * @throws ParentNotFoundException if the authenticated parent is not found.

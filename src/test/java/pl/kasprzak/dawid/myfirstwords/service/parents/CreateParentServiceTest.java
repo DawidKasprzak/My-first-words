@@ -98,12 +98,12 @@ class CreateParentServiceTest {
      * Verifies that a EmailAlreadyExistsException is thrown when the email already exists.
      */
     @Test
-    void when_emailAlreadyExists_then_throwEmailAlreadyExistsException(){
+    void when_emailAlreadyExists_then_throwEmailAlreadyExistsException() {
         when(parentsRepository.findByUsername("usernameTest")).thenReturn(Optional.empty());
         when(parentsRepository.findByMail("test@mail.com")).thenReturn(Optional.of(parentEntity));
 
         EmailAlreadyExistsException emailAlreadyExistsException = assertThrows(EmailAlreadyExistsException.class,
-                ()-> createParentService.saveParent(createParentRequest));
+                () -> createParentService.saveParent(createParentRequest));
 
         assertEquals("Email already exists: test@mail.com", emailAlreadyExistsException.getMessage());
         verify(parentsRepository, times(1)).findByUsername("usernameTest");
