@@ -33,7 +33,7 @@ class DeleteMilestoneServiceTest {
     private ChildEntity childEntity;
 
     @BeforeEach
-    void setUp(){
+    void setUp() {
 
         milestoneEntity = new MilestoneEntity();
         milestoneEntity.setId(1L);
@@ -43,6 +43,11 @@ class DeleteMilestoneServiceTest {
         milestoneEntity.setChild(childEntity);
     }
 
+    /**
+     * Unit test for deleteMilestone method in DeleteMilestoneService.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that a milestone is successfully deleted from the child's account.
+     */
     @Test
     void when_deleteMilestone_then_milestoneShouldBeDeletedFromChildAccount() {
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
@@ -54,12 +59,18 @@ class DeleteMilestoneServiceTest {
         verify(milestonesRepository, times(1)).delete(milestoneEntity);
     }
 
+    /**
+     * Unit test for deleteMilestone method in DeleteMilestoneService.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that a MilestoneNotFoundException is thrown when the milestone is not found.
+     */
     @Test
-    void when_deleteMilestoneAndMilestoneNotFound_then_throwMilestoneNotFoundException(){
+    void when_deleteMilestoneAndMilestoneNotFound_then_throwMilestoneNotFoundException() {
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(milestonesRepository.findByChildIdAndId(childEntity.getId(), milestoneEntity.getId())).thenReturn(Optional.empty());
 
-        MilestoneNotFoundException milestoneNotFoundException = assertThrows(MilestoneNotFoundException.class, () -> deleteMilestoneService.deleteMilestone(childEntity.getId(), milestoneEntity.getId(), authentication));
+        MilestoneNotFoundException milestoneNotFoundException = assertThrows(MilestoneNotFoundException.class,
+                () -> deleteMilestoneService.deleteMilestone(childEntity.getId(), milestoneEntity.getId(), authentication));
 
         assertEquals("Milestone not found", milestoneNotFoundException.getMessage());
         verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);

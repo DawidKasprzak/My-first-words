@@ -45,7 +45,8 @@ class DeleteWordServiceTest {
 
     /**
      * Unit test for deleteWord method in DeleteWordService.
-     * Verifies that a word is successfully deleted from the child's account.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that a word is successfully deleted from the child's account.
      */
     @Test
     void when_deleteWord_then_wordShouldBeDeletedFromChildAccount() {
@@ -60,14 +61,16 @@ class DeleteWordServiceTest {
 
     /**
      * Unit test for deleteWord method in DeleteWordService.
-     * Verifies that a WordNotFoundException is thrown when the word is not found.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that a WordNotFoundException is thrown when the word is not found.
      */
     @Test
     void when_deleteWordAndWordNotFound_then_throwWordNotFoundException() {
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(wordsRepository.findByChildIdAndId(childEntity.getId(), wordEntity.getId())).thenReturn(Optional.empty());
 
-        WordNotFoundException wordNotFoundException = assertThrows(WordNotFoundException.class, () -> deleteWordService.deleteWord(childEntity.getId(), wordEntity.getId(), authentication));
+        WordNotFoundException wordNotFoundException = assertThrows(WordNotFoundException.class,
+                () -> deleteWordService.deleteWord(childEntity.getId(), wordEntity.getId(), authentication));
 
         assertEquals("Word not found", wordNotFoundException.getMessage());
         verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);

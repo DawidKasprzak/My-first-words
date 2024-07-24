@@ -61,7 +61,8 @@ class CreateWordServiceTest {
 
     /**
      * Unit test for addWord method in CreateWordService.
-     * Verifies that a word is successfully added to the child's account.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that a word is successfully added to the child's account.
      */
     @Test
     void when_addWord_then_wordShouldBeAddedToTheChild() {

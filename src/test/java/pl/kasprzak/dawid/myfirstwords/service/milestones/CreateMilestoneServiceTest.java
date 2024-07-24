@@ -62,6 +62,11 @@ class CreateMilestoneServiceTest {
 
     }
 
+    /**
+     * Unit test for addMilestone method in CreateMilestoneService.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that a milestone is successfully added to the child's account.
+     */
     @Test
     void when_addMilestone_then_milestoneShouldBeAddedToTheChild() {
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);

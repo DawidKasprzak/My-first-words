@@ -27,7 +27,7 @@ public class DeleteWordService {
      *
      * @param childId        the ID of the child to whom the word belongs.
      * @param wordId         the ID of the word to be deleted.
-     * @param authentication the authentication object containing the parent's credentails.
+     * @param authentication the authentication object containing the parent's credentials.
      * @throws ParentNotFoundException if the authenticated parent is not found.
      * @throws ChildNotFoundException  if the child with the given ID is not found.
      * @throws AccessDeniedException   if the authenticated parent does not have access to the child.
