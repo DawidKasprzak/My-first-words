@@ -95,12 +95,21 @@ class GetWordServiceTest {
                 .build();
     }
 
+    /**
+     * Unit test for getByDateAchieveBefore method in GetWordService.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that words achieved before the given date are retrieved and converted to DTOs.
+     */
     @Test
     void when_getByDateAchieveBefore_then_wordsShouldBeReturnedBeforeTheGivenDate() {
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(wordsRepository.findByChildIdAndDateAchieveBefore(childEntity.getId(), date)).thenReturn(wordEntities.subList(0, 2));
+        // Mock the behavior of getWordsConverter.toDto method to ensure that any WordEntity passed to it
+        // is converted to a GetWordResponse using a predefined conversion method, createGetWordResponse.
         when(getWordsConverter.toDto(any(WordEntity.class))).thenAnswer(invocationOnMock -> {
+            // Extract the argument passed to the toDto method, which is a WordEntity object
             WordEntity entity = invocationOnMock.getArgument(0);
+            // Use the helper method createGetWordResponse to convert the WordEntity object to a GetWordResponse
             return createGetWordResponse(entity);
         });
 
@@ -116,12 +125,21 @@ class GetWordServiceTest {
         verify(getWordsConverter, times(2)).toDto(any(WordEntity.class));
     }
 
+    /**
+     * Unit test for getByDateAchieveAfter in GetWordService.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that words achieved after the given date are retrieved and converted to DTOs.
+     */
     @Test
     void when_getByDateAchieveAfter_then_wordsShouldBeReturnedAfterTheGivenDate() {
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(wordsRepository.findByChildIdAndDateAchieveAfter(childEntity.getId(), date)).thenReturn(wordEntities.subList(2, 4));
+        // Mock the behavior of getWordsConverter.toDto method to ensure that any WordEntity passed to it
+        // is converted to a GetWordResponse using a predefined conversion method, createGetWordResponse.
         when(getWordsConverter.toDto(any(WordEntity.class))).thenAnswer(invocationOnMock -> {
+            // Extract the argument passed to the toDto method, which is a WordEntity object
             WordEntity entity = invocationOnMock.getArgument(0);
+            // Use the helper method createGetWordResponse to convert the WordEntity object to a GetWordResponse
             return createGetWordResponse(entity);
         });
 
@@ -137,6 +155,11 @@ class GetWordServiceTest {
         verify(getWordsConverter, times(2)).toDto(any(WordEntity.class));
     }
 
+    /**
+     * Unit test for getWordsBetweenDays in GetWordService.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that words achieved between the given dates are retrieved and converted to DTOs.
+     */
     @Test
     void when_getWordsBetweenDays_then_wordsShouldBeReturnedBetweenTheGivenDates() {
         LocalDate startDate = date.minusDays(2);
@@ -144,8 +167,12 @@ class GetWordServiceTest {
 
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(wordsRepository.findByChildIdAndDateAchieveBetween(childEntity.getId(), startDate, endDate)).thenReturn(wordEntities);
+        // Mock the behavior of getWordsConverter.toDto method to ensure that any WordEntity passed to it
+        // is converted to a GetWordResponse using a predefined conversion method, createGetWordResponse.
         when(getWordsConverter.toDto(any(WordEntity.class))).thenAnswer(invocationOnMock -> {
+            // Extract the argument passed to the toDto method, which is a WordEntity object
             WordEntity entity = invocationOnMock.getArgument(0);
+            // Use the helper method createGetWordResponse to convert the WordEntity object to a GetWordResponse
             return createGetWordResponse(entity);
         });
 
@@ -162,6 +189,11 @@ class GetWordServiceTest {
         verify(getWordsConverter, times(4)).toDto(any(WordEntity.class));
     }
 
+    /**
+     * Unit test for getWordsBetweenDays in GetWordService when star date is null.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that a DateValidationException is thrown and the appropriate error message is returned.
+     */
     @Test
     void when_getWordsBetweenDays_and_startDateIsNull_then_throwDateValidationException() {
         LocalDate endDate = date.plusDays(2);
@@ -176,6 +208,11 @@ class GetWordServiceTest {
         verify(wordsRepository, never()).findByChildIdAndDateAchieveBetween(anyLong(), any(LocalDate.class), any(LocalDate.class));
     }
 
+    /**
+     * Unit test for getWordsBetweenDays in GetWordService when end date is null.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that a DateValidationException is thrown and the appropriate error message is returned.
+     */
     @Test
     void when_getWordsBetweenDays_and_endDateIsNull_then_throwDateValidationException() {
         LocalDate startDate = date.minusDays(2);
@@ -190,6 +227,11 @@ class GetWordServiceTest {
         verify(wordsRepository, never()).findByChildIdAndDateAchieveBetween(anyLong(), any(LocalDate.class), any(LocalDate.class));
     }
 
+    /**
+     * Unit test for getWordsBetweenDays in GetWordService when start date is after end date.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that a InvalidDateOrderException is thrown and the appropriate error message is returned.
+     */
     @Test
     void when_getWordsBetweenDays_and_startDateIsAfterEndDate_then_throwInvalidDateOrderException() {
         LocalDate startDate = date.plusDays(2);
@@ -205,13 +247,22 @@ class GetWordServiceTest {
         verify(wordsRepository, never()).findByChildIdAndDateAchieveBetween(anyLong(), any(LocalDate.class), any(LocalDate.class));
     }
 
+    /**
+     * Unit test for getAllWords method in GetWordService.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that all words for the child are retrieved and converted to DTOs.
+     */
     @Test
     void when_getAllWords_then_allWordsTheChildShouldBeReturned() {
 
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(wordsRepository.findAllByChildId(childEntity.getId())).thenReturn(wordEntities);
+        // Mock the behavior of getWordsConverter.toDto method to ensure that any WordEntity passed to it
+        // is converted to a GetWordResponse using a predefined conversion method, createGetWordResponse.
         when(getWordsConverter.toDto(any(WordEntity.class))).thenAnswer(invocationOnMock -> {
+            // Extract the argument passed to the toDto method, which is a WordEntity object
             WordEntity entity = invocationOnMock.getArgument(0);
+            // Use the helper method createGetWordResponse to convert the WordEntity object to a GetWordResponse
             return createGetWordResponse(entity);
         });
 
@@ -231,18 +282,15 @@ class GetWordServiceTest {
         verify(getWordsConverter, times(wordEntities.size())).toDto(any(WordEntity.class));
     }
 
-
     /**
-     * Unit test for getByWord method.
-     * Verifies that the correct word is returned for a given child ID and word.
-     * Also verifies that the child belongs to the authenticated parent.
+     * Unit test for getByWord method in GetWordService.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that the correct word is returned for a given child ID and word.
      */
     @Test
     void when_getByWord_then_theChildWordShouldBeReturned() {
-        // Define the word to search for
         String word = "word1";
 
-        // Mock the behavior of the authorization, repository and conversion methods
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(wordsRepository.findByWordIgnoreCaseAndChildId(word.toLowerCase(), childEntity.getId())).thenReturn(Optional.of(wordEntity1));
         when(getWordsConverter.toDto(wordEntity1)).thenReturn(
@@ -252,10 +300,8 @@ class GetWordServiceTest {
                         .dateAchieve(wordEntity1.getDateAchieve())
                         .build());
 
-        // Call the service method
         GetWordResponse response = getWordService.getByWord(childEntity.getId(), word, authentication);
 
-        // Assert the response and verify the interactions
         assertNotNull(response);
         assertEquals(word, response.getWord());
         verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
@@ -265,24 +311,20 @@ class GetWordServiceTest {
     }
 
     /**
-     * Unit test for getByWord method when the word does not exist.
-     * Verifies that a WordNotFoundException is thrown and the appropriate error message is returned.
-     * Also verifies that the child belongs to the authenticated parent.
+     * Unit test for getByWord method in GetWordService when the word does not exist.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that a WordNotFoundException is thrown and the appropriate error message is returned.
      */
     @Test
     void when_getByWord_and_wordNotExist_then_throwWordNotFoundException() {
-        // Define the word to search for
         String word = "nonExistentWord";
 
-        // Mock the behavior of the authorization and repository methods
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(wordsRepository.findByWordIgnoreCaseAndChildId(word.toLowerCase(), childEntity.getId())).thenReturn(Optional.empty());
 
-        // Assert that the WordNotFoundException is thrown
         WordNotFoundException wordNotFoundException = assertThrows(WordNotFoundException.class,
                 () -> getWordService.getByWord(childEntity.getId(), word, authentication));
 
-        // Assert the exception message and verify the interaction
         assertEquals("Word not found", wordNotFoundException.getMessage());
         verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
         verify(wordsRepository, times(1)).findByWordIgnoreCaseAndChildId(word.toLowerCase(), childEntity.getId());
