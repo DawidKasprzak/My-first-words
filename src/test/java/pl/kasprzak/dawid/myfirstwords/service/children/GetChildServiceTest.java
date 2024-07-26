@@ -93,7 +93,8 @@ class GetChildServiceTest {
 
     /**
      * Unit test for getAllChildrenOfParent method in GetChildService.
-     * Verifies that all children of the authenticated parent are retrieved and correctly converted to DTOs.
+     * Verifies that the parent is authenticated and authorized.
+     * Then verifies that all children of the authenticated parent are retrieved and correctly converted to DTOs.
      */
     @Test
     void when_getAllChildrenOfParent_then_returnAllChildren() {
@@ -117,7 +118,8 @@ class GetChildServiceTest {
 
     /**
      * Unit test for getAllChildrenOfParent method in GetChildService.
-     * Verifies that a ParentNotFoundException is thrown when the parent is not found.
+     * Verifies that a ParentNotFoundException is thrown and the appropriate error message is returned,
+     * when the parent is not found.
      */
     @Test
     void when_getAllChildrenOfParent_then_throwParentNotFoundException() {
@@ -134,7 +136,8 @@ class GetChildServiceTest {
 
     /**
      * Unit test for getChildById method in GetChildService.
-     * Verifies that a child with a specific ID is retrieved and correctly converted to a DTO.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that a child with a specific ID is retrieved and correctly converted to a DTO.
      */
     @Test
     void when_getChildById_then_returnChildWithSpecificId() {

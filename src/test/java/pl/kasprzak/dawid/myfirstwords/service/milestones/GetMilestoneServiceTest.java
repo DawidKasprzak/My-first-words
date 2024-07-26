@@ -45,7 +45,7 @@ class GetMilestoneServiceTest {
     private MilestoneEntity milestoneEntity1, milestoneEntity2, milestoneEntity3, milestoneEntity4;
     private List<MilestoneEntity> milestoneEntities;
     private LocalDate date;
-    private GetMilestoneResponse exampleResponse, milestoneResponse;
+    private GetMilestoneResponse milestoneResponse;
 
     @BeforeEach
     void setUp() {
@@ -101,12 +101,21 @@ class GetMilestoneServiceTest {
                 .build();
     }
 
+    /**
+     * Unit test for getByDateAchieveBefore method in GetMilestoneService.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that milestones achieved before the given date are retrieved and converted to DTOs.
+     */
     @Test
     void when_getByDateAchieveBefore_then_milestonesShouldBeReturnedBeforeTheGivenDate() {
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(milestonesRepository.findByChildIdAndDateAchieveBefore(childEntity.getId(), date)).thenReturn(milestoneEntities.subList(0, 2));
+        // Mock the behavior of getMilestoneConverter.toDto method to ensure that any MilestoneEntity passed to it
+        // is converted to a GetMilestoneResponse using a predefined conversion method, createGetMilestoneResponse
         when(getMilestoneConverter.toDto(any(MilestoneEntity.class))).thenAnswer(invocationOnMock -> {
+            // Extract the argument passed to the toDto method, which is a MilestoneEntity object
             MilestoneEntity entity = invocationOnMock.getArgument(0);
+            // Use the helper method createGetMilestoneResponse to convert the MilestoneEntity object to a GetMilestoneResponse
             return createGetMilestoneResponse(entity);
         });
 
@@ -122,12 +131,21 @@ class GetMilestoneServiceTest {
         verify(getMilestoneConverter, times(2)).toDto(any(MilestoneEntity.class));
     }
 
+    /**
+     * Unit test for getByDateAchieveAfter method in GetMilestoneService.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that milestones achieved after the given date are retrieved and converted to DTOs.
+     */
     @Test
     void when_getByDateAchieveAfter_then_milestonesShouldBeReturnedAfterTheGivenDate() {
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(milestonesRepository.findByChildIdAndDateAchieveAfter(childEntity.getId(), date)).thenReturn(milestoneEntities.subList(2, 4));
+        // Mock the behavior of getMilestoneConverter.toDto method to ensure that any MilestoneEntity passed to it
+        // is converted to a GetMilestoneResponse using a predefined conversion method, createGetMilestoneResponse
         when(getMilestoneConverter.toDto(any(MilestoneEntity.class))).thenAnswer(invocationOnMock -> {
+            // Extract the argument passed to the toDto method, which is a MilestoneEntity object
             MilestoneEntity entity = invocationOnMock.getArgument(0);
+            // Use the helper method createGetMilestoneResponse to convert the MilestoneEntity object to a GetMilestoneResponse
             return createGetMilestoneResponse(entity);
         });
 
@@ -144,6 +162,11 @@ class GetMilestoneServiceTest {
 
     }
 
+    /**
+     * Unit test for getMilestonesBetweenDays method in GetMilestoneService.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that milestones achieved between the given dates are retrieved and converted to DTOs.
+     */
     @Test
     void when_getMilestonesBetweenDays_then_milestonesShouldBeReturnedBetweenTheGivenDates() {
         LocalDate startDate = date.minusDays(2);
@@ -151,8 +174,12 @@ class GetMilestoneServiceTest {
 
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(milestonesRepository.findByChildIdAndDateAchieveBetween(childEntity.getId(), startDate, endDate)).thenReturn(milestoneEntities);
+        // Mock the behavior of getMilestoneConverter.toDto method to ensure that any MilestoneEntity passed to it
+        // is converted to a GetMilestoneResponse using a predefined conversion method, createGetMilestoneResponse
         when(getMilestoneConverter.toDto(any(MilestoneEntity.class))).thenAnswer(invocationOnMock -> {
+            // Extract the argument passed to the toDto method, which is a MilestoneEntity object
             MilestoneEntity entity = invocationOnMock.getArgument(0);
+            // Use the helper method createGetMilestoneResponse to convert the MilestoneEntity object to a GetMilestoneResponse
             return createGetMilestoneResponse(entity);
         });
 
@@ -168,6 +195,11 @@ class GetMilestoneServiceTest {
         verify(getMilestoneConverter, times(4)).toDto(any(MilestoneEntity.class));
     }
 
+    /**
+     * Unit test for getMilestonesBetweenDays method in GetMilestoneService when start date is null.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that a DateValidationException is thrown and the appropriate error message is returned.
+     */
     @Test
     void when_getMilestonesBetweenDays_and_startDateIsNull_then_throwDateValidationException() {
         LocalDate endDate = date.plusDays(2);
@@ -182,6 +214,11 @@ class GetMilestoneServiceTest {
         verify(milestonesRepository, never()).findByChildIdAndDateAchieveBetween(anyLong(), any(LocalDate.class), any(LocalDate.class));
     }
 
+    /**
+     * Unit test for getMilestonesBetweenDays method in GetMilestoneService when end date is null.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that a DateValidationException is thrown and the appropriate error message is returned.
+     */
     @Test
     void when_getMilestonesBetweenDays_and_endDateIsNull_then_throwDateValidationException() {
         LocalDate startDate = date.minusDays(2);
@@ -197,6 +234,11 @@ class GetMilestoneServiceTest {
 
     }
 
+    /**
+     * Unit test for getMilestonesBetweenDays method in GetMilestoneService when start date is after end date.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that a InvalidDateOrderException is thrown and the appropriate error message is returned.
+     */
     @Test
     void when_getMilestonesBetweenDays_and_startDateIsAfterEndDate_then_throwInvalidDateOrderException() {
         LocalDate startDate = date.plusDays(2);
@@ -212,13 +254,22 @@ class GetMilestoneServiceTest {
         verify(milestonesRepository, never()).findByChildIdAndDateAchieveBetween(anyLong(), any(LocalDate.class), any(LocalDate.class));
     }
 
+    /**
+     * Unit test for getAllMilestone method in GetMilestoneService.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that all milestones for the child are retrieved and converted to DTOs.
+     */
     @Test
     void when_getAllMilestones_then_allMilestonesTheChildShouldBeReturned() {
 
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(milestonesRepository.findAllByChildId(childEntity.getId())).thenReturn(milestoneEntities);
+        // Mock the behavior of getMilestoneConverter.toDto method to ensure that any MilestoneEntity passed to it
+        // is converted to a GetMilestoneResponse using a predefined conversion method, createGetMilestoneResponse
         when(getMilestoneConverter.toDto(any(MilestoneEntity.class))).thenAnswer(invocationOnMock -> {
+            // Extract the argument passed to the toDto method, which is a MilestoneEntity object
             MilestoneEntity entity = invocationOnMock.getArgument(0);
+            // Use the helper method createGetMilestoneResponse to convert the MilestoneEntity object to a GetMilestoneResponse
             return createGetMilestoneResponse(entity);
         });
 
@@ -238,9 +289,13 @@ class GetMilestoneServiceTest {
         verify(getMilestoneConverter, times(milestoneEntities.size())).toDto(any(MilestoneEntity.class));
     }
 
-
+    /**
+     * Unit test for getByTitle method in GetMilestoneService.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that the correct milestone is returned for a given child ID and title.
+     */
     @Test
-    void when_getByTitle_then_milestonesByTitleShouldBeReturned() {
+    void when_getByTitle_then_milestoneByTitleShouldBeReturned() {
         String title = "tiTLe1";
 
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
@@ -258,22 +313,45 @@ class GetMilestoneServiceTest {
         verify(getMilestoneConverter, times(1)).toDto(milestoneEntity1);
     }
 
+    /**
+     * Unit test for getByTitle method in GetMilestoneService.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that all milestones matching the given title are returned for the child.
+     */
     @Test
     void when_getByTitle_then_allMilestonesByTitleShouldBeReturned() {
         String title = "miLeStoNe";
 
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(milestonesRepository.findByTitleContainingIgnoreCaseAndChildId(title.toLowerCase(), childEntity.getId())).thenReturn(milestoneEntities);
-        when(getMilestoneConverter.toDto(any(MilestoneEntity.class))).thenReturn(exampleResponse);
+        // Mock the behavior of getMilestoneConverter.toDto method to ensure that any MilestoneEntity passed to it
+        // is converted to a GetMilestoneResponse using a predefined conversion method, createGetMilestoneResponse
+        when(getMilestoneConverter.toDto(any(MilestoneEntity.class))).thenAnswer(invocationOnMock -> {
+            // Extract the argument passed to the toDto method, which is a MilestoneEntity object
+            MilestoneEntity entity = invocationOnMock.getArgument(0);
+            // Use the helper method createGetMilestoneResponse to convert the MilestoneEntity object to a GetMilestoneResponse
+            return createGetMilestoneResponse(entity);
+        });
 
         GetAllMilestoneResponse response = getMilestoneService.getByTitle(childEntity.getId(), title.toLowerCase(), authentication);
 
         assertEquals(4, response.getMilestones().size());
+        for (GetMilestoneResponse milestoneResponse : response.getMilestones()) {
+            assertTrue(milestoneEntities.stream()
+                    .anyMatch(milestoneEntity ->
+                            milestoneEntity.getTitle().contains(milestoneResponse.getTitle())));
+        }
+
         verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
         verify(milestonesRepository, times(1)).findByTitleContainingIgnoreCaseAndChildId(title.toLowerCase(), childEntity.getId());
         verify(getMilestoneConverter, times(response.getMilestones().size())).toDto(any(MilestoneEntity.class));
     }
 
+    /**
+     * Unit test for getByTitle method in GetMilestoneService when the milestone does not exist.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that a MilestoneNotFoundException is thrown and the appropriate error message is returned.
+     */
     @Test
     void when_getByTitle_and_titleNonExistent_then_throwMilestoneNotFoundException() {
         String title = "titleNonExistent";

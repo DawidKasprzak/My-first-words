@@ -39,7 +39,8 @@ class DeleteParentServiceTest {
 
     /**
      * Unit test for deleteAccount method in DeleteParentService.
-     * Verifies that a ParentNotFoundException is thrown when the parent ID does not exist.
+     * Verifies that a ParentNotFoundException is thrown and the appropriate error message is returned,
+     * when the parent ID does not exist.
      */
     @Test
     void when_deleteNonexistentParent_then_throwParentNotFoundException() {

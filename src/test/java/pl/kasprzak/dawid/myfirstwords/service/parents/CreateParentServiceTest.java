@@ -52,7 +52,7 @@ class CreateParentServiceTest {
     }
 
     /**
-     * Unit test for the saveParent method in CreateParentService.
+     * Unit test for saveParent method in CreateParentService.
      * Verifies that a new parent is saved successfully when the username and email do not already exist.
      */
     @Test
@@ -75,8 +75,9 @@ class CreateParentServiceTest {
     }
 
     /**
-     * Unit test for the saveParent method in CreateParentService.
-     * Verifies that a UsernameAlreadyExistsException is thrown when the username already exists.
+     * Unit test for saveParent method in CreateParentService.
+     * Verifies that a UsernameAlreadyExistsException is thrown and the appropriate error message is returned,
+     * when the username already exists.
      */
     @Test
     void when_usernameAlreadyExists_then_throwUsernameAlreadyExistsException() {
@@ -95,7 +96,8 @@ class CreateParentServiceTest {
 
     /**
      * Unit test for the saveParent method in CreateParentService.
-     * Verifies that a EmailAlreadyExistsException is thrown when the email already exists.
+     * Verifies that a EmailAlreadyExistsException is thrown and the appropriate error message is returned,
+     * when the email already exists.
      */
     @Test
     void when_emailAlreadyExists_then_throwEmailAlreadyExistsException() {

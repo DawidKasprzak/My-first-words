@@ -28,7 +28,8 @@ class DeleteChildServiceTest {
 
     /**
      * Unit test for deleteChild method in DeleteChildService.
-     * Verifies that a child is successfully deleted after validation and authorization.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that a child is successfully deleted from parent's account.
      */
     @Test
     void when_deleteChild_then_childShouldBeDeleted() {

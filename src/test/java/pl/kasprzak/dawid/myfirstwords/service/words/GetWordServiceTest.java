@@ -126,7 +126,7 @@ class GetWordServiceTest {
     }
 
     /**
-     * Unit test for getByDateAchieveAfter in GetWordService.
+     * Unit test for getByDateAchieveAfter method in GetWordService.
      * First verifies that the child belongs to the authenticated parent.
      * Then verifies that words achieved after the given date are retrieved and converted to DTOs.
      */
@@ -156,7 +156,7 @@ class GetWordServiceTest {
     }
 
     /**
-     * Unit test for getWordsBetweenDays in GetWordService.
+     * Unit test for getWordsBetweenDays method in GetWordService.
      * First verifies that the child belongs to the authenticated parent.
      * Then verifies that words achieved between the given dates are retrieved and converted to DTOs.
      */
@@ -190,7 +190,7 @@ class GetWordServiceTest {
     }
 
     /**
-     * Unit test for getWordsBetweenDays in GetWordService when star date is null.
+     * Unit test for getWordsBetweenDays method in GetWordService when start date is null.
      * First verifies that the child belongs to the authenticated parent.
      * Then verifies that a DateValidationException is thrown and the appropriate error message is returned.
      */
@@ -209,7 +209,7 @@ class GetWordServiceTest {
     }
 
     /**
-     * Unit test for getWordsBetweenDays in GetWordService when end date is null.
+     * Unit test for getWordsBetweenDays method in GetWordService when end date is null.
      * First verifies that the child belongs to the authenticated parent.
      * Then verifies that a DateValidationException is thrown and the appropriate error message is returned.
      */
@@ -228,7 +228,7 @@ class GetWordServiceTest {
     }
 
     /**
-     * Unit test for getWordsBetweenDays in GetWordService when start date is after end date.
+     * Unit test for getWordsBetweenDays method in GetWordService when start date is after end date.
      * First verifies that the child belongs to the authenticated parent.
      * Then verifies that a InvalidDateOrderException is thrown and the appropriate error message is returned.
      */

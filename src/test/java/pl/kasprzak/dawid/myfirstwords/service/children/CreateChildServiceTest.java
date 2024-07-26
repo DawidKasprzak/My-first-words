@@ -60,7 +60,8 @@ class CreateChildServiceTest {
 
     /**
      * Unit test for addChild method in CreateChildService.
-     * Verifies that a child is successfully added to the parent's account.
+     * Verifies that the parent is authenticated and authorized to add a child.
+     * Then verifies that a child is successfully added to the parent's account.
      */
     @Test
     void when_addChild_then_childShouldBeSavedToParentAccount() {
@@ -80,7 +81,9 @@ class CreateChildServiceTest {
 
     /**
      * Unit test for addChild method in CreateChildService.
-     * Verifies that a ParentNotFoundException is thrown when the parent is not found.
+     * Verifies that the parent is authenticated and checked for existence.
+     * Then verifies that a ParentNotFoundException is thrown and the appropriate error message is returned,
+     * when the parent is not found.
      */
     @Test
     void when_parentNotFound_then_throwParentNotFoundException() {
