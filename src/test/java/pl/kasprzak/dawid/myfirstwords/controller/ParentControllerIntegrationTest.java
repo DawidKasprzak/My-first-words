@@ -45,7 +45,6 @@ class ParentControllerIntegrationTest {
     @Autowired
     private ParentsRepository parentsRepository;
     private CreateParentRequest createParentRequest;
-    private CreateParentResponse createParentResponse;
     private ParentInfoResponse parentInfoResponse1, parentInfoResponse2;
 
 
@@ -57,11 +56,6 @@ class ParentControllerIntegrationTest {
                 .username("testUser")
                 .password("testPassword")
                 .mail("test@mail.com")
-                .build();
-
-        createParentResponse = CreateParentResponse.builder()
-                .username(createParentRequest.getUsername())
-                .mail(createParentRequest.getMail())
                 .build();
 
         ParentEntity parent1 = new ParentEntity();
