@@ -62,7 +62,8 @@ class DeleteWordServiceTest {
     /**
      * Unit test for deleteWord method in DeleteWordService.
      * First verifies that the child belongs to the authenticated parent.
-     * Then verifies that a WordNotFoundException is thrown when the word is not found.
+     * Then verifies that a WordNotFoundException is thrown and the appropriate error message is returned
+     * when the word is not found.
      */
     @Test
     void when_deleteWordAndWordNotFound_then_throwWordNotFoundException() {

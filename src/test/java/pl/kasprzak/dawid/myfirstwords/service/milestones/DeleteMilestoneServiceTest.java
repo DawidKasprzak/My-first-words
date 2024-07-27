@@ -62,7 +62,8 @@ class DeleteMilestoneServiceTest {
     /**
      * Unit test for deleteMilestone method in DeleteMilestoneService.
      * First verifies that the child belongs to the authenticated parent.
-     * Then verifies that a MilestoneNotFoundException is thrown when the milestone is not found.
+     * Then verifies that a MilestoneNotFoundException is thrown and the appropriate error message is returned
+     * when the milestone is not found.
      */
     @Test
     void when_deleteMilestoneAndMilestoneNotFound_then_throwMilestoneNotFoundException() {

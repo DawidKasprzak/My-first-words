@@ -62,6 +62,12 @@ class UpdateMilestoneServiceTest {
 
     }
 
+    /**
+     * Unit test for updateMilestone method in UpdateMilestoneService.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that the existing milestone is updated with the new details provided in the request
+     * and that the updated milestone is saved to the repository.
+     */
     @Test
     void when_updateMilestone_then_milestoneShouldBeUpdated() {
 
@@ -80,8 +86,14 @@ class UpdateMilestoneServiceTest {
         verify(milestonesRepository, times(1)).save(any(MilestoneEntity.class));
     }
 
+    /**
+     * Unit test for updateMilestone method in UpdateMilestoneService.
+     * First verifies that the child belongs to the authenticated parent.
+     * Then verifies that a MilestoneNotFoundException is thrown and the appropriate error message is returned
+     * when the milestone with the given ID is not found for the specified child.
+     */
     @Test
-    void when_updateMilestone_andMilestoneNotFound_then_throwMilestoneNotFoundException(){
+    void when_updateMilestone_andMilestoneNotFound_then_throwMilestoneNotFoundException() {
 
         when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
         when(milestonesRepository.findByChildIdAndId(childEntity.getId(), existingMilestone.getId())).thenReturn(Optional.empty());
