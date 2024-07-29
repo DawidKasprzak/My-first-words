@@ -85,6 +85,14 @@ class ParentControllerIntegrationTest {
 
     }
 
+    /**
+     * Integration test for registering a new Parent.
+     * This test verifies that a new parent is correctly persisted in the database when a valid
+     * registration request is made. It checks the HTTP response status, response content, and verifies that
+     * the parent data is correctly saved in the database.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @Transactional
     void when_registerParent_then_parentShouldBePersistedInDatabase() throws Exception {
@@ -101,6 +109,13 @@ class ParentControllerIntegrationTest {
         assertEquals("test@mail.com", parentEntity.getMail());
     }
 
+    /**
+     * Integration test for registering a new parent with an existing username.
+     * This test verifies that if a registration request is made with a username that already exist,
+     * the service returns an HTTP 409 Conflict status and the appropriate error message.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @Transactional
     void when_usernameAlreadyExists_then_throwUsernameAlreadyExistsException() throws Exception {
@@ -113,6 +128,13 @@ class ParentControllerIntegrationTest {
                 .andExpect(content().string("Username already exists: parent1"));
     }
 
+    /**
+     * Integration test for registering a new parent with an existing email.
+     * This test verifies that if a registration request is made with an email that is already associated
+     * with another account, the service returns an HTTP 409 Conflict status and the appropriate error message.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @Transactional
     void when_emailAlreadyExists_then_throwEmailAlreadyExistsException() throws Exception {
@@ -126,6 +148,14 @@ class ParentControllerIntegrationTest {
                 .andExpect(content().string("Email already exists: parent1@mail.com"));
     }
 
+    /**
+     * Integration test for retrieving all registered parents.
+     * This test verifies that the service returns a list of all parents when the request is made.
+     * Note: Currently, this endpoint is accessible by regular users, but it is planned to restrict
+     * this functionality to administrators only. This will be updated in future implementation.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getAllRegisterParents_then_allParentsShouldBeReturned() throws Exception {
@@ -140,7 +170,15 @@ class ParentControllerIntegrationTest {
                 .andExpect(content().json(objectMapper.writeValueAsString(expectResponse)));
     }
 
-
+    /**
+     * Integration test for retrieving a parent by their ID.
+     * This test verifies that the service returns the correct parent details when a valid parent ID
+     * is provided in the request. It checks the HTTP response status and content.
+     * Note: Currently, this endpoint is accessible by regular users, but it is planned to restrict
+     * this functionality to administrators only. This will be updated in future implementation.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getParentsById_then_parentShouldBeReturned() throws Exception {
@@ -152,6 +190,15 @@ class ParentControllerIntegrationTest {
                 .andExpect(content().json(objectMapper.writeValueAsString(parentInfoResponse1)));
     }
 
+    /**
+     * Integration test for the scenario where a parent is not found by ID.
+     * This test verifies that the service returns a 404 Not Found status when a request is made
+     * for a parent ID that does not exist.
+     * Note: Currently, this endpoint is accessible by regular users, but it is planned to restrict
+     * this functionality to administrators only. This will be updated in future implementation.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getParentsById_then_throwParentNotFoundException() throws Exception {
@@ -163,6 +210,13 @@ class ParentControllerIntegrationTest {
                 .andExpect(content().string("Parent not found with id: 999"));
     }
 
+    /**
+     * Integration test for deleting a parent account.
+     * This test verifies that a parent account is removed from the database when a valid delete request is made.
+     * It checks the response status and ensures the parent record is deleted.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @Transactional
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
@@ -175,6 +229,13 @@ class ParentControllerIntegrationTest {
         assertFalse(parentsRepository.findById(parentId).isPresent());
     }
 
+    /**
+     * Integration test for attempting to delete a nonexistent parent account.
+     * This test verifies that the service returns a 404 Not Found status when attempting to delete a parent
+     * with an ID that does not exist.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @Transactional
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
@@ -186,6 +247,13 @@ class ParentControllerIntegrationTest {
 
     }
 
+    /**
+     * Integration test for changing a parent's password.
+     * This test verifies that a parent's password is updated in the database when a valid password change request is made.
+     * It checks the response status and validates that the new password is correctly hashed and stored.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @Transactional
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
@@ -205,6 +273,13 @@ class ParentControllerIntegrationTest {
         assertTrue(passwordEncoder.matches(newPassword, updateParent.getPassword()));
     }
 
+    /**
+     * Integration test for changing the password of a nonexistent parent account.
+     * This test verifies that the service returns a 404 Not Found status when attempting to change the password
+     * for a parent with an ID that does not exist.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @Transactional
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")

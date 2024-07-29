@@ -1,6 +1,7 @@
 package pl.kasprzak.dawid.myfirstwords.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Lombok;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -106,6 +107,13 @@ class ChildControllerIntegrationTest {
 
     }
 
+    /**
+     * Integration test for adding a child to a parent's account.
+     * This test verifies that a child is successfully added to the parent's account and that the child
+     * details are correctly stored in the database.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @Transactional
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
@@ -124,6 +132,13 @@ class ChildControllerIntegrationTest {
         assertEquals("user", savedChild.getParent().getUsername());
     }
 
+    /**
+     * Integration test for adding a child when the parent is not found.
+     * This test verifies that if a child is being added and the parent does not exist,
+     * the service returns n HTTP 404 Not Found status with the appropriate error message.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @Transactional
     @WithMockUser(username = "nonExistentUser", roles = "USER")
@@ -135,7 +150,13 @@ class ChildControllerIntegrationTest {
                 .andExpect(content().string("Parent not found"));
     }
 
-
+    /**
+     * Integration test for deleting a child from a parent's account.
+     * This test verifies that a child is successfully deleted from the parent's account
+     * and that the child no longer exist in the database.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @Transactional
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
@@ -149,6 +170,13 @@ class ChildControllerIntegrationTest {
         assertFalse(childrenRepository.findById(childId).isPresent());
     }
 
+    /**
+     * Integration test for retrieving all children of a parent.
+     * This test verifies that all child associated with the authenticated parent are returned
+     * and the response content matches the expected data.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getAllChildrenOfParent_then_allChildrenShouldBeReturned() throws Exception {
@@ -163,7 +191,14 @@ class ChildControllerIntegrationTest {
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
     }
 
-
+    /**
+     * Integration test for retrieving all children when the parent is not found.
+     * This test verifies that the service returns an HTTP 404 Not Found status with the appropriate error
+     * message when an authenticated parent attempts to retrieve children, but the parent does not exists
+     * in the system.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @WithMockUser(username = "nonExistentUser", roles = "USER")
     void when_getAllChildrenOfParentAndParentNotFound_then_throwParentNotFoundException() throws Exception {
@@ -173,7 +208,13 @@ class ChildControllerIntegrationTest {
                 .andExpect(content().string("Parent not found"));
     }
 
-
+    /**
+     * Integration test for retrieving a child by their ID.
+     * This test verifies that the service returns the correct child details for a given child ID.
+     * It checks that the response status is HTTP 200 OK and that the returned JSON matches the expected data.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getChildById_then_childWithSpecificIdShouldBeReturned() throws Exception {
@@ -184,5 +225,23 @@ class ChildControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(getChildResponse)));
 
+    }
+
+    /**
+     * Integration test for retrieving a child by their ID when the child is not found.
+     * This test verifies that the service returns an HTTP 404 Not Found status with the appropriate error
+     * message when a child with the given ID does not exist.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
+    @Test
+    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    void when_getChildByIdAndChildNotFound_then_throwChildNotFoundException() throws Exception {
+        Long nonExistentChildId = 999L;
+
+        mockMvc.perform(get("/api/children/{childId}", nonExistentChildId)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Child not found"));
     }
 }
