@@ -128,7 +128,14 @@ class WordsControllerIntegrationTest {
                 .collect(Collectors.toList());
     }
 
-
+    /**
+     * Integration test for adding a word to a specific child's account.
+     * This test verifies that a new word is successfully added to the specified child's vocabulary.
+     * It checks that the response status is HTTP 201 Created, the response content matches the expected data,
+     * and that the word is correctly stored in the database.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @Transactional
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
@@ -157,6 +164,13 @@ class WordsControllerIntegrationTest {
         assertEquals(childEntity.getId(), wordEntity.getChild().getId());
     }
 
+    /**
+     * Integration test for deleting a word from a child's account.
+     * This test verifies that a specific word is successfully deleted from the child's vocabulary.
+     * It checks that the response status is HTTP 204 No Content and that the word is no longer present in the database.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @Transactional
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
@@ -168,6 +182,13 @@ class WordsControllerIntegrationTest {
         assertFalse(wordsRepository.findByChildIdAndId(childEntity.getId(), wordEntity1.getId()).isPresent());
     }
 
+    /**
+     * Integration test for attempting to delete a word that does not exist.
+     * This test verifies that the service returns an HTTP 404 Not Found status with the appropriate error message
+     * when trying to delete a non-existent word from the child's vocabulary.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @Transactional
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
@@ -180,6 +201,13 @@ class WordsControllerIntegrationTest {
                 .andExpect(content().string("Word not found"));
     }
 
+    /**
+     * Integration test for retrieving words learned before a given date.
+     * This test verifies that the service returns a list of words that were added before the specified date.
+     * It checks that the response status is HTTP 200 OK and that the returned JSON matches the expected data.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getByDateAchieveBefore_then_wordsShouldBeReturnedBeforeTheGivenDate() throws Exception {
@@ -196,6 +224,13 @@ class WordsControllerIntegrationTest {
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
     }
 
+    /**
+     * Integration test for retrieving words learned after a given date.
+     * This test verifies that the service returns a list of words that were added after the specified date.
+     * It checks that the response status is HTTP 200 OK and that the returned JSON matches the expected data.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getByDateAchieveAfter_then_wordsShouldBeReturnedAfterTheGivenDate() throws Exception {
@@ -213,6 +248,14 @@ class WordsControllerIntegrationTest {
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
     }
 
+    /**
+     * Integration test for retrieving words learned between two dates.
+     * This test verifies that the service returns a list of words that were added between the specified
+     * start and end dates.
+     * It checks that the response status is HTTP 200 OK and that the returned JSON matches the expected data.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getWordsBetweenDays_then_wordsShouldBeReturnedBetweenTheGivenDates() throws Exception {
@@ -233,6 +276,13 @@ class WordsControllerIntegrationTest {
     }
 
     //sprawdzić komunikat
+    /**
+     * Integration test for retrieving words with a null start date.
+     * This test verifies that the service returns an HTTP 400 Bad Request status
+     * when the start date is null, as the date range is invalid.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getWordsBetweenDays__and_startDateIsNull_then_throwDateValidationException() throws Exception {
@@ -246,6 +296,13 @@ class WordsControllerIntegrationTest {
     }
 
     //sprawdzić komunikat
+    /**
+     * Integration test for retrieving words with a null end date.
+     * This test verifies that the service returns an HTTP 400 Bad Request status
+     * when the end date is null, as the date range is invalid.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getWordsBetweenDays_and_endDateIsNull_then_throwDateValidationException() throws Exception {
@@ -257,6 +314,13 @@ class WordsControllerIntegrationTest {
                 .andExpect(status().isBadRequest());
     }
 
+    /**
+     * Integration test for retrieving words when the start date is after the end date.
+     * This test verifies that the service returns an HTTP 400 Bad Request status with the appropriate error message
+     * when the start date is after the end date.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getWordsBetweenDays_and_startDateIsAfterEndDate_then_throwInvalidDateOrderException() throws Exception {
@@ -271,6 +335,13 @@ class WordsControllerIntegrationTest {
                 .andExpect(content().string("Start date must be before or equal to end date"));
     }
 
+    /**
+     * Integration test for retrieving all words for a specific child.
+     * This test verifies that the service returns a complete list of all words associated with the child.
+     * It checks that the response status is HTTP 200 OK and that the returned JSON matches the expected data.
+     *
+     * @throws Exception if an error occurs during the request or response processing.
+     */
     @Test
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getAllWords_then_allWordsTheChildShouldBeReturned() throws Exception {
@@ -286,18 +357,17 @@ class WordsControllerIntegrationTest {
     }
 
     /**
-     * Integration test for retrieving a word by word and child ID.
-     * Verifies that the correct word is returned for a given child ID and word.
+     * Integration test for retrieving a specific word for a child by the word content.
+     * This test verifies that the service correctly retrieves a word associated with the given child ID and word.
+     * It checks that the response status is HTTP 200 OK and that the returned JSON contains the expected word details.
      *
-     * @throws Exception if any error occurs during the HTTP request/response handling.
+     * @throws Exception if an error occurs during the request or response processing.
      */
     @Test
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getWordByChildIdAndWord_then_wordShouldBeReturn() throws Exception {
-        // Define the word to search for
         String word = "word1";
 
-        // Perform the HTTP GET request and verify the response fot the given word
         mockMvc.perform(get("/api/words/{childId}/word", childEntity.getId())
                         .param("word", word.toLowerCase())
                         .accept(MediaType.APPLICATION_JSON))
@@ -307,18 +377,17 @@ class WordsControllerIntegrationTest {
     }
 
     /**
-     * Integration test for retrieving word by non-existent word and child ID.
-     * Verifies that WordNotFoundException is thrown and the appropriate error message is returned when no word is found.
+     * Integration test for retrieving a word for a child when the word does not exist.
+     * This test verifies that the service returns an HTTP 404 Not Found status with the appropriate error message
+     * when the specified word is not found for the given child ID.
      *
-     * @throws Exception if any error occurs during the HTTP request/response handling.
+     * @throws Exception if an error occurs during the request or response processing.
      */
     @Test
     @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getWordByChildIdAndWord_then_throwWordNotFoundException() throws Exception {
-        // Define a non-existent word to search for
         String word = "nonexistentWord";
 
-        // Perform the HTTP GET request and verify the response for the non-existent word
         mockMvc.perform(get("/api/words/{childId}/word", childEntity.getId())
                         .param("word", word.toLowerCase())
                         .accept(MediaType.APPLICATION_JSON))
