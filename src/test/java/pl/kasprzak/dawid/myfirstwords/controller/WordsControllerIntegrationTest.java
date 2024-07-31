@@ -276,6 +276,7 @@ class WordsControllerIntegrationTest {
     }
 
     //sprawdzić komunikat
+
     /**
      * Integration test for retrieving words with a null start date.
      * This test verifies that the service returns an HTTP 400 Bad Request status
@@ -296,6 +297,7 @@ class WordsControllerIntegrationTest {
     }
 
     //sprawdzić komunikat
+
     /**
      * Integration test for retrieving words with a null end date.
      * This test verifies that the service returns an HTTP 400 Bad Request status
