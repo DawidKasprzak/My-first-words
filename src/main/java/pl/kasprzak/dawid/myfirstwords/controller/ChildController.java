@@ -1,13 +1,14 @@
 package pl.kasprzak.dawid.myfirstwords.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
-import pl.kasprzak.dawid.myfirstwords.exception.ParentNotFoundException;
-import pl.kasprzak.dawid.myfirstwords.exception.ChildNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.model.children.CreateChildRequest;
 import pl.kasprzak.dawid.myfirstwords.model.children.CreateChildResponse;
 import pl.kasprzak.dawid.myfirstwords.model.children.GetAllChildResponse;
@@ -25,65 +26,55 @@ public class ChildController {
     private final DeleteChildService deleteChildService;
     private final GetChildService getChildService;
 
-    /**
-     * Creates a new child for the authenticated parent.
-     * This endpoint allows an authenticated parent to add a new child to their account.
-     *
-     * @param request        the CreateChildRequest object containing the child's details.
-     * @param authentication the authentication object containing the parent's credentials.
-     * @return a CreateChildResponse containing the details of the newly created child.
-     * @throws ParentNotFoundException if the authenticated parent is not found (HTTP 404).
-     */
+    @Operation(summary = "Add a new child", description = "Creates a new child for the authenticated parent.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Child successfully created"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Access denied"),
+            @ApiResponse(responseCode = "404", description = "Parent not found")
+    })
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public CreateChildResponse addChild(@Valid @RequestBody CreateChildRequest request, Authentication authentication) {
+    public CreateChildResponse addChild(@Valid @RequestBody CreateChildRequest request,
+                                        @Parameter(hidden = true) Authentication authentication) {
         return createChildService.addChild(request, authentication);
     }
 
-    /**
-     * Deletes a child by the given ID.
-     * This endpoint allows an authenticated parent to delete a child from their account.
-     *
-     * @param childId        the ID of the child to be deleted.
-     * @param authentication the authentication object containing the parent's credentials.
-     * @throws ParentNotFoundException if the authenticated parent is not found (HTTP 404).
-     * @throws ChildNotFoundException  if the child with the given ID is not found (HTTP 404).
-     * @throws AccessDeniedException   if the parent is not authorized to delete the child (HTTP 403).
-     */
+    @Operation(summary = "Delete a child by ID", description = "Deletes a child by their ID for the authenticated parent.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Child deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "Access denied"),
+            @ApiResponse(responseCode = "404", description = "Parent or child not found")
+    })
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping(path = "/{childId}")
-    public void deleteChild(@PathVariable Long childId, Authentication authentication) {
+    public void deleteChild(@PathVariable Long childId,
+                            @Parameter(hidden = true) Authentication authentication) {
         deleteChildService.deleteChild(childId, authentication);
     }
 
-    /**
-     * Retrieves all children associated with the authenticated parent.
-     * This endpoint allows an authenticated parent to fetch all child records linked to their account.
-     *
-     * @param authentication the authentication object containing the parent's credentials.
-     * @return a GetAllChildResponse containing a list of child details.
-     * @throws ParentNotFoundException if the authenticated parent is not found (HTTP 404).
-     */
+    @Operation(summary = "Retrieve all children", description = "Fetches all children associated with the authenticated parent.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Children details retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "Access denied"),
+            @ApiResponse(responseCode = "404", description = "Parent not found")
+    })
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
-    public GetAllChildResponse getAllChildren(Authentication authentication) {
+    public GetAllChildResponse getAllChildren(@Parameter(hidden = true) Authentication authentication) {
         return getChildService.getAllChildrenOfParent(authentication);
     }
 
-    /**
-     * Retrieves a child by the given ID.
-     * This endpoint allows an authenticated parent to fetch the details of a specific child linked to their account.
-     *
-     * @param childId        the ID of the child to be retrieved.
-     * @param authentication the authentication object containing the parent's credentials.
-     * @return a GetChildResponse containing the child's details.
-     * @throws ParentNotFoundException if the authenticated parent is not found (HTTP 404).
-     * @throws ChildNotFoundException  if the child with the given ID is not found (HTTP 404).
-     * @throws AccessDeniedException   if the parent is not authorized to view the child (HTTP 403).
-     */
+    @Operation(summary = "Retrieve a child by their ID", description = "Fetches details of a specific child by their ID for the authenticated parent.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Child details retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "Access denied"),
+            @ApiResponse(responseCode = "404", description = "Parent or child not found")
+    })
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}")
-    public GetChildResponse getChildById(@PathVariable Long childId, Authentication authentication) {
+    public GetChildResponse getChildById(@PathVariable Long childId,
+                                         @Parameter(hidden = true) Authentication authentication) {
         return getChildService.getChildById(childId, authentication);
     }
 }

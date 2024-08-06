@@ -1,12 +1,14 @@
 package pl.kasprzak.dawid.myfirstwords.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import pl.kasprzak.dawid.myfirstwords.exception.*;
 import pl.kasprzak.dawid.myfirstwords.model.words.CreateWordRequest;
 import pl.kasprzak.dawid.myfirstwords.model.words.CreateWordResponse;
 import pl.kasprzak.dawid.myfirstwords.model.words.GetAllWordsResponse;
@@ -27,137 +29,97 @@ public class WordsController {
     private final DeleteWordService deleteWordService;
     private final GetWordService getWordService;
 
-    /**
-     * Adds a new word for a specific child.
-     * This endpoint allows an authenticated parent to add a new word to their child's vocabulary.
-     *
-     * @param childId        the ID of the child to whom the word belongs.
-     * @param request        the CreateWordRequest object containing the details of the word.
-     * @param authentication the authentication object containing the parent's credentials.
-     * @return a CreateWordResponse containing the details of the newly added word.
-     * @throws ParentNotFoundException if the authenticated parent is not found (HTTP 404).
-     * @throws ChildNotFoundException  if the child with the given ID is not found (HTTP 404).
-     * @throws AccessDeniedException   if the parent is not authorized to view the child (HTTP 403).
-     */
+    @Operation(summary = "Add a new word", description = "Creates a new word for the specified child. This endpoint is accessible to authenticated parents and verifies the parent-child relationship.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Word successfully created"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Access denied"),
+            @ApiResponse(responseCode = "404", description = "Parent or child not found")
+    })
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(path = "/{childId}")
     public CreateWordResponse addWord(@PathVariable Long childId, @Valid @RequestBody CreateWordRequest request,
-                                      Authentication authentication) {
+                                      @Parameter(hidden = true) Authentication authentication) {
         return createWordService.addWord(childId, request, authentication);
     }
 
-    /**
-     * Deletes a word by the given ID for a specific child.
-     * This endpoint allows an authenticated parent to delete a word from their child's vocabulary.
-     *
-     * @param childId        the ID of the child whose word is to be deleted.
-     * @param wordId         the ID of the word to be deleted.
-     * @param authentication the authentication object containing the parent's credentials.
-     * @throws ParentNotFoundException if the authenticated parent is not found (HTTP 404).
-     * @throws ChildNotFoundException  if the child with the given ID is not found (HTTP 404).
-     * @throws AccessDeniedException   if the parent is not authorized to view the child (HTTP 403).
-     * @throws WordNotFoundException   if the word with the given ID is not found (HTTP 404).
-     */
+    @Operation(summary = "Delete a word", description = "Deletes a word by its ID for the specified child. This endpoint is accessible to authenticated parents and verifies the parent-child relationship.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Word successfully deleted"),
+            @ApiResponse(responseCode = "403", description = "Access denied"),
+            @ApiResponse(responseCode = "404", description = "Parent, child or word not found")
+    })
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping(path = "/{childId}/{wordId}")
     public void deleteWord(@PathVariable Long childId, @PathVariable Long wordId,
-                           Authentication authentication) {
+                           @Parameter(hidden = true) Authentication authentication) {
         deleteWordService.deleteWord(childId, wordId, authentication);
     }
 
-    /**
-     * Retrieves all words added before the specified date for a specific child.
-     * This endpoint allows an authenticated parent to fetch words learned before a certain date.
-     *
-     * @param childId        the ID of the child whose words are to be retrieved.
-     * @param date           the date before which the words were added.
-     * @param authentication the authentication object containing the parent's credentials.
-     * @return a list of GetWordResponse containing the details of the words.
-     * @throws ParentNotFoundException if the authenticated parent is not found (HTTP 404).
-     * @throws ChildNotFoundException  if the child with the given ID is not found (HTTP 404).
-     * @throws AccessDeniedException   if the parent is not authorized to view the child (HTTP 403).
-     */
+    @Operation(summary = "Get words before a date", description = "Fetches all words added before the specified date for a specific child. This endpoint is accessible to authenticated parents and verifies the parent-child relationship.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Words successfully retrieved"),
+            @ApiResponse(responseCode = "403", description = "Access denied"),
+            @ApiResponse(responseCode = "404", description = "Parent or child not found")
+    })
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}/before/{date}")
     public List<GetWordResponse> getByDateAchieveBefore(@PathVariable Long childId, @PathVariable LocalDate date,
-                                                        Authentication authentication) {
+                                                        @Parameter(hidden = true) Authentication authentication) {
         return getWordService.getByDateAchieveBefore(childId, date, authentication);
     }
 
-    /**
-     * Retrieves all words added after the specified date for a specific child.
-     * This endpoint allows an authenticated parent to fetch words learned after a certain date.
-     *
-     * @param childId        the ID of the child whose words are to be retrieved.
-     * @param date           the date after which the words were added.
-     * @param authentication the authentication object containing the parent's credentials.
-     * @return a list of GetWordResponse containing the details of the words.
-     * @throws ParentNotFoundException if the authenticated parent is not found (HTTP 404).
-     * @throws ChildNotFoundException  if the child with the given ID is not found (HTTP 404).
-     * @throws AccessDeniedException   if the parent is not authorized to view the child (HTTP 403).
-     */
+    @Operation(summary = "Get words after a date", description = "Fetches all words added after the specified date for a specific child. This endpoint is accessible to authenticated parents and verifies the parent-child relationship.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Words successfully retrieved"),
+            @ApiResponse(responseCode = "403", description = "Access denied"),
+            @ApiResponse(responseCode = "404", description = "Parent or child not found")
+    })
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}/after/{date}")
     public List<GetWordResponse> getByDateAchieveAfter(@PathVariable Long childId, @PathVariable LocalDate date,
-                                                       Authentication authentication) {
+                                                       @Parameter(hidden = true) Authentication authentication) {
         return getWordService.getByDateAchieveAfter(childId, date, authentication);
     }
 
-    /**
-     * Retrieves all words added between the specified start and end dates for a specific child.
-     * This endpoint allows an authenticated parent to fetch words learned within a specific date range.
-     *
-     * @param childId        the ID of the child whose words are to be retrieved.
-     * @param startDate      the start date of the range.
-     * @param endDate        the end date of the range.
-     * @param authentication the authentication object containing the parent's credentials.
-     * @return a list of GetWordResponse containing the details of the words.
-     * @throws ParentNotFoundException   if the authenticated parent is not found (HTTP 404).
-     * @throws ChildNotFoundException    if the child with the given ID is not found (HTTP 404).
-     * @throws AccessDeniedException     if the parent is not authorized to view the child (HTTP 403).
-     * @throws DateValidationException   if the start date or end date is invalid (HTTP 400).
-     * @throws InvalidDateOrderException if the start date is after the end date (HTTP 400).
-     */
+    @Operation(summary = "Get words between dates", description = "Fetches all words added between the specified start and end dates for a specific child. This endpoint is accessible to authenticated parents and verifies the parent-child relationship.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Words successfully retrieved"),
+            @ApiResponse(responseCode = "400", description = "Invalid date range"),
+            @ApiResponse(responseCode = "403", description = "Access denied"),
+            @ApiResponse(responseCode = "404", description = "Parent or child not found")
+    })
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}/between")
     public List<GetWordResponse> getWordsBetweenDays(@PathVariable Long childId, @RequestParam LocalDate startDate,
-                                                     @RequestParam LocalDate endDate, Authentication authentication) {
+                                                     @RequestParam LocalDate endDate,
+                                                     @Parameter(hidden = true) Authentication authentication) {
         return getWordService.getWordsBetweenDays(childId, startDate, endDate, authentication);
     }
 
-    /**
-     * Retrieves all words for a specific child.
-     * This endpoint allows an authenticated parent to fetch all words associated with their child.
-     *
-     * @param childId        the ID of the child whose words are to be retrieved.
-     * @param authentication the authentication object containing the parent's credentials.
-     * @return a GetAllWordsResponse containing the details of all words.
-     * @throws ParentNotFoundException if the authenticated parent is not found (HTTP 404).
-     * @throws ChildNotFoundException  if the child with the given ID is not found (HTTP 404).
-     * @throws AccessDeniedException   if the parent is not authorized to view the child (HTTP 403).
-     */
+    @Operation(summary = "Get all words", description = "Fetches all words for a specific child. This endpoint is accessible to authenticated parents and verifies the parent-child relationship.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Words successfully retrieved"),
+            @ApiResponse(responseCode = "403", description = "Access denied"),
+            @ApiResponse(responseCode = "404", description = "Parent or child not found")
+    })
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}")
-    public GetAllWordsResponse getAllWords(@PathVariable Long childId, Authentication authentication) {
+    public GetAllWordsResponse getAllWords(@PathVariable Long childId,
+                                           @Parameter(hidden = true) Authentication authentication) {
         return getWordService.getAllWords(childId, authentication);
     }
 
-    /**
-     * Retrieves a specific word for a child based on the word content.
-     * This endpoint allows an authenticated parent to fetch a specific word learned by their child.
-     *
-     * @param childId        the ID of the child whose word is to be retrieved.
-     * @param word           the word to be retrieved.
-     * @param authentication the authentication object containing the parent's credentials.
-     * @return a GetWordResponse containing the details of the word.
-     * @throws ParentNotFoundException if the authenticated parent is not found (HTTP 404).
-     * @throws ChildNotFoundException  if the child with the given ID is not found (HTTP 404).
-     * @throws AccessDeniedException   if the parent is not authorized to view the child (HTTP 403).
-     * @throws WordNotFoundException   if the word is not found (HTTP 404).
-     */
+    @Operation(summary = "Get word by title", description = "Fetches a word for a specific child based on the given word title. This endpoint is accessible to authenticated parents and verifies the parent-child relationship.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Word successfully retrieved"),
+            @ApiResponse(responseCode = "403", description = "Access denied"),
+            @ApiResponse(responseCode = "404", description = "Parent, child or word not found")
+    })
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "{childId}/word")
-    public GetWordResponse getWordByChildIdAndWord(@PathVariable Long childId, @RequestParam String word, Authentication authentication) {
+    public GetWordResponse getWordByChildIdAndWord(@PathVariable Long childId, @RequestParam String word,
+                                                   @Parameter(hidden = true) Authentication authentication) {
         return getWordService.getByWord(childId, word, authentication);
     }
 }
