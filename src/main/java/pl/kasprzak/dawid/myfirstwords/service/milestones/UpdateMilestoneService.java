@@ -2,7 +2,6 @@ package pl.kasprzak.dawid.myfirstwords.service.milestones;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import pl.kasprzak.dawid.myfirstwords.exception.ChildNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.exception.MilestoneNotFoundException;
@@ -25,19 +24,17 @@ public class UpdateMilestoneService {
      * retrieves the milestone by its ID and child's ID, updates the milestone details
      * with the provided request data, and saves the updated milestone back to the repository.
      *
-     * @param childId        the ID of the child whose milestone is to be updated.
-     * @param milestoneId    the ID of the milestone to be updated.
-     * @param request        the UpdateMilestoneRequest object containing the new milestone data.
-     * @param authentication the Authentication object containing the parent's credentials.
+     * @param childId     the ID of the child whose milestone is to be updated.
+     * @param milestoneId the ID of the milestone to be updated.
+     * @param request     the UpdateMilestoneRequest object containing the new milestone data.
      * @return the update MilestoneEntity.
      * @throws ParentNotFoundException    if the authenticated parent is not found.
      * @throws ChildNotFoundException     if the child with the given ID is not found.
      * @throws AccessDeniedException      if the authenticated parent does not have access to the child.
      * @throws MilestoneNotFoundException if the milestone with the given ID is not found fot the specified child.
      */
-    public MilestoneEntity updateMilestone(Long childId, Long milestoneId, UpdateMilestoneRequest request,
-                                           Authentication authentication) {
-        authorizationHelper.validateAndAuthorizeChild(childId, authentication);
+    public MilestoneEntity updateMilestone(Long childId, Long milestoneId, UpdateMilestoneRequest request) {
+        authorizationHelper.validateAndAuthorizeChild(childId);
         MilestoneEntity milestone = milestonesRepository.findByChildIdAndId(childId, milestoneId)
                 .orElseThrow(() -> new MilestoneNotFoundException("Milestone not found"));
 

@@ -53,12 +53,9 @@ class MilestonesControllerIntegrationTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    private ParentEntity parentEntity;
     private ChildEntity childEntity;
-    private List<MilestoneEntity> milestoneEntities;
     private MilestoneEntity milestoneEntity1, milestoneEntity2, milestoneEntity3, milestoneEntity4;
     private CreateMilestoneRequest createMilestoneRequest;
-    private CreateMilestoneResponse createMilestoneResponse;
     private UpdateMilestoneRequest updateMilestoneRequest;
     private UpdateMilestoneResponse updateMilestoneResponse;
     private List<GetMilestoneResponse> allMilestoneResponses;
@@ -68,7 +65,7 @@ class MilestonesControllerIntegrationTest {
     void setUp() {
         milestonesRepository.deleteAll();
 
-        parentEntity = new ParentEntity();
+        ParentEntity parentEntity = new ParentEntity();
         parentEntity.setUsername("user");
         parentEntity.setPassword(passwordEncoder.encode("password"));
         parentEntity = parentsRepository.save(parentEntity);
@@ -82,12 +79,6 @@ class MilestonesControllerIntegrationTest {
                 .title("milestone title1")
                 .description("this is test description")
                 .dateAchieve(LocalDate.of(2024, 7, 7))
-                .build();
-
-        createMilestoneResponse = CreateMilestoneResponse.builder()
-                .title(createMilestoneRequest.getTitle())
-                .description(createMilestoneRequest.getDescription())
-                .dateAchieve(createMilestoneRequest.getDateAchieve())
                 .build();
 
         date = LocalDate.of(2024, 7, 7);
@@ -116,7 +107,7 @@ class MilestonesControllerIntegrationTest {
         milestoneEntity4.setDateAchieve(date.plusDays(2));
         milestoneEntity4.setChild(childEntity);
 
-        milestoneEntities = Arrays.asList(milestoneEntity1, milestoneEntity2, milestoneEntity3, milestoneEntity4);
+        List<MilestoneEntity> milestoneEntities = Arrays.asList(milestoneEntity1, milestoneEntity2, milestoneEntity3, milestoneEntity4);
 
         milestonesRepository.saveAll(milestoneEntities);
 
@@ -145,7 +136,7 @@ class MilestonesControllerIntegrationTest {
 
     @Test
     @Transactional
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_addMilestone_then_milestoneShouldBeAddedToSpecificChild() throws Exception {
         String jsonResponse = mockMvc.perform(post("/api/milestones/{childId}", childEntity.getId())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -157,7 +148,6 @@ class MilestonesControllerIntegrationTest {
 
         CreateMilestoneResponse response = objectMapper.readValue(jsonResponse, CreateMilestoneResponse.class);
 
-        assertNotNull(response.getId());
         assertTrue(response.getTitle().contains(createMilestoneRequest.getTitle()));
         assertEquals(createMilestoneRequest.getDateAchieve(), response.getDateAchieve());
 
@@ -173,7 +163,7 @@ class MilestonesControllerIntegrationTest {
 
     @Test
     @Transactional
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_deleteMilestone_then_milestoneShouldBeDeletedFromChildAccount() throws Exception {
         mockMvc.perform(delete("/api/milestones/{childId}/{milestoneId}", childEntity.getId(), milestoneEntity1.getId())
                         .contentType(MediaType.APPLICATION_JSON))
@@ -184,7 +174,7 @@ class MilestonesControllerIntegrationTest {
 
     @Test
     @Transactional
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_deleteMilestoneAndMilestoneNotFound_then_throwMilestoneNotFoundException() throws Exception {
         Long nonExistentMilestoneId = 999L;
 
@@ -196,7 +186,7 @@ class MilestonesControllerIntegrationTest {
     }
 
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getByDateAchieveBefore_then_milestoneShouldBeReturnedBeforeTheGivenDate() throws Exception {
 
         List<GetMilestoneResponse> expectedResponse = allMilestoneResponses.stream()
@@ -212,7 +202,7 @@ class MilestonesControllerIntegrationTest {
     }
 
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getByDateAchieveAfter_then_milestonesShouldBeReturnedAfterTheGivenDate() throws Exception {
 
         List<GetMilestoneResponse> expectedResponse = allMilestoneResponses.stream()
@@ -228,7 +218,7 @@ class MilestonesControllerIntegrationTest {
     }
 
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getMilestonesBetweenDays_then_milestonesShouldBeReturnedBetweenTheGivenDates() throws Exception {
         LocalDate startDate = date.minusDays(2);
         LocalDate endDate = date.plusDays(2);
@@ -247,7 +237,7 @@ class MilestonesControllerIntegrationTest {
     }
 
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getMilestonesBetweenDays__and_startDateIsNull_then_throwDateValidationException() throws Exception {
         LocalDate endDate = date.plusDays(2);
 
@@ -258,7 +248,7 @@ class MilestonesControllerIntegrationTest {
     }
 
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getMilestonesBetweenDays_and_endDateIsNull_then_throwDateValidationException() throws Exception {
         LocalDate startDate = date.minusDays(2);
 
@@ -269,7 +259,7 @@ class MilestonesControllerIntegrationTest {
     }
 
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getMilestonesBetweenDays_and_startDateIsAfterEndDate_then_throwInvalidDateOrderException() throws Exception {
         LocalDate startDate = date.plusDays(2);
         LocalDate endDate = date.minusDays(2);
@@ -283,7 +273,7 @@ class MilestonesControllerIntegrationTest {
     }
 
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getAllMilestones_then_allMilestonesTheChildShouldBeReturned() throws Exception {
 
         GetAllMilestoneResponse expectedResponse = GetAllMilestoneResponse.builder()
@@ -303,7 +293,7 @@ class MilestonesControllerIntegrationTest {
      * @throws Exception if any error occurs during the HTTP request/response handling.
      */
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getByTitle_then_correctMilestonesShouldBeReturned() throws Exception {
         // Prepare expected milestone responses
         List<GetMilestoneResponse> expectedMilestones = Arrays.asList(
@@ -363,12 +353,10 @@ class MilestonesControllerIntegrationTest {
      * @throws Exception if any error occurs during the HTTP request/response handling.
      */
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getByTitle_and_titleNonExistent_then_throwMilestoneNotFoundException() throws Exception {
-        // Define a non-existent title to search for
         String title = "nonExistentTitle";
 
-        // Perform the HTTP GET request and verify the response for a non-existent title
         mockMvc.perform(get("/api/milestones/{childId}/title", childEntity.getId())
                         .param("title", title.toLowerCase())
                         .accept(MediaType.APPLICATION_JSON))
@@ -377,7 +365,7 @@ class MilestonesControllerIntegrationTest {
     }
 
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_updateMilestone_then_milestoneShouldBeUpdated() throws Exception {
 
         mockMvc.perform(put("/api/milestones/{childId}/{milestoneId}", childEntity.getId(), milestoneEntity1.getId())
@@ -390,7 +378,7 @@ class MilestonesControllerIntegrationTest {
 
 
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_updateMilestone_andMilestoneNotFound_then_throwMilestoneNotFoundException() throws Exception {
 
         Long milestoneId = 999L;

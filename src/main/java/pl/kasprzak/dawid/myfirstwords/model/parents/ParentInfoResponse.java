@@ -2,7 +2,6 @@ package pl.kasprzak.dawid.myfirstwords.model.parents;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 import pl.kasprzak.dawid.myfirstwords.model.children.GetChildResponse;
 
 import java.util.List;
@@ -15,5 +14,6 @@ public class ParentInfoResponse {
     private String username;
     private String mail;
     private List<GetChildResponse> children;
+    private List<String> roles;
 
 }

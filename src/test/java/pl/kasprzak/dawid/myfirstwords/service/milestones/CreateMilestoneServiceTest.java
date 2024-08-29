@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.Authentication;
 import pl.kasprzak.dawid.myfirstwords.model.milestones.CreateMilestoneRequest;
 import pl.kasprzak.dawid.myfirstwords.model.milestones.CreateMilestoneResponse;
 import pl.kasprzak.dawid.myfirstwords.repository.MilestonesRepository;
@@ -23,8 +22,6 @@ class CreateMilestoneServiceTest {
 
     @Mock
     private AuthorizationHelper authorizationHelper;
-    @Mock
-    private Authentication authentication;
     @Mock
     private MilestonesRepository milestonesRepository;
     @Mock
@@ -69,15 +66,16 @@ class CreateMilestoneServiceTest {
      */
     @Test
     void when_addMilestone_then_milestoneShouldBeAddedToTheChild() {
-        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
+
+        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId())).thenReturn(childEntity);
         when(createMilestoneConverter.fromDto(createMilestoneRequest)).thenReturn(milestoneEntity);
         when(milestonesRepository.save(milestoneEntity)).thenReturn(milestoneEntity);
         when(createMilestoneConverter.toDto(milestoneEntity)).thenReturn(createMilestoneResponse);
 
-        CreateMilestoneResponse response = createMilestoneService.addMilestone(childEntity.getId(), createMilestoneRequest, authentication);
+        CreateMilestoneResponse response = createMilestoneService.addMilestone(childEntity.getId(), createMilestoneRequest);
 
         assertEquals(createMilestoneResponse, response);
-        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId());
         verify(createMilestoneConverter, times(1)).fromDto(createMilestoneRequest);
         verify(milestonesRepository, times(1)).save(milestoneEntity);
         verify(createMilestoneConverter, times(1)).toDto(milestoneEntity);

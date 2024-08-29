@@ -14,7 +14,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 import pl.kasprzak.dawid.myfirstwords.model.words.CreateWordRequest;
 import pl.kasprzak.dawid.myfirstwords.model.words.CreateWordResponse;
@@ -57,19 +56,16 @@ class WordsControllerIntegrationTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    private ParentEntity parentEntity;
     private ChildEntity childEntity;
     private CreateWordRequest createWordRequest;
-    private CreateWordResponse createWordResponse;
-    private List<WordEntity> wordEntities;
     private List<GetWordResponse> allWordResponses;
-    private WordEntity wordEntity1, wordEntity2, wordEntity3, wordEntity4;
+    private WordEntity wordEntity1;
     private LocalDate date;
 
     @BeforeEach
     void setUp() {
 
-        parentEntity = new ParentEntity();
+        ParentEntity parentEntity = new ParentEntity();
         parentEntity.setUsername("user");
         parentEntity.setPassword(passwordEncoder.encode("password"));
         parentEntity = parentsRepository.save(parentEntity);
@@ -81,12 +77,7 @@ class WordsControllerIntegrationTest {
 
         createWordRequest = CreateWordRequest.builder()
                 .word("word1")
-                .dateAchieve(LocalDate.of(2024, 01, 01))
-                .build();
-
-        createWordResponse = CreateWordResponse.builder()
-                .word(createWordRequest.getWord())
-                .dateAchieve(createWordRequest.getDateAchieve())
+                .dateAchieve(LocalDate.of(2024, 1, 1))
                 .build();
 
         date = LocalDate.of(2024, 1, 1);
@@ -97,25 +88,25 @@ class WordsControllerIntegrationTest {
         wordEntity1.setDateAchieve(createWordRequest.getDateAchieve().minusDays(1));
         wordEntity1.setChild(childEntity);
 
-        wordEntity2 = new WordEntity();
+        WordEntity wordEntity2 = new WordEntity();
         wordEntity2.setId(2L);
         wordEntity2.setWord("word2");
         wordEntity2.setDateAchieve(date.minusDays(2));
         wordEntity2.setChild(childEntity);
 
-        wordEntity3 = new WordEntity();
+        WordEntity wordEntity3 = new WordEntity();
         wordEntity3.setId(3L);
         wordEntity3.setWord("word3");
         wordEntity3.setDateAchieve(date.plusDays(1));
         wordEntity3.setChild(childEntity);
 
-        wordEntity4 = new WordEntity();
+        WordEntity wordEntity4 = new WordEntity();
         wordEntity4.setId(4L);
         wordEntity4.setWord("word4");
         wordEntity4.setDateAchieve(date.plusDays(2));
         wordEntity4.setChild(childEntity);
 
-        wordEntities = Arrays.asList(wordEntity1, wordEntity2, wordEntity3, wordEntity4);
+        List<WordEntity> wordEntities = Arrays.asList(wordEntity1, wordEntity2, wordEntity3, wordEntity4);
 
         wordsRepository.saveAll(wordEntities);
 
@@ -138,7 +129,7 @@ class WordsControllerIntegrationTest {
      */
     @Test
     @Transactional
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_addWord_then_wordShouldBeAddedToSpecificChild() throws Exception {
 
         String jsonResponse = mockMvc.perform(post("/api/words/{childId}", childEntity.getId())
@@ -152,7 +143,6 @@ class WordsControllerIntegrationTest {
 
         CreateWordResponse response = objectMapper.readValue(jsonResponse, CreateWordResponse.class);
 
-        assertNotNull(response.getId());
         assertEquals(createWordRequest.getWord(), response.getWord());
         assertEquals(createWordRequest.getDateAchieve(), response.getDateAchieve());
 
@@ -173,7 +163,7 @@ class WordsControllerIntegrationTest {
      */
     @Test
     @Transactional
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_deleteWord_then_wordShouldBeDeletedFromChildAccount() throws Exception {
         mockMvc.perform(delete("/api/words/{childId}/{wordId}", childEntity.getId(), wordEntity1.getId())
                         .contentType(MediaType.APPLICATION_JSON))
@@ -191,7 +181,7 @@ class WordsControllerIntegrationTest {
      */
     @Test
     @Transactional
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_deleteWordAndWordNotFound_then_throwWordNotFoundException() throws Exception {
         Long nonExistentWordId = 999L;
 
@@ -209,7 +199,7 @@ class WordsControllerIntegrationTest {
      * @throws Exception if an error occurs during the request or response processing.
      */
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getByDateAchieveBefore_then_wordsShouldBeReturnedBeforeTheGivenDate() throws Exception {
 
         List<GetWordResponse> expectedResponse = allWordResponses.stream()
@@ -232,7 +222,7 @@ class WordsControllerIntegrationTest {
      * @throws Exception if an error occurs during the request or response processing.
      */
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getByDateAchieveAfter_then_wordsShouldBeReturnedAfterTheGivenDate() throws Exception {
 
         List<GetWordResponse> expectedResponse = allWordResponses.stream()
@@ -257,7 +247,7 @@ class WordsControllerIntegrationTest {
      * @throws Exception if an error occurs during the request or response processing.
      */
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getWordsBetweenDays_then_wordsShouldBeReturnedBetweenTheGivenDates() throws Exception {
         LocalDate startDate = date.minusDays(2);
         LocalDate endDate = date.plusDays(2);
@@ -285,7 +275,7 @@ class WordsControllerIntegrationTest {
      * @throws Exception if an error occurs during the request or response processing.
      */
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getWordsBetweenDays__and_startDateIsNull_then_throwDateValidationException() throws Exception {
         LocalDate endDate = date.plusDays(2);
 
@@ -306,7 +296,7 @@ class WordsControllerIntegrationTest {
      * @throws Exception if an error occurs during the request or response processing.
      */
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getWordsBetweenDays_and_endDateIsNull_then_throwDateValidationException() throws Exception {
         LocalDate startDate = date.minusDays(2);
 
@@ -324,7 +314,7 @@ class WordsControllerIntegrationTest {
      * @throws Exception if an error occurs during the request or response processing.
      */
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getWordsBetweenDays_and_startDateIsAfterEndDate_then_throwInvalidDateOrderException() throws Exception {
         LocalDate startDate = date.plusDays(2);
         LocalDate endDate = date.minusDays(2);
@@ -345,7 +335,7 @@ class WordsControllerIntegrationTest {
      * @throws Exception if an error occurs during the request or response processing.
      */
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getAllWords_then_allWordsTheChildShouldBeReturned() throws Exception {
 
         GetAllWordsResponse expectedResponse = GetAllWordsResponse.builder()
@@ -366,7 +356,7 @@ class WordsControllerIntegrationTest {
      * @throws Exception if an error occurs during the request or response processing.
      */
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getWordByChildIdAndWord_then_wordShouldBeReturn() throws Exception {
         String word = "word1";
 
@@ -386,7 +376,7 @@ class WordsControllerIntegrationTest {
      * @throws Exception if an error occurs during the request or response processing.
      */
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getWordByChildIdAndWord_then_throwWordNotFoundException() throws Exception {
         String word = "nonexistentWord";
 

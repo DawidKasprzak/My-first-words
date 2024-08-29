@@ -21,7 +21,6 @@ class GetMilestoneConverterTest {
     @BeforeEach
     void setUp(){
 
-        // Initialize WordEntity with test data
         milestoneEntity = new MilestoneEntity();
         milestoneEntity.setId(1L);
         milestoneEntity.setTitle("testTitle");
@@ -35,7 +34,6 @@ class GetMilestoneConverterTest {
      */
     @Test
     void when_callFromDto_then_throwUnsupportedOperationException() {
-        // Assert that UnsupportedOperationException is thrown when calling fromDto with null input
         assertThrows(UnsupportedOperationException.class, () -> getMilestoneConverter.fromDto(null));
     }
 
@@ -45,10 +43,8 @@ class GetMilestoneConverterTest {
      */
     @Test
     void when_toDto_then_returnGetMilestoneResponse() {
-        // Convert the entity to response
         GetMilestoneResponse response = getMilestoneConverter.toDto(milestoneEntity);
 
-        // Verify the conversion
         assertEquals(milestoneEntity.getId(), response.getId());
         assertEquals(milestoneEntity.getTitle(), response.getTitle());
         assertEquals(milestoneEntity.getDescription(), response.getDescription());

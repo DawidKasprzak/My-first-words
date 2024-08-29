@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.Authentication;
 import pl.kasprzak.dawid.myfirstwords.exception.MilestoneNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.repository.MilestonesRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ChildEntity;
@@ -22,8 +21,6 @@ import static org.mockito.Mockito.*;
 class DeleteMilestoneServiceTest {
     @Mock
     private AuthorizationHelper authorizationHelper;
-    @Mock
-    private Authentication authentication;
     @Mock
     private MilestonesRepository milestonesRepository;
     @InjectMocks
@@ -50,12 +47,12 @@ class DeleteMilestoneServiceTest {
      */
     @Test
     void when_deleteMilestone_then_milestoneShouldBeDeletedFromChildAccount() {
-        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
+        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId())).thenReturn(childEntity);
         when(milestonesRepository.findByChildIdAndId(childEntity.getId(), milestoneEntity.getId())).thenReturn(Optional.of(milestoneEntity));
 
-        deleteMilestoneService.deleteMilestone(childEntity.getId(), milestoneEntity.getId(), authentication);
+        deleteMilestoneService.deleteMilestone(childEntity.getId(), milestoneEntity.getId());
 
-        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId());
         verify(milestonesRepository, times(1)).delete(milestoneEntity);
     }
 
@@ -67,14 +64,14 @@ class DeleteMilestoneServiceTest {
      */
     @Test
     void when_deleteMilestoneAndMilestoneNotFound_then_throwMilestoneNotFoundException() {
-        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
+        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId())).thenReturn(childEntity);
         when(milestonesRepository.findByChildIdAndId(childEntity.getId(), milestoneEntity.getId())).thenReturn(Optional.empty());
 
         MilestoneNotFoundException milestoneNotFoundException = assertThrows(MilestoneNotFoundException.class,
-                () -> deleteMilestoneService.deleteMilestone(childEntity.getId(), milestoneEntity.getId(), authentication));
+                () -> deleteMilestoneService.deleteMilestone(childEntity.getId(), milestoneEntity.getId()));
 
         assertEquals("Milestone not found", milestoneNotFoundException.getMessage());
-        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId());
         verify(milestonesRepository, never()).delete(any());
     }
 }

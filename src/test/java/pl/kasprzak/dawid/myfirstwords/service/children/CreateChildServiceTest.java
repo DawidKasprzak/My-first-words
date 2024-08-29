@@ -7,6 +7,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import pl.kasprzak.dawid.myfirstwords.exception.ParentNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.model.children.CreateChildRequest;
 import pl.kasprzak.dawid.myfirstwords.model.children.CreateChildResponse;
@@ -30,6 +32,8 @@ class CreateChildServiceTest {
     @Mock
     private CreateChildConverter createChildConverter;
     @Mock
+    private SecurityContext securityContext;
+    @Mock
     private Authentication authentication;
     @InjectMocks
     private CreateChildService createChildService;
@@ -40,7 +44,6 @@ class CreateChildServiceTest {
 
     @BeforeEach
     void setUp() {
-
 
         createChildRequest = CreateChildRequest.builder()
                 .name("childName")
@@ -56,22 +59,28 @@ class CreateChildServiceTest {
         parentEntity = new ParentEntity();
         parentEntity.setUsername("parentUsername");
 
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        when(authentication.getName()).thenReturn("parentUsername");
+
     }
 
     /**
      * Unit test for addChild method in CreateChildService.
-     * Verifies that the parent is authenticated and authorized to add a child.
-     * Then verifies that a child is successfully added to the parent's account.
+     * This test verifies that the parent is correctly authenticated and authorized
+     * through the SecurityContextHolder. It ensures that a child is successfully
+     * added to the parent's account and that all interactions with repositories
+     * and converters are correct.
      */
     @Test
     void when_addChild_then_childShouldBeSavedToParentAccount() {
-        when(authentication.getName()).thenReturn("parentUsername");
+
         when(parentsRepository.findByUsername("parentUsername")).thenReturn(Optional.of(parentEntity));
         when(createChildConverter.fromDto(createChildRequest)).thenReturn(childEntity);
         when(childrenRepository.save(childEntity)).thenReturn(childEntity);
         when(createChildConverter.toDto(childEntity)).thenReturn(createChildResponse);
 
-        CreateChildResponse result = createChildService.addChild(createChildRequest, authentication);
+        CreateChildResponse result = createChildService.addChild(createChildRequest);
 
         assertEquals("childName", result.getName());
         verify(parentsRepository, times(1)).findByUsername("parentUsername");
@@ -81,17 +90,17 @@ class CreateChildServiceTest {
 
     /**
      * Unit test for addChild method in CreateChildService.
-     * Verifies that the parent is authenticated and checked for existence.
-     * Then verifies that a ParentNotFoundException is thrown and the appropriate error message is returned,
-     * when the parent is not found.
+     * Verifies that the parent is authenticated through SecurityContextHolder and checked for existence.
+     * Ensures that a ParentNotFoundException is thrown and the appropriate error message is returned
+     * when the parent is not found in the repository.
      */
     @Test
     void when_parentNotFound_then_throwParentNotFoundException() {
-        when(authentication.getName()).thenReturn("parentUsername");
+
         when(parentsRepository.findByUsername("parentUsername")).thenReturn(Optional.empty());
 
         ParentNotFoundException parentNotFoundException = assertThrows(ParentNotFoundException.class,
-                () -> createChildService.addChild(createChildRequest, authentication));
+                () -> createChildService.addChild(createChildRequest));
 
         assertEquals("Parent not found", parentNotFoundException.getMessage());
         verify(parentsRepository, times(1)).findByUsername("parentUsername");

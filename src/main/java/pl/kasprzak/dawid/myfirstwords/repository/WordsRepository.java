@@ -1,6 +1,5 @@
 package pl.kasprzak.dawid.myfirstwords.repository;
 
-import org.springframework.cglib.core.Local;
 import org.springframework.data.jpa.repository.JpaRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.WordEntity;
 

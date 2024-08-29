@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.Authentication;
 import pl.kasprzak.dawid.myfirstwords.model.words.CreateWordRequest;
 import pl.kasprzak.dawid.myfirstwords.model.words.CreateWordResponse;
 import pl.kasprzak.dawid.myfirstwords.repository.WordsRepository;
@@ -22,8 +21,6 @@ import static org.mockito.Mockito.*;
 class CreateWordServiceTest {
     @Mock
     private AuthorizationHelper authorizationHelper;
-    @Mock
-    private Authentication authentication;
     @Mock
     private WordsRepository wordsRepository;
     @Mock
@@ -66,15 +63,15 @@ class CreateWordServiceTest {
      */
     @Test
     void when_addWord_then_wordShouldBeAddedToTheChild() {
-        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
+        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId())).thenReturn(childEntity);
         when(createWordConverter.fromDto(createWordRequest)).thenReturn(wordEntity);
         when(wordsRepository.save(wordEntity)).thenReturn(wordEntity);
         when(createWordConverter.toDto(wordEntity)).thenReturn(createWordResponse);
 
-        CreateWordResponse response = createWordService.addWord(childEntity.getId(), createWordRequest, authentication);
+        CreateWordResponse response = createWordService.addWord(childEntity.getId(), createWordRequest);
 
         assertEquals(createWordResponse, response);
-        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId());
         verify(createWordConverter, times(1)).fromDto(createWordRequest);
         verify(wordsRepository, times(1)).save(wordEntity);
         verify(createWordConverter, times(1)).toDto(wordEntity);

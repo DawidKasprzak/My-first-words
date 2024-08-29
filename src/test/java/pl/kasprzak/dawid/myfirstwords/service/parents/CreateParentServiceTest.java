@@ -10,7 +10,9 @@ import pl.kasprzak.dawid.myfirstwords.exception.EmailAlreadyExistsException;
 import pl.kasprzak.dawid.myfirstwords.exception.UsernameAlreadyExistsException;
 import pl.kasprzak.dawid.myfirstwords.model.parents.CreateParentRequest;
 import pl.kasprzak.dawid.myfirstwords.model.parents.CreateParentResponse;
+import pl.kasprzak.dawid.myfirstwords.repository.AuthoritiesRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.ParentsRepository;
+import pl.kasprzak.dawid.myfirstwords.repository.dao.AuthorityEntity;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ParentEntity;
 import pl.kasprzak.dawid.myfirstwords.service.converters.parents.CreateParentConverter;
 
@@ -25,12 +27,15 @@ class CreateParentServiceTest {
     @Mock
     private ParentsRepository parentsRepository;
     @Mock
+    private AuthoritiesRepository authoritiesRepository;
+    @Mock
     private CreateParentConverter createParentConverter;
     @InjectMocks
     private CreateParentService createParentService;
 
     private CreateParentRequest createParentRequest;
     private ParentEntity parentEntity;
+    private AuthorityEntity userAuthority;
     private CreateParentResponse createParentResponse;
 
     @BeforeEach
@@ -45,6 +50,10 @@ class CreateParentServiceTest {
         parentEntity.setUsername("usernameTest");
         parentEntity.setMail("test@mail.com");
 
+        userAuthority = new AuthorityEntity();
+        userAuthority.setAuthority("ROLE_USER");
+
+
         createParentResponse = CreateParentResponse.builder()
                 .username(createParentRequest.getUsername())
                 .mail(createParentRequest.getMail())
@@ -53,7 +62,8 @@ class CreateParentServiceTest {
 
     /**
      * Unit test for saveParent method in CreateParentService.
-     * Verifies that a new parent is saved successfully when the username and email do not already exist.
+     * Verifies that a new parent is saved successfully when the username and email do not already exist,
+     * and that the associated authority (role) is also saved.
      */
     @Test
     void when_createNewParent_then_parentShouldBeSaved() {
@@ -61,6 +71,7 @@ class CreateParentServiceTest {
         when(parentsRepository.findByUsername("usernameTest")).thenReturn(Optional.empty());
         when(parentsRepository.findByMail("test@mail.com")).thenReturn(Optional.empty());
         when(createParentConverter.fromDto(createParentRequest)).thenReturn(parentEntity);
+        when(authoritiesRepository.save(userAuthority)).thenReturn(userAuthority);
         when(parentsRepository.save(parentEntity)).thenReturn(parentEntity);
         when(createParentConverter.toDto(parentEntity)).thenReturn(createParentResponse);
 
@@ -70,6 +81,7 @@ class CreateParentServiceTest {
         verify(parentsRepository, times(1)).findByUsername("usernameTest");
         verify(parentsRepository, times(1)).findByMail("test@mail.com");
         verify(createParentConverter, times(1)).fromDto(createParentRequest);
+        verify(authoritiesRepository, times(1)).save(userAuthority);
         verify(parentsRepository, times(1)).save(parentEntity);
         verify(createParentConverter, times(1)).toDto(parentEntity);
     }
@@ -90,6 +102,7 @@ class CreateParentServiceTest {
         verify(parentsRepository, times(1)).findByUsername("usernameTest");
         verify(parentsRepository, never()).findByMail(anyString());
         verify(createParentConverter, never()).fromDto(any());
+        verify(authoritiesRepository,never()).save(any());
         verify(parentsRepository, never()).save(any());
         verify(createParentConverter, never()).toDto(any());
     }
@@ -111,6 +124,7 @@ class CreateParentServiceTest {
         verify(parentsRepository, times(1)).findByUsername("usernameTest");
         verify(parentsRepository, times(1)).findByMail("test@mail.com");
         verify(createParentConverter, never()).fromDto(any());
+        verify(authoritiesRepository, never()).save(any());
         verify(parentsRepository, never()).save(any());
         verify(createParentConverter, never()).toDto(any());
     }

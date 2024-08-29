@@ -24,13 +24,11 @@ class CreateWordConverterTest {
     @BeforeEach
     void setUp() {
 
-        // Initialize a CreateWordRequest with test data
         createWordRequest = CreateWordRequest.builder()
                 .word("testWord")
                 .dateAchieve(LocalDate.now().minusDays(10))
                 .build();
 
-        // Initialize WordEntity with test data
         wordEntity = new WordEntity();
         wordEntity.setId(1L);
         wordEntity.setWord(createWordRequest.getWord());
@@ -43,10 +41,8 @@ class CreateWordConverterTest {
      */
     @Test
     void when_fromDto_then_returnWordEntity() {
-        // Convert the request to entity
         WordEntity entity = createWordConverter.fromDto(createWordRequest);
 
-        // Verify the conversion
         assertEquals(createWordRequest.getWord(), entity.getWord());
         assertEquals(createWordRequest.getDateAchieve(), entity.getDateAchieve());
     }
@@ -57,10 +53,8 @@ class CreateWordConverterTest {
      */
     @Test
     void when_toDto_then_returnCreateWordResponse() {
-        // Convert the entity to response
         CreateWordResponse response = createWordConverter.toDto(wordEntity);
 
-        // Verify the conversion
         assertEquals(wordEntity.getId(), response.getId());
         assertEquals(wordEntity.getWord(), response.getWord());
         assertEquals(wordEntity.getDateAchieve(), response.getDateAchieve());

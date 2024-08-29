@@ -22,7 +22,6 @@ class GetWordsConverterTest {
     @BeforeEach
     void setUp(){
 
-        // Initialize WordEntity with test data
         wordEntity = new WordEntity();
         wordEntity.setId(1L);
         wordEntity.setWord("testWord");
@@ -35,7 +34,6 @@ class GetWordsConverterTest {
      */
     @Test
     void when_callFromDto_then_throwUnsupportedOperationException() {
-        // Assert that UnsupportedOperationException is thrown when calling fromDto with null input
         assertThrows(UnsupportedOperationException.class, () -> getWordsConverter.fromDto(null));
     }
 
@@ -45,10 +43,8 @@ class GetWordsConverterTest {
      */
     @Test
     void when_toDto_then_returnGetWordResponse() {
-        // Convert the entity to response
         GetWordResponse response = getWordsConverter.toDto(wordEntity);
 
-        // Verify the conversion
         assertEquals(wordEntity.getId(), response.getId());
         assertEquals(wordEntity.getWord(), response.getWord());
         assertEquals(wordEntity.getDateAchieve(), response.getDateAchieve());

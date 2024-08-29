@@ -1,6 +1,5 @@
 package pl.kasprzak.dawid.myfirstwords.model.parents;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 

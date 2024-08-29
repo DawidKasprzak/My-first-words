@@ -23,14 +23,12 @@ class UpdateMilestonesConverterTest {
 
     @BeforeEach
     void setUp() {
-        // Initialize UpdateMilestoneRequest with test data
         updateMilestoneRequest = UpdateMilestoneRequest.builder()
                 .title("update milestone title")
                 .description("update milestone description")
                 .dateAchieve(LocalDate.now().minusDays(5))
                 .build();
 
-        // Initialize MilestoneEntity with test data
         milestoneEntity = new MilestoneEntity();
         milestoneEntity.setId(1L);
         milestoneEntity.setTitle(updateMilestoneRequest.getTitle());
@@ -44,10 +42,8 @@ class UpdateMilestonesConverterTest {
      */
     @Test
     void when_fromDto_then_returnMilestoneEntity() {
-        // Convert the request to entity
         MilestoneEntity entity = updateMilestonesConverter.fromDto(updateMilestoneRequest);
 
-        // Verify the conversion
         assertEquals(updateMilestoneRequest.getTitle(), entity.getTitle());
         assertEquals(updateMilestoneRequest.getDescription(), entity.getDescription());
         assertEquals(updateMilestoneRequest.getDateAchieve(), entity.getDateAchieve());
@@ -59,10 +55,8 @@ class UpdateMilestonesConverterTest {
      */
     @Test
     void when_toDto_then_returnUpdateMilestoneResponse() {
-        // Convert the entity to response
         UpdateMilestoneResponse response = updateMilestonesConverter.toDto(milestoneEntity);
 
-        // Verify the conversion
         assertEquals(milestoneEntity.getId(), response.getId());
         assertEquals(milestoneEntity.getTitle(), response.getTitle());
         assertEquals(milestoneEntity.getDescription(), response.getDescription());

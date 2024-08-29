@@ -14,13 +14,18 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import pl.kasprzak.dawid.myfirstwords.model.children.GetChildResponse;
 import pl.kasprzak.dawid.myfirstwords.model.parents.*;
+import pl.kasprzak.dawid.myfirstwords.repository.AuthoritiesRepository;
+import pl.kasprzak.dawid.myfirstwords.repository.ChildrenRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.ParentsRepository;
+import pl.kasprzak.dawid.myfirstwords.repository.dao.AuthorityEntity;
+import pl.kasprzak.dawid.myfirstwords.repository.dao.ChildEntity;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ParentEntity;
 
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,13 +49,19 @@ class ParentControllerIntegrationTest {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private ParentsRepository parentsRepository;
+    @Autowired
+    private ChildrenRepository childrenRepository;
+    @Autowired
+    private AuthoritiesRepository authoritiesRepository;
     private CreateParentRequest createParentRequest;
     private ParentInfoResponse parentInfoResponse1, parentInfoResponse2;
+
 
 
     @BeforeEach
     void setUp() {
         parentsRepository.deleteAll();
+        authoritiesRepository.deleteAll();
 
         createParentRequest = CreateParentRequest.builder()
                 .username("testUser")
@@ -62,25 +73,70 @@ class ParentControllerIntegrationTest {
         parent1.setUsername("parent1");
         parent1.setMail("parent1@mail.com");
         parent1.setPassword(passwordEncoder.encode("password1"));
+        AuthorityEntity parent1Authority = new AuthorityEntity();
+        parent1Authority.setAuthority("ROLE_USER");
+        authoritiesRepository.save(parent1Authority);
+        parent1.setAuthorities(new ArrayList<>(List.of(parent1Authority)));
+        parent1 = parentsRepository.save(parent1);
+
+        ChildEntity childEntity1 = new ChildEntity();
+        childEntity1.setName("child1");
+        childEntity1.setParent(parent1);
+        childEntity1 = childrenRepository.save(childEntity1);
+
+        ChildEntity childEntity2 = new ChildEntity();
+        childEntity2.setName("child2");
+        childEntity2.setParent(parent1);
+        childEntity2 = childrenRepository.save(childEntity2);
+
+        parent1.setChildren(new ArrayList<>(List.of(childEntity1, childEntity2)));
         parent1 = parentsRepository.save(parent1);
 
         ParentEntity parent2 = new ParentEntity();
         parent2.setUsername("parent2");
         parent2.setMail("parent2@mail.com");
         parent2.setPassword(passwordEncoder.encode("password2"));
+        AuthorityEntity parent2Authority = new AuthorityEntity();
+        parent2Authority.setAuthority("ROLE_USER");
+        authoritiesRepository.save(parent2Authority);
+        parent2.setAuthorities(new ArrayList<>(List.of(parent2Authority)));
         parent2 = parentsRepository.save(parent2);
+
+        ChildEntity childEntity3 = new ChildEntity();
+        childEntity3.setName("child3");
+        childEntity3.setParent(parent2);
+        childEntity3 = childrenRepository.save(childEntity3);
+        parent2.setChildren(new ArrayList<>(List.of(childEntity3)));
+        parent2 = parentsRepository.save(parent2);
+
+        GetChildResponse getChildResponse1 = GetChildResponse.builder()
+                .id(childEntity1.getId())
+                .name(childEntity1.getName())
+                .build();
+
+        GetChildResponse getChildResponse2 = GetChildResponse.builder()
+                .id(childEntity2.getId())
+                .name(childEntity2.getName())
+                .build();
+
+        GetChildResponse getChildResponse3 = GetChildResponse.builder()
+                .id(childEntity3.getId())
+                .name(childEntity3.getName())
+                .build();
 
         parentInfoResponse1 = ParentInfoResponse.builder()
                 .id(parent1.getId())
                 .username(parent1.getUsername())
                 .mail(parent1.getMail())
-                .children(Collections.emptyList())
+                .children(List.of(getChildResponse1, getChildResponse2))
+                .roles(List.of("ROLE_USER"))
                 .build();
         parentInfoResponse2 = ParentInfoResponse.builder()
                 .id(parent2.getId())
                 .username(parent2.getUsername())
                 .mail(parent2.getMail())
-                .children(Collections.emptyList())
+                .children(List.of(getChildResponse3))
+                .roles(List.of("ROLE_USER"))
                 .build();
 
     }
@@ -157,7 +213,7 @@ class ParentControllerIntegrationTest {
      * @throws Exception if an error occurs during the request or response processing.
      */
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getAllRegisterParents_then_allParentsShouldBeReturned() throws Exception {
         List<ParentInfoResponse> parents = Arrays.asList(parentInfoResponse1, parentInfoResponse2);
         GetAllParentsResponse expectResponse = GetAllParentsResponse.builder()
@@ -180,7 +236,7 @@ class ParentControllerIntegrationTest {
      * @throws Exception if an error occurs during the request or response processing.
      */
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getParentsById_then_parentShouldBeReturned() throws Exception {
         Long parentId = parentInfoResponse1.getId();
 
@@ -200,7 +256,7 @@ class ParentControllerIntegrationTest {
      * @throws Exception if an error occurs during the request or response processing.
      */
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getParentsById_then_throwParentNotFoundException() throws Exception {
         Long nonExistentParentId = 999L;
 
@@ -219,7 +275,7 @@ class ParentControllerIntegrationTest {
      */
     @Test
     @Transactional
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_deleteParent_then_parentShouldBeRemovedFromDatabase() throws Exception {
         Long parentId = parentInfoResponse1.getId();
 
@@ -238,7 +294,7 @@ class ParentControllerIntegrationTest {
      */
     @Test
     @Transactional
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_deleteNonexistentParent_then_throwParentNotFoundException() throws Exception {
         Long nonExistentParentId = 999L;
 
@@ -256,7 +312,7 @@ class ParentControllerIntegrationTest {
      */
     @Test
     @Transactional
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_changePassword_then_passwordShouldBeChanged() throws Exception {
         Long parentId = parentInfoResponse1.getId();
         String newPassword = "newPassword";
@@ -282,9 +338,9 @@ class ParentControllerIntegrationTest {
      */
     @Test
     @Transactional
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_changePasswordForNonexistentParent_then_throwParentNotFoundException() throws Exception {
-        Long nonExistentParentId = 999L;
+        long nonExistentParentId = 999L;
         ChangePasswordRequest request = new ChangePasswordRequest();
         request.setPassword("newPassword");
 

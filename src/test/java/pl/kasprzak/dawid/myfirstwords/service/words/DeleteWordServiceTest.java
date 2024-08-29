@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.Authentication;
 import pl.kasprzak.dawid.myfirstwords.exception.WordNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.repository.WordsRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ChildEntity;
@@ -23,8 +22,6 @@ class DeleteWordServiceTest {
     @Mock
     private AuthorizationHelper authorizationHelper;
     @Mock
-    private Authentication authentication;
-    @Mock
     private WordsRepository wordsRepository;
     @InjectMocks
     private DeleteWordService deleteWordService;
@@ -40,7 +37,6 @@ class DeleteWordServiceTest {
         childEntity = new ChildEntity();
         childEntity.setId(1L);
         wordEntity.setChild(childEntity);
-
     }
 
     /**
@@ -50,12 +46,13 @@ class DeleteWordServiceTest {
      */
     @Test
     void when_deleteWord_then_wordShouldBeDeletedFromChildAccount() {
-        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
+
+        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId())).thenReturn(childEntity);
         when(wordsRepository.findByChildIdAndId(childEntity.getId(), wordEntity.getId())).thenReturn(Optional.of(wordEntity));
 
-        deleteWordService.deleteWord(childEntity.getId(), wordEntity.getId(), authentication);
+        deleteWordService.deleteWord(childEntity.getId(), wordEntity.getId());
 
-        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId());
         verify(wordsRepository, times(1)).delete(wordEntity);
     }
 
@@ -67,14 +64,15 @@ class DeleteWordServiceTest {
      */
     @Test
     void when_deleteWordAndWordNotFound_then_throwWordNotFoundException() {
-        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId(), authentication)).thenReturn(childEntity);
+
+        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId())).thenReturn(childEntity);
         when(wordsRepository.findByChildIdAndId(childEntity.getId(), wordEntity.getId())).thenReturn(Optional.empty());
 
         WordNotFoundException wordNotFoundException = assertThrows(WordNotFoundException.class,
-                () -> deleteWordService.deleteWord(childEntity.getId(), wordEntity.getId(), authentication));
+                () -> deleteWordService.deleteWord(childEntity.getId(), wordEntity.getId()));
 
         assertEquals("Word not found", wordNotFoundException.getMessage());
-        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId(), authentication);
+        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId());
         verify(wordsRepository, never()).delete(any());
     }
 }

@@ -2,7 +2,6 @@ package pl.kasprzak.dawid.myfirstwords.service.milestones;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import pl.kasprzak.dawid.myfirstwords.exception.*;
 import pl.kasprzak.dawid.myfirstwords.util.AuthorizationHelper;
@@ -31,14 +30,13 @@ public class GetMilestoneService {
      *
      * @param childId        the ID of the child whose milestones are to be retrieved.
      * @param date           the date before which milestones were achieved.
-     * @param authentication the authentication object containing the parent's credentials.
      * @return a list of GetMilestoneResponse DTOs containing the milestones achieved before the given date.
      * @throws ParentNotFoundException if the authenticated parent is not found.
      * @throws ChildNotFoundException  if the child with the given ID is not found.
      * @throws AccessDeniedException   if the authenticated parent does not have access to the child.
      */
-    public List<GetMilestoneResponse> getByDateAchieveBefore(Long childId, LocalDate date, Authentication authentication) {
-        authorizationHelper.validateAndAuthorizeChild(childId, authentication);
+    public List<GetMilestoneResponse> getByDateAchieveBefore(Long childId, LocalDate date) {
+        authorizationHelper.validateAndAuthorizeChild(childId);
         List<MilestoneEntity> milestones = milestonesRepository.findByChildIdAndDateAchieveBefore(childId, date);
         return milestones.stream()
                 .map(getMilestoneConverter::toDto)
@@ -52,14 +50,13 @@ public class GetMilestoneService {
      *
      * @param childId        the ID of the child whose milestones are to be retrieved.
      * @param date           the date before which milestones were achieved.
-     * @param authentication the authentication object containing the parent's credentials.
      * @return a list of GetMilestoneResponse DTOs containing the milestones achieved after the given date.
      * @throws ParentNotFoundException if the authenticated parent is not found.
      * @throws ChildNotFoundException  if the child with the given ID is not found.
      * @throws AccessDeniedException   if the authenticated parent does not have access to the child.
      */
-    public List<GetMilestoneResponse> getByDateAchieveAfter(Long childId, LocalDate date, Authentication authentication) {
-        authorizationHelper.validateAndAuthorizeChild(childId, authentication);
+    public List<GetMilestoneResponse> getByDateAchieveAfter(Long childId, LocalDate date) {
+        authorizationHelper.validateAndAuthorizeChild(childId);
         List<MilestoneEntity> milestones = milestonesRepository.findByChildIdAndDateAchieveAfter(childId, date);
         return milestones.stream()
                 .map(getMilestoneConverter::toDto)
@@ -67,14 +64,13 @@ public class GetMilestoneService {
     }
 
     /**
-     * Service method for retrieving milestones for a child that were achieved between the given date.
+     * Service method for retrieving milestones for a child that were achieved between the given dates.
      * This method validates and authorizes the parent using the AuthorizationHelper,
-     * and fetches milestones achieved between the specified date.
+     * and fetches milestones achieved between the specified dates.
      *
      * @param childId        the ID of the child whose milestones are to be retrieved.
      * @param startDate      the start date of the range.
      * @param endDate        the end date of the range.
-     * @param authentication the authentication object containing the parent's credentials.
      * @return a list of GetMilestoneResponse DTOs containing the milestones achieved between the given dates.
      * @throws ParentNotFoundException   if the authenticated parent is not found.
      * @throws ChildNotFoundException    if the child with the given ID is not found.
@@ -82,8 +78,8 @@ public class GetMilestoneService {
      * @throws DateValidationException   if either start date or end date is null.
      * @throws InvalidDateOrderException if the start date is after the end date.
      */
-    public List<GetMilestoneResponse> getMilestonesBetweenDays(Long childId, LocalDate startDate, LocalDate endDate, Authentication authentication) {
-        authorizationHelper.validateAndAuthorizeChild(childId, authentication);
+    public List<GetMilestoneResponse> getMilestonesBetweenDays(Long childId, LocalDate startDate, LocalDate endDate) {
+        authorizationHelper.validateAndAuthorizeChild(childId);
         if (startDate == null || endDate == null) {
             throw new DateValidationException("Start date and end date must not be null");
         }
@@ -102,14 +98,13 @@ public class GetMilestoneService {
      * and fetches all milestones for the specified child.
      *
      * @param childId        the ID of the child whose milestones are to be retrieved.
-     * @param authentication the authentication object containing the parent's credentials.
      * @return a GetAllMilestoneResponse DTO containing a list of all milestones for the child.
      * @throws ParentNotFoundException if the authenticated parent is not found.
      * @throws ChildNotFoundException  if the child with the given ID is not found.
      * @throws AccessDeniedException   if the authenticated parent does not have access to the child.
      */
-    public GetAllMilestoneResponse getAllMilestone(Long childId, Authentication authentication) {
-        authorizationHelper.validateAndAuthorizeChild(childId, authentication);
+    public GetAllMilestoneResponse getAllMilestone(Long childId) {
+        authorizationHelper.validateAndAuthorizeChild(childId);
         return GetAllMilestoneResponse.builder()
                 .milestones(milestonesRepository.findAllByChildId(childId).stream()
                         .map(getMilestoneConverter::toDto)
@@ -124,15 +119,14 @@ public class GetMilestoneService {
      *
      * @param childId        the ID of the child whose milestones are to be retrieved.
      * @param title          the title to search for milestones.
-     * @param authentication the authentication object containing the parent's credentials.
      * @return a GetAllMilestoneResponse DTO containing the list of milestone details.
      * @throws ParentNotFoundException    if the authenticated parent is not found.
      * @throws ChildNotFoundException     if the child with the given ID is not found.
      * @throws AccessDeniedException      if the authenticated parent does not have access to the child.
      * @throws MilestoneNotFoundException if no milestones are found with the given title for the specified child.
      */
-    public GetAllMilestoneResponse getByTitle(Long childId, String title, Authentication authentication) {
-        authorizationHelper.validateAndAuthorizeChild(childId, authentication);
+    public GetAllMilestoneResponse getByTitle(Long childId, String title) {
+        authorizationHelper.validateAndAuthorizeChild(childId);
         List<MilestoneEntity> milestones = milestonesRepository.findByTitleContainingIgnoreCaseAndChildId(title.toLowerCase(), childId);
         if (milestones.isEmpty()) {
             throw new MilestoneNotFoundException("Milestone not found");

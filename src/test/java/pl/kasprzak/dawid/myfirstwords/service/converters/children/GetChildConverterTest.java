@@ -22,7 +22,6 @@ class GetChildConverterTest {
     @BeforeEach
     void setUp() {
 
-        // Initialize ChildEntity with test data
         childEntity = new ChildEntity();
         childEntity.setId(1L);
         childEntity.setName("childName");
@@ -36,7 +35,6 @@ class GetChildConverterTest {
      */
     @Test
     void when_callFromDto_then_throwUnsupportedOperationException() {
-        // Assert that UnsupportedOperationException is thrown when calling fromDto with null input
         assertThrows(UnsupportedOperationException.class, () -> getChildConverter.fromDto(null));
     }
 
@@ -46,10 +44,8 @@ class GetChildConverterTest {
      */
     @Test
     void when_toDto_then_returnGetChildResponse() {
-        // Convert the entity to response
         GetChildResponse response = getChildConverter.toDto(childEntity);
 
-        // Verify the conversion
         assertEquals(childEntity.getId(), response.getId());
         assertEquals(childEntity.getName(), response.getName());
         assertEquals(childEntity.getBirthDate(), response.getBirthDate());

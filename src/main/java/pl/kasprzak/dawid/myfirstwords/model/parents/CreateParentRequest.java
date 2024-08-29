@@ -11,8 +11,8 @@ import org.hibernate.validator.constraints.Length;
 public class CreateParentRequest {
     @NotNull
     private String username;
-    @NotNull(message = "Hasło nie może być puste")
-    @Length(min = 5, max = 40, message = "Hasło musi mieć minimalnie 5 znaków")
+    @NotNull(message = "Password cannot be empty")
+    @Length(min = 5, max = 40, message = "Password must be at least 5 characters long")
     private String password;
     @Email
     private String mail;

@@ -1,7 +1,6 @@
 package pl.kasprzak.dawid.myfirstwords.service.words;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import pl.kasprzak.dawid.myfirstwords.exception.ChildNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.exception.ParentNotFoundException;
@@ -36,14 +35,13 @@ public class GetWordService {
      *
      * @param childId        the ID of the child whose words are to be retrieved.
      * @param date           the date before which words were achieved.
-     * @param authentication the authentication object containing the parent's credentials.
      * @return a list of GetWordResponse DTOs containing the words achieved before the given date.
      * @throws ParentNotFoundException if the authenticated parent is not found.
      * @throws ChildNotFoundException  if the child with the given ID is not found.
      * @throws AccessDeniedException   if the authenticated parent does not have access to the child.
      */
-    public List<GetWordResponse> getByDateAchieveBefore(Long childId, LocalDate date, Authentication authentication) {
-        authorizationHelper.validateAndAuthorizeChild(childId, authentication);
+    public List<GetWordResponse> getByDateAchieveBefore(Long childId, LocalDate date) {
+        authorizationHelper.validateAndAuthorizeChild(childId);
         List<WordEntity> words = wordsRepository.findByChildIdAndDateAchieveBefore(childId, date);
         return words.stream()
                 .map(getWordsConverter::toDto)
@@ -57,14 +55,13 @@ public class GetWordService {
      *
      * @param childId        the ID of the child whose words are to be retrieved.
      * @param date           the date after which words were achieved.
-     * @param authentication the authentication object containing the parent's credentials.
      * @return a list of GetWordResponse DTOs containing the words achieved after the given date.
      * @throws ParentNotFoundException if the authenticated parent is not found.
      * @throws ChildNotFoundException  if the child with the given ID is not found.
      * @throws AccessDeniedException   if the authenticated parent does not have access to the child.
      */
-    public List<GetWordResponse> getByDateAchieveAfter(Long childId, LocalDate date, Authentication authentication) {
-        authorizationHelper.validateAndAuthorizeChild(childId, authentication);
+    public List<GetWordResponse> getByDateAchieveAfter(Long childId, LocalDate date) {
+        authorizationHelper.validateAndAuthorizeChild(childId);
         List<WordEntity> words = wordsRepository.findByChildIdAndDateAchieveAfter(childId, date);
         return words.stream()
                 .map(getWordsConverter::toDto)
@@ -79,7 +76,6 @@ public class GetWordService {
      * @param childId        the ID of the child whose words are to be retrieved.
      * @param startDate      the start date of the range.
      * @param endDate        the end date of the range.
-     * @param authentication the authentication object containing the parent's credentials.
      * @return a list of GetWordResponse DTOs containing the words achieved between the given dates.
      * @throws ParentNotFoundException   if the authenticated parent is not found.
      * @throws ChildNotFoundException    if the child with the given ID is not found.
@@ -87,8 +83,8 @@ public class GetWordService {
      * @throws DateValidationException   if either start date or end date is null.
      * @throws InvalidDateOrderException if the start date is after the end date.
      */
-    public List<GetWordResponse> getWordsBetweenDays(Long childId, LocalDate startDate, LocalDate endDate, Authentication authentication) {
-        authorizationHelper.validateAndAuthorizeChild(childId, authentication);
+    public List<GetWordResponse> getWordsBetweenDays(Long childId, LocalDate startDate, LocalDate endDate) {
+        authorizationHelper.validateAndAuthorizeChild(childId);
         if (startDate == null || endDate == null) {
             throw new DateValidationException("Start date and end date must not be null");
         }
@@ -108,15 +104,14 @@ public class GetWordService {
      *
      * @param childId        the ID of the child whose word is to be retrieved.
      * @param word           the word to be retrieved.
-     * @param authentication the authentication object containing the parent's credentials.
      * @return a GetWordResponse DTO containing the word details.
      * @throws ParentNotFoundException if the authenticated parent is not found.
      * @throws ChildNotFoundException  if the child with the given ID is not found.
      * @throws AccessDeniedException   if the authenticated parent does not have access to the child.
      * @throws WordNotFoundException   if the word with the given ID is not found for the specified child.
      */
-    public GetWordResponse getByWord(Long childId, String word, Authentication authentication) {
-        authorizationHelper.validateAndAuthorizeChild(childId, authentication);
+    public GetWordResponse getByWord(Long childId, String word) {
+        authorizationHelper.validateAndAuthorizeChild(childId);
         return wordsRepository.findByWordIgnoreCaseAndChildId(word.toLowerCase(), childId)
                 .map(getWordsConverter::toDto)
                 .orElseThrow(() -> new WordNotFoundException("Word not found"));
@@ -128,14 +123,13 @@ public class GetWordService {
      * and fetches all words for the specified child.
      *
      * @param childId        the ID of the child whose words are to be retrieved.
-     * @param authentication the authentication object containing the parent's credentials.
      * @return a GetAllWordsResponse DTO containing a list of all words for the child.
      * @throws ParentNotFoundException if the authenticated parent is not found.
      * @throws ChildNotFoundException  if the child with the given ID is not found.
      * @throws AccessDeniedException   if the authenticated parent does not have access to the child.
      */
-    public GetAllWordsResponse getAllWords(Long childId, Authentication authentication) {
-        authorizationHelper.validateAndAuthorizeChild(childId, authentication);
+    public GetAllWordsResponse getAllWords(Long childId) {
+        authorizationHelper.validateAndAuthorizeChild(childId);
         return GetAllWordsResponse.builder()
                 .words(wordsRepository.findAllByChildId(childId).stream()
                         .map(getWordsConverter::toDto)

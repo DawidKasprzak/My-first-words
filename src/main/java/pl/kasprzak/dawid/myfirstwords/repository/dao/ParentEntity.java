@@ -2,7 +2,6 @@ package pl.kasprzak.dawid.myfirstwords.repository.dao;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import pl.kasprzak.dawid.myfirstwords.repository.dao.ChildEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,9 +19,10 @@ public class ParentEntity {
     private String password;
     private String mail;
 
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.REMOVE)
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "parent", cascade = CascadeType.REMOVE)
     private List<ChildEntity> children = new ArrayList<>();
 
-    private String authority;
+    @ManyToMany
+    private List<AuthorityEntity> authorities = new ArrayList<>();
 
 }

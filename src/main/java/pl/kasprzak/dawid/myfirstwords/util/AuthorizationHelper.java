@@ -2,7 +2,7 @@ package pl.kasprzak.dawid.myfirstwords.util;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import pl.kasprzak.dawid.myfirstwords.exception.ChildNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.exception.ParentNotFoundException;
@@ -19,19 +19,20 @@ public class AuthorizationHelper {
     public final ParentsRepository parentsRepository;
 
     /**
-     * Validates and authorizes a child based on the given child ID and authentication.
-     * This method checks if the authenticated parent has access to the specified child.
-     * If the parent or child does not exist, or if the parent does not have access, appropriate exception are thronw.
+     * Validates and authorizes a child based on the given child ID.
+     * This method retrieves the username of the authenticated parent from the SecurityContextHolder,
+     * checks if the parent exists, and verifies if the parent has access to the specified child.
+     * If the parent or child does not exist, or if the parent does not have access, appropriate exceptions are thrown.
      *
      * @param childId The ID of the child to be validated and authorized.
-     * @param authentication The authentication object containing the parent's credentials.
-     * @return The childEntity if validation and authorization are successful.
+     * @return The ChildEntity if validation and authorization are successful.
      * @throws ParentNotFoundException if the authenticated parent is not found.
      * @throws ChildNotFoundException if the child with the given ID is not found.
      * @throws AccessDeniedException if the authenticated parent does not have access to the child.
      */
-    public ChildEntity validateAndAuthorizeChild(Long childId, Authentication authentication) {
-        ParentEntity parent = parentsRepository.findByUsername(authentication.getName())
+    public ChildEntity validateAndAuthorizeChild(Long childId) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        ParentEntity parent = parentsRepository.findByUsername(username)
                 .orElseThrow(() -> new ParentNotFoundException("Parent not found"));
         ChildEntity child = childrenRepository.findById(childId)
                 .orElseThrow(() -> new ChildNotFoundException("Child not found"));

@@ -1,9 +1,7 @@
 package pl.kasprzak.dawid.myfirstwords.repository.dao;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import pl.kasprzak.dawid.myfirstwords.model.children.Gender;
 
 import java.time.LocalDate;

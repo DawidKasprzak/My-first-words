@@ -1,7 +1,6 @@
 package pl.kasprzak.dawid.myfirstwords.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.Lombok;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,8 +49,7 @@ class ChildControllerIntegrationTest {
     private ParentsRepository parentsRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
-    private ParentEntity parentEntity;
-    private ChildEntity childEntity, childEntity2;
+    private ChildEntity childEntity;
     private CreateChildRequest createChildRequest;
     private CreateChildResponse createChildResponse;
     private GetChildResponse getChildResponse, getChildResponse2;
@@ -61,14 +59,14 @@ class ChildControllerIntegrationTest {
     void setUp() {
 
 
-        parentEntity = new ParentEntity();
+        ParentEntity parentEntity = new ParentEntity();
         parentEntity.setUsername("user");
         parentEntity.setPassword(passwordEncoder.encode("password"));
         parentsRepository.save(parentEntity);
 
         createChildRequest = CreateChildRequest.builder()
                 .name("childName")
-                .birthDate(LocalDate.of(2024, 01, 22))
+                .birthDate(LocalDate.of(2024, 1, 22))
                 .gender(Gender.GIRL)
                 .build();
 
@@ -80,10 +78,10 @@ class ChildControllerIntegrationTest {
         childEntity.setParent(parentEntity);
         childrenRepository.save(childEntity);
 
-        childEntity2 = new ChildEntity();
+        ChildEntity childEntity2 = new ChildEntity();
         childEntity2.setId(2L);
         childEntity2.setName("childName2");
-        childEntity2.setBirthDate(LocalDate.of(2023, 05, 15));
+        childEntity2.setBirthDate(LocalDate.of(2023, 5, 15));
         childEntity2.setParent(parentEntity);
         childrenRepository.save(childEntity2);
 
@@ -116,7 +114,7 @@ class ChildControllerIntegrationTest {
      */
     @Test
     @Transactional
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_parentAddsAChildToTheAccount_then_childShouldBeReturned() throws Exception {
 
         mockMvc.perform(post("/api/children")
@@ -127,7 +125,7 @@ class ChildControllerIntegrationTest {
 
         ChildEntity savedChild = childrenRepository.findAll().get(0);
         assertEquals("childName", savedChild.getName());
-        assertEquals(LocalDate.of(2024, 01, 22), savedChild.getBirthDate());
+        assertEquals(LocalDate.of(2024, 1, 22), savedChild.getBirthDate());
         assertEquals(Gender.GIRL, savedChild.getGender());
         assertEquals("user", savedChild.getParent().getUsername());
     }
@@ -159,7 +157,7 @@ class ChildControllerIntegrationTest {
      */
     @Test
     @Transactional
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_parentDeleteChild_then_childShouldBeDeletedFromParentAccount() throws Exception {
         Long childId = childEntity.getId();
 
@@ -178,7 +176,7 @@ class ChildControllerIntegrationTest {
      * @throws Exception if an error occurs during the request or response processing.
      */
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getAllChildrenOfParent_then_allChildrenShouldBeReturned() throws Exception {
         List<GetChildResponse> children = Arrays.asList(getChildResponse, getChildResponse2);
         GetAllChildResponse expectedResponse = GetAllChildResponse.builder()
@@ -216,7 +214,7 @@ class ChildControllerIntegrationTest {
      * @throws Exception if an error occurs during the request or response processing.
      */
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getChildById_then_childWithSpecificIdShouldBeReturned() throws Exception {
         Long childId = childEntity.getId();
 
@@ -235,7 +233,7 @@ class ChildControllerIntegrationTest {
      * @throws Exception if an error occurs during the request or response processing.
      */
     @Test
-    @WithUserDetails(value = "user", userDetailsServiceBeanName = "userDetailsServiceForTest")
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceForTest")
     void when_getChildByIdAndChildNotFound_then_throwChildNotFoundException() throws Exception {
         Long nonExistentChildId = 999L;
 

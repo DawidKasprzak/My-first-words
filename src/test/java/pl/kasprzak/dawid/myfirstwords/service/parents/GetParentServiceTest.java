@@ -31,7 +31,6 @@ class GetParentServiceTest {
     private GetParentsConverter getParentsConverter;
     @InjectMocks
     private GetParentService getParentService;
-
     private ParentEntity parent1, parent2;
     private ParentInfoResponse parentInfoResponse1, parentInfoResponse2;
 

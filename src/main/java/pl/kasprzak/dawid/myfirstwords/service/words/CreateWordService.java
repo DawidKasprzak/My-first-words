@@ -1,7 +1,6 @@
 package pl.kasprzak.dawid.myfirstwords.service.words;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import pl.kasprzak.dawid.myfirstwords.util.AuthorizationHelper;
 import pl.kasprzak.dawid.myfirstwords.exception.ChildNotFoundException;
@@ -31,14 +30,13 @@ public class CreateWordService {
      *
      * @param childId        the ID of the child to whom the word will be added.
      * @param request        the CreateWordRequest containing the word details.
-     * @param authentication the authentication object containing the parent's credentials.
      * @return a CreateWordResponse DTO containing the details of the newly created word.
      * @throws ParentNotFoundException if the authenticated parent is not found.
      * @throws ChildNotFoundException  if the child with the given ID is not found.
      * @throws AccessDeniedException   if the authenticated parent does not have access to the child.
      */
-    public CreateWordResponse addWord(Long childId, CreateWordRequest request, Authentication authentication) {
-        ChildEntity child = authorizationHelper.validateAndAuthorizeChild(childId, authentication);
+    public CreateWordResponse addWord(Long childId, CreateWordRequest request) {
+        ChildEntity child = authorizationHelper.validateAndAuthorizeChild(childId);
         WordEntity wordToSave = createWordConverter.fromDto(request);
         wordToSave.setChild(child);
         WordEntity savedEntity = wordsRepository.save(wordToSave);

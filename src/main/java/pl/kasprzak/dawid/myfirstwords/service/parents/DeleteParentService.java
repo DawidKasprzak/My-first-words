@@ -1,12 +1,9 @@
 package pl.kasprzak.dawid.myfirstwords.service.parents;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import pl.kasprzak.dawid.myfirstwords.exception.ParentNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.repository.ParentsRepository;
-import pl.kasprzak.dawid.myfirstwords.repository.dao.ParentEntity;
 
 @Service
 @RequiredArgsConstructor

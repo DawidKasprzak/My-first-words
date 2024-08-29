@@ -2,7 +2,6 @@ package pl.kasprzak.dawid.myfirstwords.service.milestones;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import pl.kasprzak.dawid.myfirstwords.exception.ChildNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.exception.ParentNotFoundException;
@@ -30,14 +29,13 @@ public class CreateMilestoneService {
      *
      * @param childId        the ID of the child to whom the milestone will be added.
      * @param request        the CreateMilestoneRequest containing the milestone details.
-     * @param authentication the authentication object containing the parent's credentials.
      * @return a CreateMilestoneResponse DTO containing the details of the newly created milestone.
      * @throws ParentNotFoundException if the authenticated parent is not found.
      * @throws ChildNotFoundException  if the child with the given ID is not found.
      * @throws AccessDeniedException   if the authenticated parent does not have access to the child.
      */
-    public CreateMilestoneResponse addMilestone(Long childId, CreateMilestoneRequest request, Authentication authentication) {
-        ChildEntity child = authorizationHelper.validateAndAuthorizeChild(childId, authentication);
+    public CreateMilestoneResponse addMilestone(Long childId, CreateMilestoneRequest request) {
+        ChildEntity child = authorizationHelper.validateAndAuthorizeChild(childId);
         MilestoneEntity milestoneToSave = createMilestoneConverter.fromDto(request);
         milestoneToSave.setChild(child);
         MilestoneEntity savedEntity = milestonesRepository.save(milestoneToSave);

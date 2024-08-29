@@ -1,7 +1,6 @@
 package pl.kasprzak.dawid.myfirstwords.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.MilestoneEntity;
 
 import java.time.LocalDate;

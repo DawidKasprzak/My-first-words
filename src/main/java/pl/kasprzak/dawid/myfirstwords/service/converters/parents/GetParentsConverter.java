@@ -3,6 +3,7 @@ package pl.kasprzak.dawid.myfirstwords.service.converters.parents;
 import org.springframework.stereotype.Service;
 import pl.kasprzak.dawid.myfirstwords.model.children.GetChildResponse;
 import pl.kasprzak.dawid.myfirstwords.model.parents.ParentInfoResponse;
+import pl.kasprzak.dawid.myfirstwords.repository.dao.AuthorityEntity;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ParentEntity;
 import pl.kasprzak.dawid.myfirstwords.service.converters.Convertable;
 import pl.kasprzak.dawid.myfirstwords.service.converters.children.GetChildConverter;
@@ -36,6 +37,7 @@ public class GetParentsConverter implements Convertable<Void, ParentEntity, Pare
                 .username(parentEntity.getUsername())
                 .mail(parentEntity.getMail())
                 .children(children)
+                .roles(parentEntity.getAuthorities().stream().map(AuthorityEntity::getAuthority).collect(Collectors.toList()))
                 .build();
     }
 }
