@@ -52,7 +52,7 @@ public class GetChildService {
      */
     @Transactional
     public GetAllChildResponse getAllChildrenOfParent(Long parentID) {
-        if (parentID == null && isAdmin()) {
+        if (parentID == null && authorizationHelper.isAdmin()) {
             throw new IllegalArgumentException("Admin must provide a parentID to retrieve children");
         }
         ParentEntity parent;
@@ -69,19 +69,6 @@ public class GetChildService {
                         .map(getChildConverter::toDto)
                         .collect(Collectors.toList()))
                 .build();
-    }
-
-    /**
-     * Checks if the authenticated user has the role of an administrator.
-     * This method retrieves the authentication details from the SecurityContextHolder
-     * and checks if the user has the `ROLE_ADMIN` authority.
-     *
-     * @return `true` if the authenticated user has the `ROLE_ADMIN` authority, otherwise `false`.
-     */
-    private boolean isAdmin() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication.getAuthorities().stream()
-                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
     }
 
     /**

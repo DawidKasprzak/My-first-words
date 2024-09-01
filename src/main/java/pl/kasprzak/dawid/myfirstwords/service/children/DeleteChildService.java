@@ -19,17 +19,32 @@ public class DeleteChildService {
     private final ChildrenRepository childrenRepository;
 
     /**
-     * Service method for deleting a child identified by the given ID after validating and authorizing the parent.
-     * This method uses the AuthorizationHelper to validate and authorize the authenticated parent. If the parent is authorized,
-     * the method deletes the child entity from the repository.
+     * Service method for deleting a child identified by the given ID after validating and authorizing
+     * either the authenticated parent or an administrator.
+     * If the authenticated user is an administrator, the method requires a parentID to validate and
+     * authorize the operation for the specified parent. If the user is not an administrator, the method
+     * validates and authorizes the operation based on the authenticated parent's access to the child.
+     * The method uses the AuthorizationHelper to perform the necessary validation and authorization.
+     * Once validated, the child entity is deleted from the repository.
      *
-     * @param childId        the ID of the child to be deleted.
-     * @throws ParentNotFoundException if the authenticated parent is not found.
-     * @throws ChildNotFoundException  if the child with the given ID is not found.
-     * @throws AccessDeniedException   if the authenticated parent does not have access to the child.
+     * @param childId  the ID of the child to be deleted.
+     * @param parentID the ID of the parent, required if the authenticated user is an administrator.
+     * @throws IllegalArgumentException if the authenticated user is an administrator and the parentID is null.
+     * @throws ParentNotFoundException  if the parent with the specified ID is not found.
+     * @throws ChildNotFoundException   if the child with the specified ID is not found.
+     * @throws AccessDeniedException    if the authenticated parent does not have access to the child,
+     *                                  or if the administrator is not authorized for the specified parent.
      */
-    public void deleteChild(Long childId) {
-        ChildEntity child = authorizationHelper.validateAndAuthorizeChild(childId);
-        childrenRepository.deleteById(child.getId());
+    public void deleteChild(Long childId, Long parentID) {
+        if (authorizationHelper.isAdmin()) {
+            if (parentID == null) {
+                throw new IllegalArgumentException("Admin must provide a parentID to delete a child");
+            }
+            authorizationHelper.validateAndAuthorizeChildForAdmin(childId, parentID);
+            childrenRepository.deleteById(childId);
+        } else {
+            ChildEntity child = authorizationHelper.validateAndAuthorizeChild(childId);
+            childrenRepository.deleteById(child.getId());
+        }
     }
 }

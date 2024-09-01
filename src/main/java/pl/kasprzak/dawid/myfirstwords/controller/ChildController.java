@@ -41,17 +41,21 @@ public class ChildController {
     }
 
 
-    @Operation(summary = "Delete a child by ID", description = "Deletes a child by their ID for the authenticated parent or an administrator.")
+    @Operation(summary = "Delete a child by ID",
+            description = "Deletes a child by their ID for the authenticated parent or an administrator. " +
+                    "If the authenticated user is a parent, they can delete their own child without providing a parentID. " +
+                    "If the authenticated user is an administrator, they must provide a parentID to delete the child associated with that parent.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Child deleted successfully"),
-            @ApiResponse(responseCode = "403", description = "Access denied, parent is not the owner of the child or an administrator"),
+            @ApiResponse(responseCode = "400", description = "Bad Request, parentID is required for administrators"),
+            @ApiResponse(responseCode = "403", description = "Access denied, parent is not the owner of the child or user is not an administrator"),
             @ApiResponse(responseCode = "404", description = "Parent or child not found")
     })
     @ChildOwnerOrAdmin
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping(path = "/{childId}")
-    public void deleteChild(@PathVariable Long childId) {
-        deleteChildService.deleteChild(childId);
+    public void deleteChild(@PathVariable Long childId, @RequestParam(value = "parentID", required = false) Long parentID) {
+        deleteChildService.deleteChild(childId, parentID);
     }
 
 
