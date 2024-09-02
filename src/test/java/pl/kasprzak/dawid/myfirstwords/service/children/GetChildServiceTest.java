@@ -7,10 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import pl.kasprzak.dawid.myfirstwords.exception.ParentNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.model.children.Gender;
 import pl.kasprzak.dawid.myfirstwords.model.children.GetAllChildResponse;
@@ -91,6 +88,7 @@ class GetChildServiceTest {
                 .name(child2.getName())
                 .birthDate(child2.getBirthDate())
                 .build();
+
     }
 
 
@@ -104,11 +102,7 @@ class GetChildServiceTest {
         List<ChildEntity> children = Arrays.asList(child1, child2);
         List<GetChildResponse> expectResponse = Arrays.asList(getChildResponse1, getChildResponse2);
 
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
-
-        when(authentication.getName()).thenReturn("parent");
-        when(parentsRepository.findByUsername(authentication.getName())).thenReturn(Optional.of(parentEntity));
+        when(authorizationHelper.validateParentOrAdmin(null)).thenReturn(parentEntity);
         when(childrenRepository.findByParentId(1L)).thenReturn(children);
         when(getChildConverter.toDto(child1)).thenReturn(getChildResponse1);
         when(getChildConverter.toDto(child2)).thenReturn(getChildResponse2);
@@ -116,7 +110,6 @@ class GetChildServiceTest {
         GetAllChildResponse response = getChildService.getAllChildrenOfParent(null);
 
         assertEquals(expectResponse, response.getChildren());
-        verify(parentsRepository, times(1)).findByUsername("parent");
         verify(childrenRepository, times(1)).findByParentId(1L);
         verify(getChildConverter, times(1)).toDto(child1);
         verify(getChildConverter, times(1)).toDto(child2);
@@ -132,21 +125,16 @@ class GetChildServiceTest {
     @Test
     void when_adminGetsAllChildrenByParentID_then_returnAllChildrenForSpecifiedParent() {
         List<ChildEntity> children = Arrays.asList(child1, child2);
-        List<GetChildResponse> expectResponse = Arrays.asList(getChildResponse1, getChildResponse2);
+        List<GetChildResponse> expectedResponse = Arrays.asList(getChildResponse1, getChildResponse2);
 
-        lenient().when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
-
-        lenient().when(authentication.getAuthorities()).thenAnswer(invocationOnMock -> Collections.<GrantedAuthority>singleton(new SimpleGrantedAuthority("ROLE_ADMIN")));
-        when(parentsRepository.findById(1L)).thenReturn(Optional.of(parentEntity));
+        when(authorizationHelper.validateParentOrAdmin(parentEntity.getId())).thenReturn(parentEntity);
         when(childrenRepository.findByParentId(1L)).thenReturn(children);
         when(getChildConverter.toDto(child1)).thenReturn(getChildResponse1);
         when(getChildConverter.toDto(child2)).thenReturn(getChildResponse2);
 
         GetAllChildResponse response = getChildService.getAllChildrenOfParent(1L);
 
-        assertEquals(expectResponse, response.getChildren());
-        verify(parentsRepository, times(1)).findById(1L);
+        assertEquals(expectedResponse, response.getChildren());
         verify(childrenRepository, times(1)).findByParentId(1L);
         verify(getChildConverter, times(1)).toDto(child1);
         verify(getChildConverter, times(1)).toDto(child2);
@@ -159,17 +147,15 @@ class GetChildServiceTest {
      */
     @Test
     void when_getAllChildrenOfParent_then_throwParentNotFoundException() {
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
 
-        when(authentication.getName()).thenReturn("parent");
-        when(parentsRepository.findByUsername(authentication.getName())).thenReturn(Optional.empty());
+        when(authorizationHelper.validateParentOrAdmin(null))
+                .thenThrow(new ParentNotFoundException("Parent not found"));
 
         ParentNotFoundException parentNotFoundException = assertThrows(ParentNotFoundException.class,
                 () -> getChildService.getAllChildrenOfParent(null));
 
         assertEquals("Parent not found", parentNotFoundException.getMessage());
-        verify(parentsRepository, times(1)).findByUsername(authentication.getName());
+        verify(authorizationHelper, times(1)).validateParentOrAdmin(null);
         verify(childrenRepository, never()).findByParentId(anyLong());
         verify(getChildConverter, never()).toDto(any());
 
@@ -179,21 +165,18 @@ class GetChildServiceTest {
      * Unit test for the getAllChildrenOfParent method in GetChildService.
      * Verifies that when an administrator does not provide a parent ID, the method throws
      * an IllegalArgumentException with the appropriate error message.
-     * The test mocks the SecurityContext to simulate an admin user and ensures that no
-     * repository or converter methods are called when the exception is thrown.
      */
     @Test
     void when_adminDoesNotProvideParentID_then_throwIllegalArgumentException() {
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
 
-        when(authentication.getAuthorities()).thenAnswer(invocationOnMock -> Collections.<GrantedAuthority>singleton(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        when(authorizationHelper.validateParentOrAdmin(null))
+                .thenThrow(new IllegalArgumentException("Admin must provide a parentID to retrieve children"));
 
         IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,
                 () -> getChildService.getAllChildrenOfParent(null));
 
         assertEquals("Admin must provide a parentID to retrieve children", illegalArgumentException.getMessage());
-
+        verify(authorizationHelper, times(1)).validateParentOrAdmin(null);
         verify(parentsRepository, never()).findById(anyLong());
         verify(childrenRepository, never()).findByParentId(anyLong());
     }
@@ -207,13 +190,52 @@ class GetChildServiceTest {
     void when_getChildById_then_returnChildWithSpecificId() {
         Long childId = child1.getId();
 
-        when(authorizationHelper.validateAndAuthorizeChild(childId)).thenReturn(child1);
+        when(authorizationHelper.validateAndAuthorizeForAdminOrParent(childId, null)).thenReturn(child1);
         when(getChildConverter.toDto(child1)).thenReturn(getChildResponse1);
 
-        GetChildResponse response = getChildService.getChildById(childId);
+        GetChildResponse response = getChildService.getChildById(childId, null);
 
         assertEquals(getChildResponse1, response);
-        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childId);
+        verify(authorizationHelper, times(1)).validateAndAuthorizeForAdminOrParent(childId, null);
         verify(getChildConverter, times(1)).toDto(child1);
+    }
+
+
+    /**
+     * Unit test for getChildById method in GetChildService when accessed by an administrator.
+     * This test verifies that when an administrator requests a child's details by its ID and the parent's ID,
+     * the child entity is retrieved and correctly converted to a DTO.
+     */
+    @Test
+    void when_adminGetsChildById_then_childShouldBeReturned() {
+        Long parentID = parentEntity.getId();
+        Long childID = child1.getId();
+
+        when(authorizationHelper.validateAndAuthorizeForAdminOrParent(childID, parentID)).thenReturn(child1);
+        when(getChildConverter.toDto(child1)).thenReturn(getChildResponse1);
+
+        GetChildResponse response = getChildService.getChildById(childID, parentID);
+
+        assertEquals(childID, response.getId());
+        verify(authorizationHelper, times(1)).validateAndAuthorizeForAdminOrParent(childID, parentID);
+        verify(getChildConverter, times(1)).toDto(child1);
+    }
+
+    /**
+     * Unit test for the getChildById method in GetChildService.
+     * Verifies that when an administrator does not provide a parent ID, the method throws
+     * an IllegalArgumentException with the appropriate error message.
+     */
+    @Test
+    void when_adminDoesNotProvideParentIDForSingleChild_then_throwIllegalArgumentException() {
+        when(authorizationHelper.validateAndAuthorizeForAdminOrParent(child1.getId(), null))
+                .thenThrow(new IllegalArgumentException("Admin must provide a parentID to retrieve children"));
+
+        IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,
+                () -> getChildService.getChildById(1L, null));
+
+        assertEquals("Admin must provide a parentID to retrieve children", illegalArgumentException.getMessage());
+        verify(authorizationHelper, times(1)).validateAndAuthorizeForAdminOrParent(child1.getId(), null);
+        verify(getChildConverter, never()).toDto(any());
     }
 }

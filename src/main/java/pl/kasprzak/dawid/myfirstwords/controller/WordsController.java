@@ -29,7 +29,7 @@ public class WordsController {
     private final DeleteWordService deleteWordService;
     private final GetWordService getWordService;
 
-    @Operation(summary = "Add a new word", description = "Creates a new word for the specified child. This endpoint is accessible to authenticated parents and administrators and verifies the parent-child relationship.")
+    @Operation(summary = "Add a new word", description = "Creates a new word for the specified child. This endpoint is accessible to authenticated parents and verifies the parent-child relationship.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Word successfully created"),
             @ApiResponse(responseCode = "400", description = "Invalid input data"),

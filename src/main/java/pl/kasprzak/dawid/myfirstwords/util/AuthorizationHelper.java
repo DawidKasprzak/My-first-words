@@ -80,4 +80,57 @@ public class AuthorizationHelper {
         }
         return child;
     }
+
+    /**
+     * Validates and authorizes access to a child based on the provided child ID and optionally the parent ID.
+     * This method determines whether the authenticated user is an admin or a parent:
+     * If the user is an admin, the method requires a valid parent ID and verifies that the child belongs to that parent.
+     * If the user is a parent, the method validates and authorizes access based on the authenticated parent's identity.
+     * If validation and authorization are successful, the corresponding ChildEntity is returned.
+     *
+     * @param childID  The ID of the child to be validated and authorized.
+     * @param parentID The ID of the parent, required if the authenticated user is an admin.
+     * @return The ChildEntity if the validation and authorization are successful.
+     * @throws IllegalArgumentException if the authenticated user is an admin and the parentID is null.
+     * @throws ParentNotFoundException  if the specified parent (for admin) or authenticated parent (for regular user) is not found.
+     * @throws ChildNotFoundException   if the child with the specified ID is not found.
+     * @throws AccessDeniedException    if the parent (either specified or authenticated) does not have access to the specified child.
+     */
+    public ChildEntity validateAndAuthorizeForAdminOrParent(Long childID, Long parentID) {
+        if (isAdmin()) {
+            if (parentID == null) {
+                throw new IllegalArgumentException("Admin must provide a parentID to perform this operation.");
+            }
+            return validateAndAuthorizeChildForAdmin(childID, parentID);
+        } else {
+            return validateAndAuthorizeChild(childID);
+        }
+    }
+
+    /**
+     * Validates and authorizes the parent or admin based on the provided parent ID.
+     * This method determines whether the authenticated user is an admin or a parent:
+     * If the user is an admin, the method requires a valid parent ID and verifies that the parent exists.
+     * If the user is a parent, the method retrieves the authenticated parent's details from the SecurityContextHolder.
+     * This method is useful in cases where a parent or admin needs to perform actions related to parent entities,
+     * but a specific child ID is not required for the operation.
+     *
+     * @param parentID The ID of the parent, required if the authenticated user is an admin.
+     * @return The ParentEntity if the validation and authorization are successful.
+     * @throws IllegalArgumentException if the authenticated user is an admin and the parentID is null.
+     * @throws ParentNotFoundException  if the specified parent (for admin) or authenticated parent (for regular user) is not found.
+     */
+    public ParentEntity validateParentOrAdmin(Long parentID) {
+        if (isAdmin()) {
+            if (parentID == null) {
+                throw new IllegalArgumentException("Admin must provide a parentID to perform this operation.");
+            }
+            return parentsRepository.findById(parentID)
+                    .orElseThrow(() -> new ParentNotFoundException("Parent not found"));
+        } else {
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            return parentsRepository.findByUsername(username)
+                    .orElseThrow(() -> new ParentNotFoundException("Parent not found"));
+        }
+    }
 }

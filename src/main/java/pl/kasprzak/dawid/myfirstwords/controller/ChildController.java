@@ -77,16 +77,20 @@ public class ChildController {
     }
 
 
-    @Operation(summary = "Retrieve a child by their ID", description = "Fetches details of a specific child by their ID for the authenticated parent or an administrator.")
+    @Operation(summary = "Retrieve a child by their ID",
+            description = "Fetches details of a specific child by their ID for the authenticated parent or an administrator. " +
+                    "If the authenticated user is a parent, they can retrieve their own child without providing a parentID. " +
+                    "If the authenticated user is an administrator, they must provide a parentID to retrieve the details of the child associated with that parent.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Child details retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Bad Request, parentID is required for administrators"),
             @ApiResponse(responseCode = "403", description = "Access denied, user is not authorized to access the child"),
             @ApiResponse(responseCode = "404", description = "Parent or child not found")
     })
     @ChildOwnerOrAdmin
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}")
-    public GetChildResponse getChildById(@PathVariable Long childId) {
-        return getChildService.getChildById(childId);
+    public GetChildResponse getChildById(@PathVariable Long childId, @RequestParam(value = "parentID", required = false) Long parentID) {
+        return getChildService.getChildById(childId, parentID);
     }
 }

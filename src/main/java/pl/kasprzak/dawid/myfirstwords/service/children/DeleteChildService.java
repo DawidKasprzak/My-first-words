@@ -36,15 +36,7 @@ public class DeleteChildService {
      *                                  or if the administrator is not authorized for the specified parent.
      */
     public void deleteChild(Long childId, Long parentID) {
-        if (authorizationHelper.isAdmin()) {
-            if (parentID == null) {
-                throw new IllegalArgumentException("Admin must provide a parentID to delete a child");
-            }
-            authorizationHelper.validateAndAuthorizeChildForAdmin(childId, parentID);
-            childrenRepository.deleteById(childId);
-        } else {
-            ChildEntity child = authorizationHelper.validateAndAuthorizeChild(childId);
-            childrenRepository.deleteById(child.getId());
-        }
+        ChildEntity child = authorizationHelper.validateAndAuthorizeForAdminOrParent(childId, parentID);
+        childrenRepository.deleteById(child.getId());
     }
 }
