@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import pl.kasprzak.dawid.myfirstwords.exception.ChildNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.exception.ParentNotFoundException;
+import pl.kasprzak.dawid.myfirstwords.exception.AdminMissingParentIDException;
 import pl.kasprzak.dawid.myfirstwords.repository.ChildrenRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.ChildEntity;
 import pl.kasprzak.dawid.myfirstwords.util.AuthorizationHelper;
@@ -29,11 +30,11 @@ public class DeleteChildService {
      *
      * @param childId  the ID of the child to be deleted.
      * @param parentID the ID of the parent, required if the authenticated user is an administrator.
-     * @throws IllegalArgumentException if the authenticated user is an administrator and the parentID is null.
-     * @throws ParentNotFoundException  if the parent with the specified ID is not found.
-     * @throws ChildNotFoundException   if the child with the specified ID is not found.
-     * @throws AccessDeniedException    if the authenticated parent does not have access to the child,
-     *                                  or if the administrator is not authorized for the specified parent.
+     * @throws AdminMissingParentIDException if the authenticated user is an administrator and the parentID is null.
+     * @throws ParentNotFoundException       if the parent with the specified ID is not found.
+     * @throws ChildNotFoundException        if the child with the specified ID is not found.
+     * @throws AccessDeniedException         if the authenticated parent does not have access to the child,
+     *                                       or if the administrator is not authorized for the specified parent.
      */
     public void deleteChild(Long childId, Long parentID) {
         ChildEntity child = authorizationHelper.validateAndAuthorizeForAdminOrParent(childId, parentID);

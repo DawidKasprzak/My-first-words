@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import pl.kasprzak.dawid.myfirstwords.exception.ChildNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.exception.ParentNotFoundException;
+import pl.kasprzak.dawid.myfirstwords.exception.AdminMissingParentIDException;
 import pl.kasprzak.dawid.myfirstwords.model.children.GetAllChildResponse;
 import pl.kasprzak.dawid.myfirstwords.model.children.GetChildResponse;
 import pl.kasprzak.dawid.myfirstwords.repository.ChildrenRepository;
@@ -41,9 +42,9 @@ public class GetChildService {
      * @param parentID The ID of the parent whose children are to be retrieved. Optional for parents,
      *                 but required for admins.
      * @return a GetAllChildResponse containing a list of all child DTOs for the specified or authenticated parent.
-     * @throws ParentNotFoundException  if the parent with the specified `parentID` or the authenticated parent
-     *                                  cannot be found.
-     * @throws IllegalArgumentException if the authenticated user is an admin and does not provide a `parentID`.
+     * @throws ParentNotFoundException       if the parent with the specified `parentID` or the authenticated parent
+     *                                       cannot be found.
+     * @throws AdminMissingParentIDException if the authenticated user is an admin and does not provide a `parentID`.
      */
     @Transactional
     public GetAllChildResponse getAllChildrenOfParent(Long parentID) {
@@ -67,11 +68,11 @@ public class GetChildService {
      * @param childId  the ID of the child to be retrieved.
      * @param parentID the ID of the parent, required if the authenticated user is an administrator.
      * @return a GetChildResponse containing the child DTO.
-     * @throws IllegalArgumentException if the authenticated user is an administrator and the parentID is null.
-     * @throws ParentNotFoundException  if the parent with the specified ID is not found.
-     * @throws ChildNotFoundException   if the child with the given ID is not found.
-     * @throws AccessDeniedException    if the authenticated parent does not have access to the child,
-     *                                  or if the administrator is not authorized for the specified parent.
+     * @throws AdminMissingParentIDException if the authenticated user is an administrator and the parentID is null.
+     * @throws ParentNotFoundException       if the parent with the specified ID is not found.
+     * @throws ChildNotFoundException        if the child with the given ID is not found.
+     * @throws AccessDeniedException         if the authenticated parent does not have access to the child,
+     *                                       or if the administrator is not authorized for the specified parent.
      */
     public GetChildResponse getChildById(Long childId, Long parentID) {
         ChildEntity child = authorizationHelper.validateAndAuthorizeForAdminOrParent(childId, parentID);

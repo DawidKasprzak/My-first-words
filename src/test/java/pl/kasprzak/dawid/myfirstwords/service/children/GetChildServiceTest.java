@@ -6,8 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
+import pl.kasprzak.dawid.myfirstwords.exception.AdminMissingParentIDException;
 import pl.kasprzak.dawid.myfirstwords.exception.ParentNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.model.children.Gender;
 import pl.kasprzak.dawid.myfirstwords.model.children.GetAllChildResponse;
@@ -27,18 +26,12 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class GetChildServiceTest {
-
-
     @Mock
     private ChildrenRepository childrenRepository;
     @Mock
     private ParentsRepository parentsRepository;
     @Mock
     private GetChildConverter getChildConverter;
-    @Mock
-    private SecurityContext securityContext;
-    @Mock
-    private Authentication authentication;
     @Mock
     private AuthorizationHelper authorizationHelper;
     @InjectMocks
@@ -94,7 +87,7 @@ class GetChildServiceTest {
 
     /**
      * Unit test for getAllChildrenOfParent method in GetChildService.
-     * Verifies that the parent is authenticated and authorized using SecurityContextHolder.
+     * Verifies that the parent is authenticated and authorized using AuthorizationHelper.
      * Then verifies that all children of the authenticated parent are retrieved and correctly converted to DTOs.
      */
     @Test
@@ -119,14 +112,14 @@ class GetChildServiceTest {
      * Unit test for the getAllChildrenOfParent method in GetChildService.
      * Verifies that when an administrator provides a valid parent ID, the method correctly retrieves
      * all children associated with that parent and converts them to DTOs.
-     * The test mocks the SecurityContext to simulate an admin user and ensures that the appropriate
-     * repositories and converters are called, resulting in a correct response.
+     * Simulates the admin scenario using lenient stubbing.
      */
     @Test
     void when_adminGetsAllChildrenByParentID_then_returnAllChildrenForSpecifiedParent() {
         List<ChildEntity> children = Arrays.asList(child1, child2);
         List<GetChildResponse> expectedResponse = Arrays.asList(getChildResponse1, getChildResponse2);
 
+        lenient().when(authorizationHelper.isAdmin()).thenReturn(true);
         when(authorizationHelper.validateParentOrAdmin(parentEntity.getId())).thenReturn(parentEntity);
         when(childrenRepository.findByParentId(1L)).thenReturn(children);
         when(getChildConverter.toDto(child1)).thenReturn(getChildResponse1);
@@ -142,8 +135,8 @@ class GetChildServiceTest {
 
     /**
      * Unit test for getAllChildrenOfParent method in GetChildService.
-     * Verifies that a ParentNotFoundException is thrown and the appropriate error message is returned,
-     * when the parent is not found.
+     * Verifies that a ParentNotFoundException is thrown and the appropriate error message is returned
+     * when the parent is not found during the validation process.
      */
     @Test
     void when_getAllChildrenOfParent_then_throwParentNotFoundException() {
@@ -164,18 +157,20 @@ class GetChildServiceTest {
     /**
      * Unit test for the getAllChildrenOfParent method in GetChildService.
      * Verifies that when an administrator does not provide a parent ID, the method throws
-     * an IllegalArgumentException with the appropriate error message.
+     * an AdminMissingParentIDException with the appropriate error message.
+     * This test uses lenient stubbing to simulate an admin user who fails to provide a parent ID.
      */
     @Test
     void when_adminDoesNotProvideParentID_then_throwIllegalArgumentException() {
 
+        lenient().when(authorizationHelper.isAdmin()).thenReturn(true);
         when(authorizationHelper.validateParentOrAdmin(null))
-                .thenThrow(new IllegalArgumentException("Admin must provide a parentID to retrieve children"));
+                .thenThrow(new AdminMissingParentIDException("Admin must provide a parentID to retrieve children"));
 
-        IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,
+        AdminMissingParentIDException adminMissingParentIDException = assertThrows(AdminMissingParentIDException.class,
                 () -> getChildService.getAllChildrenOfParent(null));
 
-        assertEquals("Admin must provide a parentID to retrieve children", illegalArgumentException.getMessage());
+        assertEquals("Admin must provide a parentID to retrieve children", adminMissingParentIDException.getMessage());
         verify(authorizationHelper, times(1)).validateParentOrAdmin(null);
         verify(parentsRepository, never()).findById(anyLong());
         verify(childrenRepository, never()).findByParentId(anyLong());
@@ -183,7 +178,7 @@ class GetChildServiceTest {
 
     /**
      * Unit test for getChildById method in GetChildService.
-     * First verifies that the child belongs to the authenticated parent.
+     * Verifies that the child belongs to the authenticated parent.
      * Then verifies that a child with a specific ID is retrieved and correctly converted to a DTO.
      */
     @Test
@@ -205,12 +200,14 @@ class GetChildServiceTest {
      * Unit test for getChildById method in GetChildService when accessed by an administrator.
      * This test verifies that when an administrator requests a child's details by its ID and the parent's ID,
      * the child entity is retrieved and correctly converted to a DTO.
+     * Lenient stubbing is used to simulate an admin user.
      */
     @Test
     void when_adminGetsChildById_then_childShouldBeReturned() {
         Long parentID = parentEntity.getId();
         Long childID = child1.getId();
 
+        lenient().when(authorizationHelper.isAdmin()).thenReturn(true);
         when(authorizationHelper.validateAndAuthorizeForAdminOrParent(childID, parentID)).thenReturn(child1);
         when(getChildConverter.toDto(child1)).thenReturn(getChildResponse1);
 
@@ -224,17 +221,19 @@ class GetChildServiceTest {
     /**
      * Unit test for the getChildById method in GetChildService.
      * Verifies that when an administrator does not provide a parent ID, the method throws
-     * an IllegalArgumentException with the appropriate error message.
+     * an AdminMissingParentIDException with the appropriate error message.
+     * Lenient stubbing is used to simulate an admin user who fails to provide a parent ID.
      */
     @Test
     void when_adminDoesNotProvideParentIDForSingleChild_then_throwIllegalArgumentException() {
+        lenient().when(authorizationHelper.isAdmin()).thenReturn(true);
         when(authorizationHelper.validateAndAuthorizeForAdminOrParent(child1.getId(), null))
-                .thenThrow(new IllegalArgumentException("Admin must provide a parentID to retrieve children"));
+                .thenThrow(new AdminMissingParentIDException("Admin must provide a parentID to retrieve children"));
 
-        IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,
+        AdminMissingParentIDException adminMissingParentIDException = assertThrows(AdminMissingParentIDException.class,
                 () -> getChildService.getChildById(1L, null));
 
-        assertEquals("Admin must provide a parentID to retrieve children", illegalArgumentException.getMessage());
+        assertEquals("Admin must provide a parentID to retrieve children", adminMissingParentIDException.getMessage());
         verify(authorizationHelper, times(1)).validateAndAuthorizeForAdminOrParent(child1.getId(), null);
         verify(getChildConverter, never()).toDto(any());
     }

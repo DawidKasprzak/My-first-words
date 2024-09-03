@@ -72,4 +72,10 @@ public class GlobalExceptionHandler {
     public String handleEmailAlreadyExistsException(EmailAlreadyExistsException exception) {
         return exception.getMessage();
     }
+
+    @ExceptionHandler(AdminMissingParentIDException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String handleAdminMissingParentIDException(AdminMissingParentIDException exception){
+        return exception.getMessage();
+    }
 }

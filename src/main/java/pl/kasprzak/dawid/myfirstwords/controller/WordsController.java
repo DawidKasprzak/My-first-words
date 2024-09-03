@@ -43,17 +43,22 @@ public class WordsController {
         return createWordService.addWord(childId, request);
     }
 
-    @Operation(summary = "Delete a word", description = "Deletes a word by its ID for the specified child. This endpoint is accessible to authenticated parents and administrators, and verifies the parent-child relationship.")
+    @Operation(summary = "Delete a word by ID",
+            description = "Deletes a word by its ID for the specified child for the authenticated parent or an administrator. " +
+                    "If the authenticated user is a parent, they can delete a word for their own child without providing a parentID. " +
+                    "If the authenticated user is an administrator, they must provide a parentID to delete a word associated with a child of that parent.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Word successfully deleted"),
-            @ApiResponse(responseCode = "403", description = "Access denied, parent is not the owner of the child or an administrator"),
+            @ApiResponse(responseCode = "400", description = "Bad Request, parentID is required for administrators"),
+            @ApiResponse(responseCode = "403", description = "Access denied, parent is not the owner of the child or user is not an administrator"),
             @ApiResponse(responseCode = "404", description = "Parent, child or word not found")
     })
     @ChildOwnerOrAdmin
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping(path = "/{childId}/{wordId}")
-    public void deleteWord(@PathVariable Long childId, @PathVariable Long wordId) {
-        deleteWordService.deleteWord(childId, wordId);
+    public void deleteWord(@PathVariable Long childId, @PathVariable Long wordId,
+                           @RequestParam(value = "parentID", required = false) Long parentID) {
+        deleteWordService.deleteWord(childId, wordId, parentID);
     }
 
     @Operation(summary = "Get words before a date", description = "Fetches all words added before the specified date for a specific child. This endpoint is accessible to authenticated parents and administrators and verifies the parent-child relationship.")

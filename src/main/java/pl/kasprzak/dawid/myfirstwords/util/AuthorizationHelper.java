@@ -5,6 +5,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import pl.kasprzak.dawid.myfirstwords.exception.AdminMissingParentIDException;
 import pl.kasprzak.dawid.myfirstwords.exception.ChildNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.exception.ParentNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.repository.ChildrenRepository;
@@ -99,7 +100,7 @@ public class AuthorizationHelper {
     public ChildEntity validateAndAuthorizeForAdminOrParent(Long childID, Long parentID) {
         if (isAdmin()) {
             if (parentID == null) {
-                throw new IllegalArgumentException("Admin must provide a parentID to perform this operation.");
+                throw new AdminMissingParentIDException("Admin must provide a parentID to perform this operation.");
             }
             return validateAndAuthorizeChildForAdmin(childID, parentID);
         } else {
@@ -123,7 +124,7 @@ public class AuthorizationHelper {
     public ParentEntity validateParentOrAdmin(Long parentID) {
         if (isAdmin()) {
             if (parentID == null) {
-                throw new IllegalArgumentException("Admin must provide a parentID to perform this operation.");
+                throw new AdminMissingParentIDException("Admin must provide a parentID to perform this operation.");
             }
             return parentsRepository.findById(parentID)
                     .orElseThrow(() -> new ParentNotFoundException("Parent not found"));
