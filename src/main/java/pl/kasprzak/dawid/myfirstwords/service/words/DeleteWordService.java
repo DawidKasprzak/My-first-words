@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import pl.kasprzak.dawid.myfirstwords.exception.ChildNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.exception.ParentNotFoundException;
+import pl.kasprzak.dawid.myfirstwords.exception.AdminMissingParentIDException;
 import org.springframework.stereotype.Service;
 import pl.kasprzak.dawid.myfirstwords.exception.WordNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.util.AuthorizationHelper;
@@ -32,11 +33,11 @@ public class DeleteWordService {
      * @param childId  the ID of the child to whom the word belongs.
      * @param wordId   the ID of the word to be deleted.
      * @param parentID the ID of the parent, required if the authenticated user is an administrator.
-     * @throws IllegalArgumentException if the authenticated user is an admin and the parentID is null.
-     * @throws ParentNotFoundException  if the specified parent (for admin) or authenticated parent (for regular user) is not found.
-     * @throws ChildNotFoundException   if the child with the given ID is not found.
-     * @throws AccessDeniedException    if the authenticated parent does not have access to the child.
-     * @throws WordNotFoundException    if the word with the given ID is not found for the specified child.
+     * @throws AdminMissingParentIDException if the authenticated user is an admin and the parentID is null.
+     * @throws ParentNotFoundException       if the specified parent (for admin) or authenticated parent (for regular user) is not found.
+     * @throws ChildNotFoundException        if the child with the given ID is not found.
+     * @throws AccessDeniedException         if the authenticated parent does not have access to the child.
+     * @throws WordNotFoundException         if the word with the given ID is not found for the specified child.
      */
     public void deleteWord(Long childId, Long wordId, Long parentID) {
         authorizationHelper.validateAndAuthorizeForAdminOrParent(childId, parentID);

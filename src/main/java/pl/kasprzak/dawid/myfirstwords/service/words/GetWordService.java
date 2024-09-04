@@ -7,6 +7,7 @@ import pl.kasprzak.dawid.myfirstwords.exception.ParentNotFoundException;
 import pl.kasprzak.dawid.myfirstwords.exception.DateValidationException;
 import pl.kasprzak.dawid.myfirstwords.exception.InvalidDateOrderException;
 import pl.kasprzak.dawid.myfirstwords.exception.WordNotFoundException;
+import pl.kasprzak.dawid.myfirstwords.exception.AdminMissingParentIDException;
 import pl.kasprzak.dawid.myfirstwords.util.AuthorizationHelper;
 import pl.kasprzak.dawid.myfirstwords.model.words.GetAllWordsResponse;
 import pl.kasprzak.dawid.myfirstwords.model.words.GetWordResponse;
@@ -30,18 +31,20 @@ public class GetWordService {
 
     /**
      * Service method for retrieving words for a child that were achieved before the given date.
-     * This method validates and authorizes the parent using the AuthorizationHelper,
+     * This method validates and authorizes the parent or admin using the AuthorizationHelper,
      * and fetches words achieved before the specified date.
      *
-     * @param childId        the ID of the child whose words are to be retrieved.
-     * @param date           the date before which words were achieved.
+     * @param childId  the ID of the child whose words are to be retrieved.
+     * @param date     the date before which words were achieved.
+     * @param parentID the ID of the parent (optional, required for admins).
      * @return a list of GetWordResponse DTOs containing the words achieved before the given date.
-     * @throws ParentNotFoundException if the authenticated parent is not found.
-     * @throws ChildNotFoundException  if the child with the given ID is not found.
-     * @throws AccessDeniedException   if the authenticated parent does not have access to the child.
+     * @throws ParentNotFoundException       if the authenticated parent or the parent with the given ID is not found.
+     * @throws ChildNotFoundException        if the child with the given ID is not found.
+     * @throws AccessDeniedException         if the authenticated parent or admin does not have access to the child.
+     * @throws AdminMissingParentIDException if the admin does not provide a parentID.
      */
-    public List<GetWordResponse> getByDateAchieveBefore(Long childId, LocalDate date) {
-        authorizationHelper.validateAndAuthorizeChild(childId);
+    public List<GetWordResponse> getByDateAchieveBefore(Long childId, LocalDate date, Long parentID) {
+        authorizationHelper.validateAndAuthorizeForAdminOrParent(childId, parentID);
         List<WordEntity> words = wordsRepository.findByChildIdAndDateAchieveBefore(childId, date);
         return words.stream()
                 .map(getWordsConverter::toDto)
@@ -50,18 +53,20 @@ public class GetWordService {
 
     /**
      * Service method for retrieving words for a child that were achieved after the given date.
-     * This method validates and authorizes the parent using the AuthorizationHelper,
+     * This method validates and authorizes the parent or admin using the AuthorizationHelper,
      * and fetches words achieved after the specified date.
      *
-     * @param childId        the ID of the child whose words are to be retrieved.
-     * @param date           the date after which words were achieved.
+     * @param childId  the ID of the child whose words are to be retrieved.
+     * @param date     the date before which words were achieved.
+     * @param parentID the ID of the parent (optional, required for admins).
      * @return a list of GetWordResponse DTOs containing the words achieved after the given date.
-     * @throws ParentNotFoundException if the authenticated parent is not found.
-     * @throws ChildNotFoundException  if the child with the given ID is not found.
-     * @throws AccessDeniedException   if the authenticated parent does not have access to the child.
+     * @throws ParentNotFoundException       if the authenticated parent or the parent with the given ID is not found.
+     * @throws ChildNotFoundException        if the child with the given ID is not found.
+     * @throws AccessDeniedException         if the authenticated parent or admin does not have access to the child.
+     * @throws AdminMissingParentIDException if the admin does not provide a parentID.
      */
-    public List<GetWordResponse> getByDateAchieveAfter(Long childId, LocalDate date) {
-        authorizationHelper.validateAndAuthorizeChild(childId);
+    public List<GetWordResponse> getByDateAchieveAfter(Long childId, LocalDate date, Long parentID) {
+        authorizationHelper.validateAndAuthorizeForAdminOrParent(childId, parentID);
         List<WordEntity> words = wordsRepository.findByChildIdAndDateAchieveAfter(childId, date);
         return words.stream()
                 .map(getWordsConverter::toDto)
@@ -73,9 +78,9 @@ public class GetWordService {
      * This method validates and authorizes the parent using the AuthorizationHelper,
      * and fetches words achieved between the specified date.
      *
-     * @param childId        the ID of the child whose words are to be retrieved.
-     * @param startDate      the start date of the range.
-     * @param endDate        the end date of the range.
+     * @param childId   the ID of the child whose words are to be retrieved.
+     * @param startDate the start date of the range.
+     * @param endDate   the end date of the range.
      * @return a list of GetWordResponse DTOs containing the words achieved between the given dates.
      * @throws ParentNotFoundException   if the authenticated parent is not found.
      * @throws ChildNotFoundException    if the child with the given ID is not found.
@@ -102,8 +107,8 @@ public class GetWordService {
      * This method validates and authorizes the parent using the AuthorizationHelper,
      * and fetches the word for the specified child.
      *
-     * @param childId        the ID of the child whose word is to be retrieved.
-     * @param word           the word to be retrieved.
+     * @param childId the ID of the child whose word is to be retrieved.
+     * @param word    the word to be retrieved.
      * @return a GetWordResponse DTO containing the word details.
      * @throws ParentNotFoundException if the authenticated parent is not found.
      * @throws ChildNotFoundException  if the child with the given ID is not found.
@@ -122,7 +127,7 @@ public class GetWordService {
      * This method validates and authorizes the parent using the AuthorizationHelper,
      * and fetches all words for the specified child.
      *
-     * @param childId        the ID of the child whose words are to be retrieved.
+     * @param childId the ID of the child whose words are to be retrieved.
      * @return a GetAllWordsResponse DTO containing a list of all words for the child.
      * @throws ParentNotFoundException if the authenticated parent is not found.
      * @throws ChildNotFoundException  if the child with the given ID is not found.

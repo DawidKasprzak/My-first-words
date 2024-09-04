@@ -61,30 +61,40 @@ public class WordsController {
         deleteWordService.deleteWord(childId, wordId, parentID);
     }
 
-    @Operation(summary = "Get words before a date", description = "Fetches all words added before the specified date for a specific child. This endpoint is accessible to authenticated parents and administrators and verifies the parent-child relationship.")
+    @Operation(summary = "Get words before a specified date",
+            description = "Fetches all words added before the specified date for the specified child. " +
+                    "If the authenticated user is a parent, they can retrieve words for their own child without providing a parentID. " +
+                    "If the authenticated user is an administrator, they must provide a parentID to retrieve words associated with a child of that parent.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Words successfully retrieved"),
-            @ApiResponse(responseCode = "403", description = "Access denied, user is not authorized to access the child"),
+            @ApiResponse(responseCode = "400", description = "Bad Request, parentID is required for administrators"),
+            @ApiResponse(responseCode = "403", description = "Access denied, parent is not the owner of the child or user is not an administrator"),
             @ApiResponse(responseCode = "404", description = "Parent or child not found")
     })
     @ChildOwnerOrAdmin
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}/before/{date}")
-    public List<GetWordResponse> getByDateAchieveBefore(@PathVariable Long childId, @PathVariable LocalDate date) {
-        return getWordService.getByDateAchieveBefore(childId, date);
+    public List<GetWordResponse> getByDateAchieveBefore(@PathVariable Long childId, @PathVariable LocalDate date,
+                                                        @RequestParam(value = "parentID", required = false) Long parentID) {
+        return getWordService.getByDateAchieveBefore(childId, date, parentID);
     }
 
-    @Operation(summary = "Get words after a date", description = "Fetches all words added after the specified date for a specific child. This endpoint is accessible to authenticated parents and administrators, and verifies the parent-child relationship.")
+    @Operation(summary = "Get words after a specified date",
+            description = "Fetches all words added after the specified date for the specified child. " +
+                    "If the authenticated user is a parent, they can retrieve words for their own child without providing a parentID. " +
+                    "If the authenticated user is an administrator, they must provide a parentID to retrieve words associated with a child of that parent.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Words successfully retrieved"),
-            @ApiResponse(responseCode = "403", description = "Access denied, user is not authorized to access the child"),
+            @ApiResponse(responseCode = "400", description = "Bad Request, parentID is required for administrators"),
+            @ApiResponse(responseCode = "403", description = "Access denied, parent is not the owner of the child or user is not an administrator"),
             @ApiResponse(responseCode = "404", description = "Parent or child not found")
     })
     @ChildOwnerOrAdmin
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}/after/{date}")
-    public List<GetWordResponse> getByDateAchieveAfter(@PathVariable Long childId, @PathVariable LocalDate date) {
-        return getWordService.getByDateAchieveAfter(childId, date);
+    public List<GetWordResponse> getByDateAchieveAfter(@PathVariable Long childId, @PathVariable LocalDate date,
+                                                       @RequestParam(value = "parentID", required = false) Long parentID) {
+        return getWordService.getByDateAchieveAfter(childId, date, parentID);
     }
 
     @Operation(summary = "Get words between dates", description = "Fetches all words added between the specified start and end dates for a specific child. This endpoint is accessible to authenticated parents and administrators, and verifies the parent-child relationship.")

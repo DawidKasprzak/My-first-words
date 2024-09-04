@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import pl.kasprzak.dawid.myfirstwords.exception.AdminMissingParentIDException;
 import pl.kasprzak.dawid.myfirstwords.exception.DateValidationException;
 import pl.kasprzak.dawid.myfirstwords.exception.InvalidDateOrderException;
 import pl.kasprzak.dawid.myfirstwords.exception.WordNotFoundException;
@@ -39,6 +40,7 @@ class GetWordServiceTest {
     @InjectMocks
     private GetWordService getWordService;
 
+    private ParentEntity parentEntity;
     private ChildEntity childEntity;
     private List<WordEntity> wordEntities;
     private WordEntity wordEntity1;
@@ -47,7 +49,8 @@ class GetWordServiceTest {
     @BeforeEach
     void setUp() {
 
-        ParentEntity parentEntity = new ParentEntity();
+        parentEntity = new ParentEntity();
+        parentEntity.setId(1L);
         parentEntity.setUsername("parentName");
         parentEntity.setPassword("password");
 
@@ -93,13 +96,17 @@ class GetWordServiceTest {
     }
 
     /**
-     * Unit test for getByDateAchieveBefore method in GetWordService.
-     * First verifies that the child belongs to the authenticated parent.
-     * Then verifies that words achieved before the given date are retrieved and converted to DTOs.
+     * Unit test for the getByDateAchieveBefore method in GetWordService.
+     * This test verifies that the service correctly retrieves words achieved before a specified date
+     * for a given child and converts them to DTOs.
+     * The test ensures that:
+     * 1. The child is validated and authorized using the AuthorizationHelper for either the authenticated parent or administrator.
+     * 2. The WordsRepository is queried to find words associated with the child that were achieved before the specified date.
+     * 3. Each retrieved WordEntity is converted to a GetWordResponse DTO using the GetWordsConverter.
      */
     @Test
     void when_getByDateAchieveBefore_then_wordsShouldBeReturnedBeforeTheGivenDate() {
-        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId())).thenReturn(childEntity);
+        when(authorizationHelper.validateAndAuthorizeForAdminOrParent(childEntity.getId(), null)).thenReturn(childEntity);
         when(wordsRepository.findByChildIdAndDateAchieveBefore(childEntity.getId(), date)).thenReturn(wordEntities.subList(0, 2));
         // Mock the behavior of getWordsConverter.toDto method to ensure that any WordEntity passed to it
         // is converted to a GetWordResponse using a predefined conversion method, createGetWordResponse.
@@ -110,26 +117,88 @@ class GetWordServiceTest {
             return createGetWordResponse(entity);
         });
 
-        List<GetWordResponse> response = getWordService.getByDateAchieveBefore(childEntity.getId(), date);
+        List<GetWordResponse> response = getWordService.getByDateAchieveBefore(childEntity.getId(), date, null);
 
         assertEquals(2, response.size());
         for (GetWordResponse wordResponse : response) {
             assertTrue(wordResponse.getDateAchieve().isBefore(date));
         }
 
-        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId());
+        verify(authorizationHelper, times(1)).validateAndAuthorizeForAdminOrParent(childEntity.getId(), null);
         verify(wordsRepository, times(1)).findByChildIdAndDateAchieveBefore(childEntity.getId(), date);
         verify(getWordsConverter, times(2)).toDto(any(WordEntity.class));
     }
 
     /**
-     * Unit test for getByDateAchieveAfter method in GetWordService.
-     * First verifies that the child belongs to the authenticated parent.
-     * Then verifies that words achieved after the given date are retrieved and converted to DTOs.
+     * Unit test for the getByDateAchieveBefore method in GetWordService when accessed by an administrator.
+     * This test verifies that the service correctly retrieves words achieved before a specified date
+     * for a given child when the request is made by an administrator.
+     * The test ensures that:
+     * 1. The child is validated and authorized for the administrator using the AuthorizationHelper
+     * with a provided parent ID.
+     * 2. The WordsRepository is queried to find words associated with the child that were achieved
+     * before the specified date.
+     * 3. Each retrieved WordEntity is converted to a GetWordResponse DTO using the GetWordsConverter.
+     */
+    @Test
+    void when_adminGetsWordsByDateAchieveBefore_then_wordsShouldBeReturnedBeforeTheGivenDate() {
+        lenient().when(authorizationHelper.isAdmin()).thenReturn(true);
+        when(authorizationHelper.validateAndAuthorizeForAdminOrParent(childEntity.getId(), parentEntity.getId())).thenReturn(childEntity);
+        when(wordsRepository.findByChildIdAndDateAchieveBefore(childEntity.getId(), date)).thenReturn(wordEntities.subList(0, 2));
+
+        when(getWordsConverter.toDto(any(WordEntity.class))).thenAnswer(invocationOnMock -> {
+            WordEntity entity = invocationOnMock.getArgument(0);
+            return createGetWordResponse(entity);
+        });
+
+        List<GetWordResponse> responses = getWordService.getByDateAchieveBefore(childEntity.getId(), date, parentEntity.getId());
+
+        assertEquals(2, responses.size());
+        for (GetWordResponse wordResponse : responses) {
+            assertTrue(wordResponse.getDateAchieve().isBefore(date));
+        }
+
+        verify(authorizationHelper, times(1)).validateAndAuthorizeForAdminOrParent(childEntity.getId(), parentEntity.getId());
+        verify(wordsRepository, times(1)).findByChildIdAndDateAchieveBefore(childEntity.getId(), date);
+        verify(getWordsConverter, times(2)).toDto(any(WordEntity.class));
+    }
+
+    /**
+     * Unit test for the getByDateAchieveBefore method in GetWordService when accessed by an administrator without a parent ID.
+     * This test verifies that the service correctly throws an AdminMissingParentIDException when the admin
+     * attempts to retrieve words achieved before a specified date without providing a parent ID.
+     * The test ensures that:
+     * 1. The AuthorizationHelper correctly identifies the current user as an admin.
+     * 2. The validateAndAuthorizeForAdminOrParent method throws an AdminMissingParentIDException when no parent ID is provided.
+     * 3. The WordsRepository is never queried if an exception is thrown.
+     */
+    @Test
+    void when_adminGetsWordsByDateAchieveBeforeWithoutParentID_then_adminMissingParentIDExceptionShouldBeThrown() {
+        lenient().when(authorizationHelper.isAdmin()).thenReturn(true);
+        when(authorizationHelper.validateAndAuthorizeForAdminOrParent(childEntity.getId(), null))
+                .thenThrow(new AdminMissingParentIDException("Admin must provide a parentID to retrieve children"));
+
+        AdminMissingParentIDException adminMissingParentIDException = assertThrows(AdminMissingParentIDException.class,
+                () -> getWordService.getByDateAchieveBefore(childEntity.getId(), date, null));
+
+        assertEquals("Admin must provide a parentID to retrieve children", adminMissingParentIDException.getMessage());
+
+        verify(authorizationHelper, never()).validateAndAuthorizeForAdminOrParent(anyLong(), anyLong());
+        verify(wordsRepository, never()).findByChildIdAndDateAchieveBefore(childEntity.getId(), date);
+    }
+
+    /**
+     * Unit test for the getByDateAchieveAfter method in GetWordService.
+     * This test verifies that the service correctly retrieves words achieved after a specified date
+     * for a given child and converts them to DTOs.
+     * The test ensures that:
+     * 1. The child is validated and authorized using the AuthorizationHelper for either the authenticated parent or administrator.
+     * 2. The WordsRepository is queried to find words associated with the child that were achieved after the specified date.
+     * 3. Each retrieved WordEntity is converted to a GetWordResponse DTO using the GetWordsConverter.
      */
     @Test
     void when_getByDateAchieveAfter_then_wordsShouldBeReturnedAfterTheGivenDate() {
-        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId())).thenReturn(childEntity);
+        when(authorizationHelper.validateAndAuthorizeForAdminOrParent(childEntity.getId(), null)).thenReturn(childEntity);
         when(wordsRepository.findByChildIdAndDateAchieveAfter(childEntity.getId(), date)).thenReturn(wordEntities.subList(2, 4));
         // Mock the behavior of getWordsConverter.toDto method to ensure that any WordEntity passed to it
         // is converted to a GetWordResponse using a predefined conversion method, createGetWordResponse.
@@ -140,16 +209,74 @@ class GetWordServiceTest {
             return createGetWordResponse(entity);
         });
 
-        List<GetWordResponse> response = getWordService.getByDateAchieveAfter(childEntity.getId(), date);
+        List<GetWordResponse> response = getWordService.getByDateAchieveAfter(childEntity.getId(), date, null);
 
         assertEquals(2, response.size());
         for (GetWordResponse wordResponse : response) {
             assertTrue(wordResponse.getDateAchieve().isAfter(date));
         }
 
-        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId());
+        verify(authorizationHelper, times(1)).validateAndAuthorizeForAdminOrParent(childEntity.getId(), null);
         verify(wordsRepository, times(1)).findByChildIdAndDateAchieveAfter(childEntity.getId(), date);
         verify(getWordsConverter, times(2)).toDto(any(WordEntity.class));
+    }
+
+    /**
+     * Unit test for the getByDateAchieveAfter method in GetWordService when accessed by an administrator.
+     * This test verifies that the service correctly retrieves words achieved after a specified date
+     * for a given child when the request is made by an administrator.
+     * The test ensures that:
+     * 1. The child is validated and authorized for the administrator using the AuthorizationHelper
+     * with a provided parent ID.
+     * 2. The WordsRepository is queried to find words associated with the child that were achieved
+     * after the specified date.
+     * 3. Each retrieved WordEntity is converted to a GetWordResponse DTO using the GetWordsConverter.
+     */
+    @Test
+    void when_adminGetsWordsByDateAchieveAfter_then_wordsShouldBeReturnedAfterTheGivenDate() {
+        lenient().when(authorizationHelper.isAdmin()).thenReturn(true);
+        when(authorizationHelper.validateAndAuthorizeForAdminOrParent(childEntity.getId(), parentEntity.getId())).thenReturn(childEntity);
+        when(wordsRepository.findByChildIdAndDateAchieveAfter(childEntity.getId(), date)).thenReturn(wordEntities.subList(2, 4));
+
+        when(getWordsConverter.toDto(any(WordEntity.class))).thenAnswer(invocationOnMock -> {
+            WordEntity entity = invocationOnMock.getArgument(0);
+            return createGetWordResponse(entity);
+        });
+
+        List<GetWordResponse> responses = getWordService.getByDateAchieveAfter(childEntity.getId(), date, parentEntity.getId());
+
+        assertEquals(2, responses.size());
+        for (GetWordResponse wordResponse : responses) {
+            assertTrue(wordResponse.getDateAchieve().isAfter(date));
+        }
+
+        verify(authorizationHelper, times(1)).validateAndAuthorizeForAdminOrParent(childEntity.getId(), parentEntity.getId());
+        verify(wordsRepository, times(1)).findByChildIdAndDateAchieveAfter(childEntity.getId(), date);
+        verify(getWordsConverter, times(2)).toDto(any(WordEntity.class));
+    }
+
+    /**
+     * Unit test for the getByDateAchieveAfter method in GetWordService when accessed by an administrator without a parent ID.
+     * This test verifies that the service correctly throws an AdminMissingParentIDException when the admin
+     * attempts to retrieve words achieved after a specified date without providing a parent ID.
+     * The test ensures that:
+     * 1. The AuthorizationHelper correctly identifies the current user as an admin.
+     * 2. The validateAndAuthorizeForAdminOrParent method throws an AdminMissingParentIDException when no parent ID is provided.
+     * 3. The WordsRepository is never queried if an exception is thrown.
+     */
+    @Test
+    void when_adminGetsWordsByDateAchieveAfterWithoutParentID_then_adminMissingParentIDExceptionShouldBeThrown() {
+        lenient().when(authorizationHelper.isAdmin()).thenReturn(true);
+        when(authorizationHelper.validateAndAuthorizeForAdminOrParent(childEntity.getId(), null))
+                .thenThrow(new AdminMissingParentIDException("Admin must provide a parentID to retrieve children"));
+
+        AdminMissingParentIDException adminMissingParentIDException = assertThrows(AdminMissingParentIDException.class,
+                () -> getWordService.getByDateAchieveAfter(childEntity.getId(), date, null));
+
+        assertEquals("Admin must provide a parentID to retrieve children", adminMissingParentIDException.getMessage());
+
+        verify(authorizationHelper, never()).validateAndAuthorizeForAdminOrParent(anyLong(), anyLong());
+        verify(wordsRepository, never()).findByChildIdAndDateAchieveAfter(childEntity.getId(), date);
     }
 
     /**

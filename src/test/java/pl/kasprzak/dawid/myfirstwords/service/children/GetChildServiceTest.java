@@ -161,7 +161,7 @@ class GetChildServiceTest {
      * This test uses lenient stubbing to simulate an admin user who fails to provide a parent ID.
      */
     @Test
-    void when_adminDoesNotProvideParentID_then_throwIllegalArgumentException() {
+    void when_adminDoesNotProvideParentID_then_throwAdminMissingParentIDException() {
 
         lenient().when(authorizationHelper.isAdmin()).thenReturn(true);
         when(authorizationHelper.validateParentOrAdmin(null))
