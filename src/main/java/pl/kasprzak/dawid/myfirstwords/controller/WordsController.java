@@ -39,7 +39,8 @@ public class WordsController {
     @IsLoggedUser
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(path = "/{childId}")
-    public CreateWordResponse addWord(@PathVariable Long childId, @Valid @RequestBody CreateWordRequest request) {
+    public CreateWordResponse addWord(@PathVariable Long childId,
+                                      @Valid @RequestBody CreateWordRequest request) {
         return createWordService.addWord(childId, request);
     }
 
@@ -56,7 +57,8 @@ public class WordsController {
     @ChildOwnerOrAdmin
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping(path = "/{childId}/{wordId}")
-    public void deleteWord(@PathVariable Long childId, @PathVariable Long wordId,
+    public void deleteWord(@PathVariable Long childId,
+                           @PathVariable Long wordId,
                            @RequestParam(value = "parentID", required = false) Long parentID) {
         deleteWordService.deleteWord(childId, wordId, parentID);
     }
@@ -74,7 +76,8 @@ public class WordsController {
     @ChildOwnerOrAdmin
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}/before/{date}")
-    public List<GetWordResponse> getByDateAchieveBefore(@PathVariable Long childId, @PathVariable LocalDate date,
+    public List<GetWordResponse> getByDateAchieveBefore(@PathVariable Long childId,
+                                                        @PathVariable LocalDate date,
                                                         @RequestParam(value = "parentID", required = false) Long parentID) {
         return getWordService.getByDateAchieveBefore(childId, date, parentID);
     }
@@ -92,24 +95,31 @@ public class WordsController {
     @ChildOwnerOrAdmin
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}/after/{date}")
-    public List<GetWordResponse> getByDateAchieveAfter(@PathVariable Long childId, @PathVariable LocalDate date,
+    public List<GetWordResponse> getByDateAchieveAfter(@PathVariable Long childId,
+                                                       @PathVariable LocalDate date,
                                                        @RequestParam(value = "parentID", required = false) Long parentID) {
         return getWordService.getByDateAchieveAfter(childId, date, parentID);
     }
 
-    @Operation(summary = "Get words between dates", description = "Fetches all words added between the specified start and end dates for a specific child. This endpoint is accessible to authenticated parents and administrators, and verifies the parent-child relationship.")
+    @Operation(summary = "Get words between a specified dates",
+            description = "Fetches all words added between the specified dates for the specified child. " +
+                    "If the authenticated user is a parent, they can retrieve words for their own child without providing a parentID. " +
+                    "If the authenticated user is an administrator, they must provide a parentID to retrieve words associated with a child of that parent.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Words successfully retrieved"),
             @ApiResponse(responseCode = "400", description = "Invalid date range"),
-            @ApiResponse(responseCode = "403", description = "Access denied, user is not authorized to access the child"),
+            @ApiResponse(responseCode = "400", description = "Bad Request, parentID is required for administrators"),
+            @ApiResponse(responseCode = "403", description = "Access denied, parent is not the owner of the child or user is not an administrator"),
             @ApiResponse(responseCode = "404", description = "Parent or child not found")
     })
     @ChildOwnerOrAdmin
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}/between")
-    public List<GetWordResponse> getWordsBetweenDays(@PathVariable Long childId, @RequestParam LocalDate startDate,
-                                                     @RequestParam LocalDate endDate) {
-        return getWordService.getWordsBetweenDays(childId, startDate, endDate);
+    public List<GetWordResponse> getWordsBetweenDays(@PathVariable Long childId,
+                                                     @RequestParam LocalDate startDate,
+                                                     @RequestParam LocalDate endDate,
+                                                     @RequestParam(value = "parentID", required = false) Long parentID) {
+        return getWordService.getWordsBetweenDays(childId, startDate, endDate, parentID);
     }
 
     @Operation(summary = "Get all words", description = "Fetches all words for a specific child. This endpoint is accessible to authenticated parents and administrators, and verifies the parent-child relationship.")
@@ -125,16 +135,22 @@ public class WordsController {
         return getWordService.getAllWords(childId);
     }
 
-    @Operation(summary = "Get word by title", description = "Fetches a word for a specific child based on the given word title. This endpoint is accessible to authenticated parents and administrator, and verifies the parent-child relationship.")
+    @Operation(summary = "Get word by exact match",
+            description = "Fetches a specific word spoken by the specified child. " +
+                    "If the authenticated user is a parent, they can retrieve a word for their own child without providing a parentID. " +
+                    "If the authenticated user is an administrator, they must provide a parentID to retrieve a word associated with a child of that parent.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Word successfully retrieved"),
-            @ApiResponse(responseCode = "403", description = "Access denied, user is not authorized to access the child"),
+            @ApiResponse(responseCode = "400", description = "Bad Request, parentID is required for administrators"),
+            @ApiResponse(responseCode = "403", description = "Access denied, parent is not the owner of the child or user is not an administrator"),
             @ApiResponse(responseCode = "404", description = "Parent, child or word not found")
     })
     @ChildOwnerOrAdmin
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "{childId}/word")
-    public GetWordResponse getWordByChildIdAndWord(@PathVariable Long childId, @RequestParam String word) {
-        return getWordService.getByWord(childId, word);
+    public GetWordResponse getWordByChildIdAndWord(@PathVariable Long childId,
+                                                   @RequestParam String word,
+                                                   @RequestParam(value = "parentID", required = false) Long parentID) {
+        return getWordService.getByWord(childId, word, parentID);
     }
 }
