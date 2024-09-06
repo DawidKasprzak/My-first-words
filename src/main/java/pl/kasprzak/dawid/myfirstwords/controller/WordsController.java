@@ -122,17 +122,22 @@ public class WordsController {
         return getWordService.getWordsBetweenDays(childId, startDate, endDate, parentID);
     }
 
-    @Operation(summary = "Get all words", description = "Fetches all words for a specific child. This endpoint is accessible to authenticated parents and administrators, and verifies the parent-child relationship.")
+    @Operation(summary = "Get all words for a child",
+            description = "Fetches all words for a specific child. " +
+                    "If the authenticated user is a parent, they can retrieve words for their own child without providing a parentID. " +
+                    "If the authenticated user is an administrator, they must provide a parentID to retrieve words associated with a child of that parent.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Words successfully retrieved"),
-            @ApiResponse(responseCode = "403", description = "Access denied, user is not authorized to access the child"),
+            @ApiResponse(responseCode = "400", description = "Bad Request, parentID is required for administrators"),
+            @ApiResponse(responseCode = "403", description = "Access denied, parent is not the owner of the child or user is not an administrator"),
             @ApiResponse(responseCode = "404", description = "Parent or child not found")
     })
     @ChildOwnerOrAdmin
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}")
-    public GetAllWordsResponse getAllWords(@PathVariable Long childId) {
-        return getWordService.getAllWords(childId);
+    public GetAllWordsResponse getAllWords(@PathVariable Long childId,
+                                           @RequestParam(value = "parentID", required = false) Long parentID) {
+        return getWordService.getAllWords(childId, parentID);
     }
 
     @Operation(summary = "Get word by exact match",

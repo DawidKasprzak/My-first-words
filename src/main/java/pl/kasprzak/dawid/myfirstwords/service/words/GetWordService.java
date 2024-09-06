@@ -127,17 +127,19 @@ public class GetWordService {
 
     /**
      * Service method for retrieving all words for a child.
-     * This method validates and authorizes the parent using the AuthorizationHelper,
+     * This method validates and authorizes the parent or admin using the AuthorizationHelper,
      * and fetches all words for the specified child.
      *
-     * @param childId the ID of the child whose words are to be retrieved.
+     * @param childId  the ID of the child whose words are to be retrieved.
+     * @param parentID (Optional) the ID of the parent. Required for administrators.
      * @return a GetAllWordsResponse DTO containing a list of all words for the child.
-     * @throws ParentNotFoundException if the authenticated parent is not found.
-     * @throws ChildNotFoundException  if the child with the given ID is not found.
-     * @throws AccessDeniedException   if the authenticated parent does not have access to the child.
+     * @throws ParentNotFoundException       if the authenticated parent or the parent with the given ID is not found.
+     * @throws ChildNotFoundException        if the child with the given ID is not found.
+     * @throws AccessDeniedException         if the authenticated parent or admin does not have access to the child.
+     * @throws AdminMissingParentIDException if the admin does not provide a parentID.
      */
-    public GetAllWordsResponse getAllWords(Long childId) {
-        authorizationHelper.validateAndAuthorizeChild(childId);
+    public GetAllWordsResponse getAllWords(Long childId, Long parentID) {
+        authorizationHelper.validateAndAuthorizeForAdminOrParent(childId, parentID);
         return GetAllWordsResponse.builder()
                 .words(wordsRepository.findAllByChildId(childId).stream()
                         .map(getWordsConverter::toDto)
