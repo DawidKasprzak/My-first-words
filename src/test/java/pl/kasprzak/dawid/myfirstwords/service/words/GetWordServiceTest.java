@@ -528,12 +528,12 @@ class GetWordServiceTest {
 
         lenient().when(authorizationHelper.isAdmin()).thenReturn(true);
         when(authorizationHelper.validateAndAuthorizeForAdminOrParent(childEntity.getId(), null))
-                .thenThrow(new AdminMissingParentIDException("Admin must provide a parentID to retrieve children"));
+                .thenThrow(new AdminMissingParentIDException("Admin must provide a parentID to perform this operation."));
 
         AdminMissingParentIDException adminMissingParentIDException = assertThrows(AdminMissingParentIDException.class,
                 () -> getWordService.getByWord(childEntity.getId(), word, null));
 
-        assertEquals("Admin must provide a parentID to retrieve children", adminMissingParentIDException.getMessage());
+        assertEquals("Admin must provide a parentID to perform this operation.", adminMissingParentIDException.getMessage());
         verify(authorizationHelper, times(1)).validateAndAuthorizeForAdminOrParent(childEntity.getId(), null);
         verify(wordsRepository, never()).findByWordIgnoreCaseAndChildId(anyString(), anyLong());
         verify(getWordsConverter, never()).toDto(any(WordEntity.class));

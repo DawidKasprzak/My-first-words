@@ -165,12 +165,12 @@ class GetChildServiceTest {
 
         lenient().when(authorizationHelper.isAdmin()).thenReturn(true);
         when(authorizationHelper.validateParentOrAdmin(null))
-                .thenThrow(new AdminMissingParentIDException("Admin must provide a parentID to retrieve children"));
+                .thenThrow(new AdminMissingParentIDException("Admin must provide a parentID to perform this operation."));
 
         AdminMissingParentIDException adminMissingParentIDException = assertThrows(AdminMissingParentIDException.class,
                 () -> getChildService.getAllChildrenOfParent(null));
 
-        assertEquals("Admin must provide a parentID to retrieve children", adminMissingParentIDException.getMessage());
+        assertEquals("Admin must provide a parentID to perform this operation.", adminMissingParentIDException.getMessage());
         verify(authorizationHelper, times(1)).validateParentOrAdmin(null);
         verify(parentsRepository, never()).findById(anyLong());
         verify(childrenRepository, never()).findByParentId(anyLong());
@@ -228,12 +228,12 @@ class GetChildServiceTest {
     void when_adminDoesNotProvideParentIDForSingleChild_then_throwIllegalArgumentException() {
         lenient().when(authorizationHelper.isAdmin()).thenReturn(true);
         when(authorizationHelper.validateAndAuthorizeForAdminOrParent(child1.getId(), null))
-                .thenThrow(new AdminMissingParentIDException("Admin must provide a parentID to retrieve children"));
+                .thenThrow(new AdminMissingParentIDException("Admin must provide a parentID to perform this operation."));
 
         AdminMissingParentIDException adminMissingParentIDException = assertThrows(AdminMissingParentIDException.class,
                 () -> getChildService.getChildById(1L, null));
 
-        assertEquals("Admin must provide a parentID to retrieve children", adminMissingParentIDException.getMessage());
+        assertEquals("Admin must provide a parentID to perform this operation.", adminMissingParentIDException.getMessage());
         verify(authorizationHelper, times(1)).validateAndAuthorizeForAdminOrParent(child1.getId(), null);
         verify(getChildConverter, never()).toDto(any());
     }

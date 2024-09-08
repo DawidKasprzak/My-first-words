@@ -46,17 +46,23 @@ public class MilestonesController {
         return createMilestoneService.addMilestone(childId, request);
     }
 
-    @Operation(summary = "Delete a milestone", description = "Deletes a milestone by its ID for the specified child. This endpoint is accessible to authenticated parents and administrators and verifies the parent-child relationship.")
+    @Operation(summary = "Delete a milestone by ID",
+            description = "Deletes a milestone by its ID for the specified child for the authenticated parent or an administrator. " +
+                    "If the authenticated user is a parent, they can delete a word for their own child without providing a parentID. " +
+                    "If the authenticated user is an administrator, they must provide a parentID to delete a word associated with a child of that parent.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Milestone successfully deleted"),
-            @ApiResponse(responseCode = "403", description = "Access denied, parent is not the owner of the child or an administrator"),
+            @ApiResponse(responseCode = "400", description = "Bad Request, parentID is required for administrators"),
+            @ApiResponse(responseCode = "403", description = "Access denied, parent is not the owner of the child or user is not an administrator"),
             @ApiResponse(responseCode = "404", description = "Parent, child or milestone not found")
     })
     @ChildOwnerOrAdmin
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping(path = "/{childId}/{milestoneId}")
-    public void deleteMilestone(@PathVariable Long childId, @PathVariable Long milestoneId) {
-        deleteMilestoneService.deleteMilestone(childId, milestoneId);
+    public void deleteMilestone(@PathVariable Long childId,
+                                @PathVariable Long milestoneId,
+                                @RequestParam(value = "parentID", required = false) Long parentID) {
+        deleteMilestoneService.deleteMilestone(childId, milestoneId, parentID);
     }
 
     @Operation(summary = "Get milestones before a date", description = "Fetches all milestones added before the specified date for a specific child. This endpoint is accessible to authenticated parents and administrators and verifies the parent-child relationship.")

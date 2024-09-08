@@ -11,7 +11,6 @@ import pl.kasprzak.dawid.myfirstwords.util.AuthorizationHelper;
 import pl.kasprzak.dawid.myfirstwords.repository.WordsRepository;
 import pl.kasprzak.dawid.myfirstwords.repository.dao.WordEntity;
 
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -41,8 +40,8 @@ public class DeleteWordService {
      */
     public void deleteWord(Long childId, Long wordId, Long parentID) {
         authorizationHelper.validateAndAuthorizeForAdminOrParent(childId, parentID);
-        Optional<WordEntity> word = wordsRepository.findByChildIdAndId(childId, wordId);
-        WordEntity wordEntity = word.orElseThrow(() -> new WordNotFoundException("Word not found"));
+        WordEntity wordEntity = wordsRepository.findByChildIdAndId(childId, wordId)
+                .orElseThrow(() -> new WordNotFoundException("Word not found"));
         wordsRepository.delete(wordEntity);
     }
 }

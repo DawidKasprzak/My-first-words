@@ -82,12 +82,12 @@ class DeleteChildServiceTest {
 
         lenient().when(authorizationHelper.isAdmin()).thenReturn(true);
         when(authorizationHelper.validateAndAuthorizeForAdminOrParent(childEntity.getId(), null))
-                .thenThrow(new AdminMissingParentIDException("Admin must provide a parentID to delete a child"));
+                .thenThrow(new AdminMissingParentIDException("Admin must provide a parentID to perform this operation."));
 
         AdminMissingParentIDException adminMissingParentIDException = assertThrows(AdminMissingParentIDException.class,
                 () -> deleteChildService.deleteChild(childEntity.getId(), null));
 
-        assertEquals("Admin must provide a parentID to delete a child", adminMissingParentIDException.getMessage());
+        assertEquals("Admin must provide a parentID to perform this operation.", adminMissingParentIDException.getMessage());
         verify(authorizationHelper, never()).validateAndAuthorizeChildForAdmin(anyLong(), anyLong());
         verify(childrenRepository, never()).deleteById(anyLong());
 
