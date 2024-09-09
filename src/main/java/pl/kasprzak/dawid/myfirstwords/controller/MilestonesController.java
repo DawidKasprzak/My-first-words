@@ -65,45 +65,63 @@ public class MilestonesController {
         deleteMilestoneService.deleteMilestone(childId, milestoneId, parentID);
     }
 
-    @Operation(summary = "Get milestones before a date", description = "Fetches all milestones added before the specified date for a specific child. This endpoint is accessible to authenticated parents and administrators and verifies the parent-child relationship.")
+    @Operation(summary = "Get milestones before a specified date",
+            description = "Fetches all milestones added before the specified date for the specified child. " +
+                    "If the authenticated user is a parent, they can retrieve milestones for their own child without providing a parentID. " +
+                    "If the authenticated user is an administrator, they must provide a parentID to retrieve milestones associated with a child of that parent.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Milestone successfully retrieved"),
-            @ApiResponse(responseCode = "403", description = "Access denied, user is not authorized to access the child"),
+            @ApiResponse(responseCode = "400", description = "Bad Request, parentID is required for administrators"),
+            @ApiResponse(responseCode = "403", description = "Access denied, parent is not the owner of the child or user is not an administrator"),
             @ApiResponse(responseCode = "404", description = "Parent or child not found")
     })
     @ChildOwnerOrAdmin
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}/before/{date}")
-    public List<GetMilestoneResponse> getByDateAchieveBefore(@PathVariable Long childId, @PathVariable LocalDate date) {
-        return getMilestoneService.getByDateAchieveBefore(childId, date);
+    public List<GetMilestoneResponse> getByDateAchieveBefore(@PathVariable Long childId,
+                                                             @PathVariable LocalDate date,
+                                                             @RequestParam(value = "parentID", required = false) Long parentID) {
+        return getMilestoneService.getByDateAchieveBefore(childId, date, parentID);
     }
 
-    @Operation(summary = "Get milestones after a date", description = "Fetches all milestones added after the specified date for a specific child. This endpoint is accessible to authenticated parents and administrators, and verifies the parent-child relationship.")
+    @Operation(summary = "Get milestones after a specified date",
+            description = "Fetches all milestones added after the specified date for the specified child. " +
+                    "If the authenticated user is a parent, they can retrieve milestones for their own child without providing a parentID. " +
+                    "If the authenticated user is an administrator, they must provide a parentID to retrieve milestones associated with a child of that parent.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Milestone successfully retrieved"),
-            @ApiResponse(responseCode = "403", description = "Access denied, user is not authorized to access the child"),
+            @ApiResponse(responseCode = "400", description = "Bad Request, parentID is required for administrators"),
+            @ApiResponse(responseCode = "403", description = "Access denied, parent is not the owner of the child or user is not an administrator"),
             @ApiResponse(responseCode = "404", description = "Parent or child not found")
     })
     @ChildOwnerOrAdmin
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}/after/{date}")
-    public List<GetMilestoneResponse> getByDateAchieveAfter(@PathVariable Long childId, @PathVariable LocalDate date) {
-        return getMilestoneService.getByDateAchieveAfter(childId, date);
+    public List<GetMilestoneResponse> getByDateAchieveAfter(@PathVariable Long childId,
+                                                            @PathVariable LocalDate date,
+                                                            @RequestParam(value = "parentID", required = false) Long parentID) {
+        return getMilestoneService.getByDateAchieveAfter(childId, date, parentID);
     }
 
-    @Operation(summary = "Get milestones between dates", description = "Fetches all milestones added between the specified start and end dates for a specific child. This endpoint is accessible to authenticated parents and administrators and verifies the parent-child relationship.")
+    @Operation(summary = "Get milestones between a specified dates",
+            description = "Fetches all milestones added between the specified dates for the specified child. " +
+                    "If the authenticated user is a parent, they can retrieve milestones for their own child without providing a parentID. " +
+                    "If the authenticated user is an administrator, they must provide a parentID to retrieve milestones associated with a child of that parent.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Milestones successfully retrieved"),
             @ApiResponse(responseCode = "400", description = "Invalid date range"),
-            @ApiResponse(responseCode = "403", description = "Access denied, user is not authorized to access the child"),
+            @ApiResponse(responseCode = "400", description = "Bad Request, parentID is required for administrators"),
+            @ApiResponse(responseCode = "403", description = "Access denied, parent is not the owner of the child or user is not an administrator"),
             @ApiResponse(responseCode = "404", description = "Parent or child not found")
     })
     @ChildOwnerOrAdmin
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}/between")
-    public List<GetMilestoneResponse> getMilestoneBetweenDays(@PathVariable Long childId, @RequestParam LocalDate startDate,
-                                                              @RequestParam LocalDate endDate) {
-        return getMilestoneService.getMilestonesBetweenDays(childId, startDate, endDate);
+    public List<GetMilestoneResponse> getMilestoneBetweenDays(@PathVariable Long childId,
+                                                              @RequestParam LocalDate startDate,
+                                                              @RequestParam LocalDate endDate,
+                                                              @RequestParam(value = "parentID", required = false) Long parentID) {
+        return getMilestoneService.getMilestonesBetweenDays(childId, startDate, endDate, parentID);
     }
 
     @Operation(summary = "Get all milestones", description = "Fetches all milestone for a specific child. This endpoint is accessible to authenticated parents and administrators, and verifies the parent-child relationship.")

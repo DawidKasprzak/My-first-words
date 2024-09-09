@@ -36,7 +36,7 @@ public class GetWordService {
      *
      * @param childId  the ID of the child whose words are to be retrieved.
      * @param date     the date before which words were achieved.
-     * @param parentID the ID of the parent (optional, required for admins).
+     * @param parentID the ID of the parent, required if the authenticated user is an administrator.
      * @return a list of GetWordResponse DTOs containing the words achieved before the given date.
      * @throws ParentNotFoundException       if the authenticated parent or the parent with the given ID is not found.
      * @throws ChildNotFoundException        if the child with the given ID is not found.
@@ -58,7 +58,7 @@ public class GetWordService {
      *
      * @param childId  the ID of the child whose words are to be retrieved.
      * @param date     the date before which words were achieved.
-     * @param parentID the ID of the parent (optional, required for admins).
+     * @param parentID the ID of the parent, required if the authenticated user is an administrator.
      * @return a list of GetWordResponse DTOs containing the words achieved after the given date.
      * @throws ParentNotFoundException       if the authenticated parent or the parent with the given ID is not found.
      * @throws ChildNotFoundException        if the child with the given ID is not found.
@@ -81,6 +81,7 @@ public class GetWordService {
      * @param childId   the ID of the child whose words are to be retrieved.
      * @param startDate the start date of the range.
      * @param endDate   the end date of the range.
+     * @param parentID the ID of the parent, required if the authenticated user is an administrator.
      * @return a list of GetWordResponse DTOs containing the words achieved between the given dates.
      * @throws ParentNotFoundException       if the authenticated parent or the parent with the given ID is not found.
      * @throws ChildNotFoundException        if the child with the given ID is not found.

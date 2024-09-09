@@ -30,11 +30,12 @@ public class DeleteMilestoneService {
      *
      * @param childId     the ID of the child to whom the milestone belongs.
      * @param milestoneId the ID of the milestone to be deleted.
+     * @param parentID    the ID of the parent, required if the authenticated user is an administrator.
      * @throws AdminMissingParentIDException if the authenticated user is an admin and the parentID is null.
-     * @throws ParentNotFoundException    if the specified parent (for admin) or authenticated parent (for regular user) is not found.
-     * @throws ChildNotFoundException     if the child with the given ID is not found.
-     * @throws AccessDeniedException      if the authenticated parent does not have access to the child.
-     * @throws MilestoneNotFoundException if the milestone with the given ID is not found for the specified child.
+     * @throws ParentNotFoundException       if the specified parent (for admin) or authenticated parent (for regular user) is not found.
+     * @throws ChildNotFoundException        if the child with the given ID is not found.
+     * @throws AccessDeniedException         if the authenticated parent does not have access to the child.
+     * @throws MilestoneNotFoundException    if the milestone with the given ID is not found for the specified child.
      */
     public void deleteMilestone(Long childId, Long milestoneId, Long parentID) {
         authorizationHelper.validateAndAuthorizeForAdminOrParent(childId, parentID);
