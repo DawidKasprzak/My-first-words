@@ -124,30 +124,41 @@ public class MilestonesController {
         return getMilestoneService.getMilestonesBetweenDays(childId, startDate, endDate, parentID);
     }
 
-    @Operation(summary = "Get all milestones", description = "Fetches all milestone for a specific child. This endpoint is accessible to authenticated parents and administrators, and verifies the parent-child relationship.")
+    @Operation(summary = "Get all milestones for a child",
+            description = "Fetches all milestones for a specific child. " +
+                    "If the authenticated user is a parent, they can retrieve milestones for their own child without providing a parentID. " +
+                    "If the authenticated user is an administrator, they must provide a parentID to retrieve milestones associated with a child of that parent.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Milestones successfully retrieved"),
-            @ApiResponse(responseCode = "403", description = "Access denied, user is not authorized to access the child"),
+            @ApiResponse(responseCode = "400", description = "Bad Request, parentID is required for administrators"),
+            @ApiResponse(responseCode = "403", description = "Access denied, parent is not the owner of the child or user is not an administrator"),
             @ApiResponse(responseCode = "404", description = "Parent or child not found")
     })
     @ChildOwnerOrAdmin
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}")
-    public GetAllMilestoneResponse getAllMilestones(@PathVariable Long childId) {
-        return getMilestoneService.getAllMilestone(childId);
+    public GetAllMilestoneResponse getAllMilestones(@PathVariable Long childId,
+                                                    @RequestParam(value = "parentID", required = false) Long parentID) {
+        return getMilestoneService.getAllMilestone(childId, parentID);
     }
 
-    @Operation(summary = "Retrieve milestones by title", description = "Fetches all milestones for a specific child that match a given title. This endpoint is accessible to authenticated parents and administrators and verifies the parent-child relationship.")
+    @Operation(summary = "Get milestones by title",
+            description = "Fetches all milestones for the specified child that match a given title. " +
+                    "If the authenticated user is a parent, they can retrieve milestones for their own child without providing a parentID. " +
+                    "If the authenticated user is an administrator, they must provide a parentID to retrieve milestones associated with a child of that parent.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Milestones successfully retrieved"),
-            @ApiResponse(responseCode = "403", description = "Access denied, user is not authorized to access the child"),
+            @ApiResponse(responseCode = "400", description = "Bad Request, parentID is required for administrators"),
+            @ApiResponse(responseCode = "403", description = "Access denied, parent is not the owner of the child or user is not an administrator"),
             @ApiResponse(responseCode = "404", description = "Parent, child or milestone not found")
     })
     @ChildOwnerOrAdmin
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = "/{childId}/title")
-    public GetAllMilestoneResponse getByTitle(@PathVariable Long childId, @RequestParam String title) {
-        return getMilestoneService.getByTitle(childId, title);
+    public GetAllMilestoneResponse getByTitle(@PathVariable Long childId,
+                                              @RequestParam String title,
+                                              @RequestParam(value = "parentID", required = false) Long parentID) {
+        return getMilestoneService.getByTitle(childId, title, parentID);
     }
 
     @Operation(summary = "Update a milestone", description = "Updates the details of an existing milestone for a specific child. This endpoint is accessible to authenticated parents and administrators, and verifies the parent-child relationship.")

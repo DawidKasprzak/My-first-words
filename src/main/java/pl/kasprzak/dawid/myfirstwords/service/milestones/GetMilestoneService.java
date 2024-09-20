@@ -50,13 +50,13 @@ public class GetMilestoneService {
      * This method validates and authorizes the parent or admin using the AuthorizationHelper,
      * and fetches milestone achieved after the specified date.
      *
-     * @param childId the ID of the child whose milestones are to be retrieved.
-     * @param date    the date before which milestones were achieved.
+     * @param childId  the ID of the child whose milestones are to be retrieved.
+     * @param date     the date before which milestones were achieved.
      * @param parentID the ID of the parent, required if the authenticated user is an administrator.
      * @return a list of GetMilestoneResponse DTOs containing the milestones achieved after the given date.
-     * @throws ParentNotFoundException if the authenticated parent or the parent with the given ID is not found.
-     * @throws ChildNotFoundException  if the child with the given ID is not found.
-     * @throws AccessDeniedException   if the authenticated parent or admin does not have access to the child.
+     * @throws ParentNotFoundException       if the authenticated parent or the parent with the given ID is not found.
+     * @throws ChildNotFoundException        if the child with the given ID is not found.
+     * @throws AccessDeniedException         if the authenticated parent or admin does not have access to the child.
      * @throws AdminMissingParentIDException if the admin does not provide a parentID.
      */
     public List<GetMilestoneResponse> getByDateAchieveAfter(Long childId, LocalDate date, Long parentID) {
@@ -75,13 +75,13 @@ public class GetMilestoneService {
      * @param childId   the ID of the child whose milestones are to be retrieved.
      * @param startDate the start date of the range.
      * @param endDate   the end date of the range.
-     * @param parentID the ID of the parent, required if the authenticated user is an administrator.
+     * @param parentID  the ID of the parent, required if the authenticated user is an administrator.
      * @return a list of GetMilestoneResponse DTOs containing the milestones achieved between the given dates.
-     * @throws ParentNotFoundException   if the authenticated parent or the parent with the given ID is not found.
-     * @throws ChildNotFoundException    if the child with the given ID is not found.
-     * @throws AccessDeniedException     if the authenticated parent or admin does not have access to the child.
-     * @throws DateValidationException   if either start date or end date is null.
-     * @throws InvalidDateOrderException if the start date is after the end date.
+     * @throws ParentNotFoundException       if the authenticated parent or the parent with the given ID is not found.
+     * @throws ChildNotFoundException        if the child with the given ID is not found.
+     * @throws AccessDeniedException         if the authenticated parent or admin does not have access to the child.
+     * @throws DateValidationException       if either start date or end date is null.
+     * @throws InvalidDateOrderException     if the start date is after the end date.
      * @throws AdminMissingParentIDException if the admin does not provide a parentID.
      */
     public List<GetMilestoneResponse> getMilestonesBetweenDays(Long childId, LocalDate startDate, LocalDate endDate, Long parentID) {
@@ -100,17 +100,19 @@ public class GetMilestoneService {
 
     /**
      * Service method for retrieving all milestones for a child.
-     * This method validates and authorizes the parent using the AuthorizationHelper,
+     * This method validates and authorizes the parent or admin using the AuthorizationHelper,
      * and fetches all milestones for the specified child.
      *
-     * @param childId the ID of the child whose milestones are to be retrieved.
+     * @param childId  the ID of the child whose milestones are to be retrieved.
+     * @param parentID the ID of the parent, required if the authenticated user is an admin.
      * @return a GetAllMilestoneResponse DTO containing a list of all milestones for the child.
-     * @throws ParentNotFoundException if the authenticated parent is not found.
-     * @throws ChildNotFoundException  if the child with the given ID is not found.
-     * @throws AccessDeniedException   if the authenticated parent does not have access to the child.
+     * @throws ParentNotFoundException       if the authenticated parent or the parent with the given ID is not found.
+     * @throws ChildNotFoundException        if the child with the given ID is not found.
+     * @throws AccessDeniedException         if the authenticated parent or admin does not have access to the child.
+     * @throws AdminMissingParentIDException if the admin does not provide a parentID.
      */
-    public GetAllMilestoneResponse getAllMilestone(Long childId) {
-        authorizationHelper.validateAndAuthorizeChild(childId);
+    public GetAllMilestoneResponse getAllMilestone(Long childId, Long parentID) {
+        authorizationHelper.validateAndAuthorizeForAdminOrParent(childId, parentID);
         return GetAllMilestoneResponse.builder()
                 .milestones(milestonesRepository.findAllByChildId(childId).stream()
                         .map(getMilestoneConverter::toDto)
@@ -120,19 +122,21 @@ public class GetMilestoneService {
 
     /**
      * Service method for retrieving milestones for a child by the given title.
-     * This method validates and authorizes the parent using the AuthorizationHelper,
+     * This method validates and authorizes the parent or admin using the AuthorizationHelper,
      * and fetches milestones for the specified child that match the given title.
      *
-     * @param childId the ID of the child whose milestones are to be retrieved.
-     * @param title   the title to search for milestones.
+     * @param childId  the ID of the child whose milestones are to be retrieved.
+     * @param title    the title to search for milestones (case-insensitive).
+     * @param parentID the ID of the parent, required if the authenticated user is an admin.
      * @return a GetAllMilestoneResponse DTO containing the list of milestone details.
-     * @throws ParentNotFoundException    if the authenticated parent is not found.
-     * @throws ChildNotFoundException     if the child with the given ID is not found.
-     * @throws AccessDeniedException      if the authenticated parent does not have access to the child.
-     * @throws MilestoneNotFoundException if no milestones are found with the given title for the specified child.
+     * @throws ParentNotFoundException       if the authenticated parent or the parent with the given ID is not found.
+     * @throws ChildNotFoundException        if the child with the given ID is not found.
+     * @throws AccessDeniedException         if the authenticated parent or admin does not have access to the child.
+     * @throws MilestoneNotFoundException    if no milestones are found with the given title for the specified child.
+     * @throws AdminMissingParentIDException if the admin does not provide a parentID.
      */
-    public GetAllMilestoneResponse getByTitle(Long childId, String title) {
-        authorizationHelper.validateAndAuthorizeChild(childId);
+    public GetAllMilestoneResponse getByTitle(Long childId, String title, Long parentID) {
+        authorizationHelper.validateAndAuthorizeForAdminOrParent(childId, parentID);
         List<MilestoneEntity> milestones = milestonesRepository.findByTitleContainingIgnoreCaseAndChildId(title.toLowerCase(), childId);
         if (milestones.isEmpty()) {
             throw new MilestoneNotFoundException("Milestone not found");

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import pl.kasprzak.dawid.myfirstwords.exception.AdminMissingParentIDException;
 import pl.kasprzak.dawid.myfirstwords.exception.DateValidationException;
 import pl.kasprzak.dawid.myfirstwords.exception.InvalidDateOrderException;
 import pl.kasprzak.dawid.myfirstwords.exception.MilestoneNotFoundException;
@@ -334,9 +335,13 @@ class GetMilestoneServiceTest {
     }
 
     /**
-     * Unit test for getMilestonesBetweenDays method in GetMilestoneService when end date is null.
-     * First verifies that the child belongs to the authenticated parent.
-     * Then verifies that a DateValidationException is thrown and the appropriate error message is returned.
+     * Unit test for the getMilestonesBetweenDays method in GetMilestoneService when the end date is null.
+     * This test verifies that the service throws a DateValidationException if the end date is not provided.
+     * The test ensures that:
+     * 1. The child is validated and authorized using the AuthorizationHelper for either the authenticated parent or administrator.
+     * 2. A DateValidationException is thrown if the end date is null.
+     * 3. The WordsRepository is never queried if the validation fails due to a missing end date.
+     * 4. The appropriate error message ("Start date and end date must not be null") is returned when the exception is thrown.
      */
     @Test
     void when_getMilestonesBetweenDays_and_endDateIsNull_then_throwDateValidationException() {
@@ -353,7 +358,7 @@ class GetMilestoneServiceTest {
 
     }
 
-     /**
+    /**
      * Unit test for the getMilestonesBetweenDays method in GetMilestoneService when the start date is after end date.
      * This test verifies that the service throws a InvalidDateOrderException if the start date is after end date.
      * The test ensures that:
@@ -378,14 +383,18 @@ class GetMilestoneServiceTest {
     }
 
     /**
-     * Unit test for getAllMilestone method in GetMilestoneService.
-     * First verifies that the child belongs to the authenticated parent.
-     * Then verifies that all milestones for the child are retrieved and converted to DTOs.
+     * Unit test for the getAllMilestones method in GetMilestoneService.
+     * This test verifies that the service correctly retrieves all milestones for a given child
+     * and converts them to DTOs.
+     * The test ensures that:
+     * 1. The child is validated and authorized using the AuthorizationHelper for either the authenticated parent or administrator.
+     * 2. The MilestonesRepository is queried to find all milestones associated with the child.
+     * 3. Each retrieved MilestoneEntity is converted to a GetMilestoneResponse DTO using the GetMilestonesConverter.
      */
     @Test
     void when_getAllMilestones_then_allMilestonesTheChildShouldBeReturned() {
 
-        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId())).thenReturn(childEntity);
+        when(authorizationHelper.validateAndAuthorizeForAdminOrParent(childEntity.getId(), null)).thenReturn(childEntity);
         when(milestonesRepository.findAllByChildId(childEntity.getId())).thenReturn(milestoneEntities);
         // Mock the behavior of getMilestoneConverter.toDto method to ensure that any MilestoneEntity passed to it
         // is converted to a GetMilestoneResponse using a predefined conversion method, createGetMilestoneResponse
@@ -396,7 +405,7 @@ class GetMilestoneServiceTest {
             return createGetMilestoneResponse(entity);
         });
 
-        GetAllMilestoneResponse response = getMilestoneService.getAllMilestone(childEntity.getId());
+        GetAllMilestoneResponse response = getMilestoneService.getAllMilestone(childEntity.getId(), null);
 
         assertEquals(milestoneEntities.size(), response.getMilestones().size());
 
@@ -407,45 +416,118 @@ class GetMilestoneServiceTest {
                             entity.getDateAchieve().equals(milestoneResponse.getDateAchieve())));
         }
 
-        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId());
+        verify(authorizationHelper, times(1)).validateAndAuthorizeForAdminOrParent(childEntity.getId(), null);
         verify(milestonesRepository, times(1)).findAllByChildId(childEntity.getId());
         verify(getMilestoneConverter, times(milestoneEntities.size())).toDto(any(MilestoneEntity.class));
     }
 
     /**
-     * Unit test for getByTitle method in GetMilestoneService.
-     * First verifies that the child belongs to the authenticated parent.
-     * Then verifies that the correct milestone is returned for a given child ID and title.
+     * Unit test for the getAllMilestones method in GetMilestoneService when accessed by an administrator.
+     * This test verifies that the service correctly retrieves all milestone for a given child
+     * when the request is made by an administrator, providing a parent ID.
+     * The test ensures that:
+     * 1. The child is validated and authorized for the administrator using the AuthorizationHelper with a provided parent ID.
+     * 2. The MilestonesRepository is queried to find all milestones associated with the child.
+     * 3. Each retrieved MilestoneEntity is converted to a GetMilestoneResponse DTO using the GetMilestonesConverter.
+     */
+    @Test
+    void when_adminGetsAllMilestones_then_allMilestonesForTheChildShouldBeReturned() {
+
+        lenient().when(authorizationHelper.isAdmin()).thenReturn(true);
+        when(authorizationHelper.validateAndAuthorizeForAdminOrParent(childEntity.getId(), parentEntity.getId())).thenReturn(childEntity);
+        when(milestonesRepository.findAllByChildId(childEntity.getId())).thenReturn(milestoneEntities);
+        when(getMilestoneConverter.toDto(any(MilestoneEntity.class))).thenAnswer(invocationOnMock -> {
+            MilestoneEntity entity = invocationOnMock.getArgument(0);
+            return createGetMilestoneResponse(entity);
+        });
+
+        GetAllMilestoneResponse response = getMilestoneService.getAllMilestone(childEntity.getId(), parentEntity.getId());
+
+        assertEquals(milestoneEntities.size(), response.getMilestones().size());
+        //sprawdzić
+        for (GetMilestoneResponse milestoneResponse : response.getMilestones()) {
+            assertTrue(milestoneEntities.stream().anyMatch(entity ->
+                    entity.getId().equals(milestoneResponse.getId()) &&
+                            entity.getTitle().equals(milestoneResponse.getTitle()) &&
+                            entity.getDateAchieve().equals(milestoneResponse.getDateAchieve())));
+        }
+
+        verify(authorizationHelper, times(1)).validateAndAuthorizeForAdminOrParent(childEntity.getId(), parentEntity.getId());
+        verify(milestonesRepository, times(1)).findAllByChildId(childEntity.getId());
+        verify(getMilestoneConverter, times(milestoneEntities.size())).toDto(any(MilestoneEntity.class));
+    }
+
+    /**
+     * Unit test for the getByTitle method in GetMilestoneService.
+     * This test verifies that the service correctly retrieves a single milestone
+     * for a given child based on the title provided, ignoring case sensitivity.
+     * The test ensures that:
+     * 1. The child is validated and authorized using the AuthorizationHelper for either the authenticated parent or administrator.
+     * 2. The MilestonesRepository is queried to find milestones associated with the child, ignoring case sensitivity.
+     * 3. The retrieved MilestoneEntity is converted to a GetMilestoneResponse DTO using the GetMilestoneConverter.
      */
     @Test
     void when_getByTitle_then_milestoneByTitleShouldBeReturned() {
         String title = "tiTLe1";
 
-        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId())).thenReturn(childEntity);
+        when(authorizationHelper.validateAndAuthorizeForAdminOrParent(childEntity.getId(), null)).thenReturn(childEntity);
         when(milestonesRepository.findByTitleContainingIgnoreCaseAndChildId(title.toLowerCase(), childEntity.getId())).thenReturn(milestoneEntities.subList(0, 1));
         when(getMilestoneConverter.toDto(milestoneEntity1)).thenReturn(milestoneResponse);
 
         List<GetMilestoneResponse> expectedMilestones = Collections.singletonList(milestoneResponse);
         GetAllMilestoneResponse expectedResponse = GetAllMilestoneResponse.builder().milestones(expectedMilestones).build();
 
-        GetAllMilestoneResponse response = getMilestoneService.getByTitle(childEntity.getId(), title.toLowerCase());
+        GetAllMilestoneResponse response = getMilestoneService.getByTitle(childEntity.getId(), title.toLowerCase(), null);
 
         assertEquals(expectedResponse, response);
-        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId());
+        verify(authorizationHelper, times(1)).validateAndAuthorizeForAdminOrParent(childEntity.getId(), null);
         verify(milestonesRepository, times(1)).findByTitleContainingIgnoreCaseAndChildId(title.toLowerCase(), childEntity.getId());
         verify(getMilestoneConverter, times(1)).toDto(milestoneEntity1);
     }
 
     /**
-     * Unit test for getByTitle method in GetMilestoneService.
-     * First verifies that the child belongs to the authenticated parent.
-     * Then verifies that all milestones matching the given title are returned for the child.
+     * Unit test for the getByTitle method in GetMilestoneService when accessed by an administrator.
+     * This test verifies that the service correctly retrieves a single milestone
+     * for a given child when the request is made by an administrator, providing a parent ID.
+     * The test ensures that:
+     * 1. The child is validated and authorized for the administrator using the AuthorizationHelper with a provided parent ID.
+     * 2. The MilestonesRepository is queried to find milestones associated with the child, ignoring case sensitivity.
+     * 3. The retrieved MilestoneEntity is converted to a GetMilestoneResponse DTO using the GetMilestoneConverter.
+     */
+    @Test
+    void when_adminGetsMilestoneByTitle_then_childMilestoneByTitleShouldBeReturned() {
+        String title = "tiTLe1";
+
+        lenient().when(authorizationHelper.isAdmin()).thenReturn(true);
+        when(authorizationHelper.validateAndAuthorizeForAdminOrParent(childEntity.getId(), parentEntity.getId())).thenReturn(childEntity);
+        when(milestonesRepository.findByTitleContainingIgnoreCaseAndChildId(title.toLowerCase(), childEntity.getId())).thenReturn(milestoneEntities.subList(0, 1));
+        when(getMilestoneConverter.toDto(milestoneEntity1)).thenReturn(milestoneResponse);
+
+        List<GetMilestoneResponse> expectedMilestones = Collections.singletonList(milestoneResponse);
+        GetAllMilestoneResponse expectedResponse = GetAllMilestoneResponse.builder().milestones(expectedMilestones).build();
+
+        GetAllMilestoneResponse response = getMilestoneService.getByTitle(childEntity.getId(), title.toLowerCase(), parentEntity.getId());
+
+        assertEquals(expectedResponse, response);
+        verify(authorizationHelper, times(1)).validateAndAuthorizeForAdminOrParent(childEntity.getId(), parentEntity.getId());
+        verify(milestonesRepository, times(1)).findByTitleContainingIgnoreCaseAndChildId(title.toLowerCase(), childEntity.getId());
+        verify(getMilestoneConverter, times(1)).toDto(milestoneEntity1);
+    }
+
+    /**
+     * Unit test for the getByTitle method in GetMilestoneService.
+     * This test verifies that the service correctly retrieves multiple milestones
+     * for a given child based on the title provided, ignoring case sensitivity.
+     * The test ensures that:
+     * 1. The child is validated and authorized using the AuthorizationHelper for either the authenticated parent or administrator.
+     * 2. The MilestonesRepository is queried to find milestones associated with the child, ignoring case sensitivity.
+     * 3. Each retrieved MilestoneEntity is converted to a GetMilestoneResponse DTO using the GetMilestoneConverter.
      */
     @Test
     void when_getByTitle_then_allMilestonesByTitleShouldBeReturned() {
         String title = "miLeStoNe";
 
-        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId())).thenReturn(childEntity);
+        when(authorizationHelper.validateAndAuthorizeForAdminOrParent(childEntity.getId(), null)).thenReturn(childEntity);
         when(milestonesRepository.findByTitleContainingIgnoreCaseAndChildId(title.toLowerCase(), childEntity.getId())).thenReturn(milestoneEntities);
         // Mock the behavior of getMilestoneConverter.toDto method to ensure that any MilestoneEntity passed to it
         // is converted to a GetMilestoneResponse using a predefined conversion method, createGetMilestoneResponse
@@ -456,7 +538,7 @@ class GetMilestoneServiceTest {
             return createGetMilestoneResponse(entity);
         });
 
-        GetAllMilestoneResponse response = getMilestoneService.getByTitle(childEntity.getId(), title.toLowerCase());
+        GetAllMilestoneResponse response = getMilestoneService.getByTitle(childEntity.getId(), title.toLowerCase(), null);
 
         assertEquals(4, response.getMilestones().size());
         for (GetMilestoneResponse milestoneResponse : response.getMilestones()) {
@@ -465,28 +547,99 @@ class GetMilestoneServiceTest {
                             milestoneEntity.getTitle().contains(milestoneResponse.getTitle())));
         }
 
-        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId());
+        verify(authorizationHelper, times(1)).validateAndAuthorizeForAdminOrParent(childEntity.getId(), null);
         verify(milestonesRepository, times(1)).findByTitleContainingIgnoreCaseAndChildId(title.toLowerCase(), childEntity.getId());
         verify(getMilestoneConverter, times(response.getMilestones().size())).toDto(any(MilestoneEntity.class));
     }
 
     /**
-     * Unit test for getByTitle method in GetMilestoneService when the milestone does not exist.
-     * First verifies that the child belongs to the authenticated parent.
-     * Then verifies that a MilestoneNotFoundException is thrown and the appropriate error message is returned.
+     * Unit test for the getByTitle method in GetMilestoneService when accessed by an administrator.
+     * This test verifies that the service correctly retrieves multiple milestones
+     * for a given child when the request is made by an administrator, providing a parent ID.
+     * The test ensures that:
+     * 1. The child is validated and authorized for the administrator using the AuthorizationHelper with a provided parent ID.
+     * 2. The MilestonesRepository is queried to find milestones associated with the child, ignoring case sensitivity.
+     * 3. Each retrieved MilestoneEntity is converted to a GetMilestoneResponse DTO using the GetMilestoneConverter.
+     */
+    @Test
+    void when_adminGetsMilestoneByTitle_then_allMilestonesByTitleShouldBeReturned() {
+        String title = "miLeStoNe";
+
+        lenient().when(authorizationHelper.isAdmin()).thenReturn(true);
+        when(authorizationHelper.validateAndAuthorizeForAdminOrParent(childEntity.getId(), parentEntity.getId())).thenReturn(childEntity);
+        when(milestonesRepository.findByTitleContainingIgnoreCaseAndChildId(title.toLowerCase(), childEntity.getId())).thenReturn(milestoneEntities);
+        // Mock the behavior of getMilestoneConverter.toDto method to ensure that any MilestoneEntity passed to it
+        // is converted to a GetMilestoneResponse using a predefined conversion method, createGetMilestoneResponse
+        when(getMilestoneConverter.toDto(any(MilestoneEntity.class))).thenAnswer(invocationOnMock -> {
+            // Extract the argument passed to the toDto method, which is a MilestoneEntity object
+            MilestoneEntity entity = invocationOnMock.getArgument(0);
+            // Use the helper method createGetMilestoneResponse to convert the MilestoneEntity object to a GetMilestoneResponse
+            return createGetMilestoneResponse(entity);
+        });
+
+        GetAllMilestoneResponse response = getMilestoneService.getByTitle(childEntity.getId(), title.toLowerCase(), parentEntity.getId());
+
+        assertEquals(4, response.getMilestones().size());
+        for (GetMilestoneResponse milestoneResponse : response.getMilestones()) {
+            assertTrue(milestoneEntities.stream()
+                    .anyMatch(milestoneEntity ->
+                            milestoneEntity.getTitle().contains(milestoneResponse.getTitle())));
+        }
+
+        verify(authorizationHelper, times(1)).validateAndAuthorizeForAdminOrParent(childEntity.getId(), parentEntity.getId());
+        verify(milestonesRepository, times(1)).findByTitleContainingIgnoreCaseAndChildId(title.toLowerCase(), childEntity.getId());
+        verify(getMilestoneConverter, times(response.getMilestones().size())).toDto(any(MilestoneEntity.class));
+    }
+
+    /**
+     * Unit test for the getByTitle method in GetMilestoneService when accessed by an administrator
+     * without providing a parent ID.
+     * This test verifies that an AdminMissingParentIDException is thrown when the administrator
+     * tries to retrieve a milestone for a child without providing a parent ID.
+     * The test ensures that:
+     * 1. The child is not authorized because the parent ID is missing.
+     * 2. The AdminMissingParentIDException is thrown with the appropriate message.
+     * 3. The MilestonesRepository is never queried if the authorization fails due to a missing parent ID.
+     */
+    @Test
+    void when_adminGetsMilestoneByTitleWithoutParentID_then_adminMissingParentIDExceptionShouldBeThrown() {
+        String title = "miLeStoNe";
+
+        lenient().when(authorizationHelper.isAdmin()).thenReturn(true);
+        when(authorizationHelper.validateAndAuthorizeForAdminOrParent(childEntity.getId(), null))
+                .thenThrow(new AdminMissingParentIDException("Admin must provide a parentID to perform this operation."));
+
+        AdminMissingParentIDException adminMissingParentIDException = assertThrows(AdminMissingParentIDException.class,
+                () -> getMilestoneService.getByTitle(childEntity.getId(), title, null));
+
+        assertEquals("Admin must provide a parentID to perform this operation.", adminMissingParentIDException.getMessage());
+
+
+        verify(authorizationHelper, times(1)).validateAndAuthorizeForAdminOrParent(childEntity.getId(), null);
+        verify(milestonesRepository, never()).findByTitleContainingIgnoreCaseAndChildId(anyString(), anyLong());
+        verify(getMilestoneConverter, never()).toDto(any(MilestoneEntity.class));
+    }
+
+    /**
+     * Unit test for the getByTitle method in GetMilestoneService when the requested milestone does not exist for the given child.
+     * This test verifies that the service correctly handles the case where no milestones match the given title for a specific child.
+     * The test ensures that:
+     * 1. The child is validated and authorized using the AuthorizationHelper for either the authenticated parent or administrator.
+     * 2. The MilestonesRepository is queried to find milestones associated with the child that contain the given title, ignoring case sensitivity.
+     * 3. If no matching milestones are found, a MilestoneNotFoundException is thrown with the appropriate error message.
      */
     @Test
     void when_getByTitle_and_titleNonExistent_then_throwMilestoneNotFoundException() {
         String title = "titleNonExistent";
 
-        when(authorizationHelper.validateAndAuthorizeChild(childEntity.getId())).thenReturn(childEntity);
+        when(authorizationHelper.validateAndAuthorizeForAdminOrParent(childEntity.getId(), null)).thenReturn(childEntity);
         when(milestonesRepository.findByTitleContainingIgnoreCaseAndChildId(title.toLowerCase(), childEntity.getId())).thenReturn(Collections.emptyList());
 
         MilestoneNotFoundException milestoneNotFoundException = assertThrows(MilestoneNotFoundException.class,
-                () -> getMilestoneService.getByTitle(childEntity.getId(), title.toLowerCase()));
+                () -> getMilestoneService.getByTitle(childEntity.getId(), title.toLowerCase(), null));
 
         assertEquals("Milestone not found", milestoneNotFoundException.getMessage());
-        verify(authorizationHelper, times(1)).validateAndAuthorizeChild(childEntity.getId());
+        verify(authorizationHelper, times(1)).validateAndAuthorizeForAdminOrParent(childEntity.getId(), null);
         verify(milestonesRepository, times(1)).findByTitleContainingIgnoreCaseAndChildId(title.toLowerCase(), childEntity.getId());
         verify(getMilestoneConverter, never()).toDto(any(MilestoneEntity.class));
     }
